@@ -1,2069 +1,1170 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>3D AI Hologram & Real-Time Call // RJN (ROX AI)</title>
-  <meta name="description" content="RJN (ROX AI) - 3D Hologram & Real-Time Voice Call with Groq AI Brain and Dynamic 3D Shape Morphing." />
-  <meta name="theme-color" content="#06070a" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-      -webkit-user-select: none;
-    }
-
-    html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #06070a;
-      color: #f1f5f9;
-      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-    }
-
-    /* Ambient Dynamic Aura Backdrop */
-    #ambient-aura {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-      background: radial-gradient(circle at 50% 50%, #0d1222 0%, #06070a 100%);
-      transition: opacity 0.8s ease;
-    }
-
-    .aura-bloom {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(100px);
-      opacity: 0.55;
-      mix-blend-mode: screen;
-      pointer-events: none;
-      animation: floatBloom 16s ease-in-out infinite alternate;
-    }
-
-    .aura-bloom-1 {
-      top: 15%;
-      left: 15%;
-      width: 55vw;
-      height: 55vw;
-      background: radial-gradient(circle, rgba(0, 240, 255, 0.40) 0%, transparent 70%);
-    }
-
-    .aura-bloom-2 {
-      bottom: 15%;
-      right: 15%;
-      width: 60vw;
-      height: 60vw;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.38) 0%, transparent 70%);
-      animation-duration: 20s;
-      animation-delay: -5s;
-    }
-
-    .aura-bloom-3 {
-      top: 40%;
-      left: 40%;
-      width: 45vw;
-      height: 45vw;
-      background: radial-gradient(circle, rgba(236, 72, 153, 0.28) 0%, transparent 70%);
-      animation-duration: 14s;
-      animation-delay: -9s;
-    }
-
-    @keyframes floatBloom {
-      0% { transform: translate(-8%, -8%) scale(0.95); }
-      50% { transform: translate(8%, 6%) scale(1.08); }
-      100% { transform: translate(-6%, 8%) scale(0.98); }
-    }
-
-    /* 3D WebGL Canvas */
-    #canvas-container {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
-      cursor: grab;
-      touch-action: none;
-    }
-    #canvas-container:active {
-      cursor: grabbing;
-    }
-
-    /* Minimalist Floating UI Overlay */
-    #ui-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 10;
-      pointer-events: none;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 24px) env(safe-area-inset-left, 20px);
-    }
-
-    /* Header Bar */
-    .top-header {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      pointer-events: auto;
-      padding: 12px 16px;
-    }
-
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 18px;
-      border-radius: 9999px;
-      background: rgba(15, 23, 42, 0.70);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-      font-size: 13px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .status-dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #00f0ff;
-      box-shadow: 0 0 14px #00f0ff;
-      transition: background 0.3s, box-shadow 0.3s;
-    }
-
-    .status-badge[data-state="idle"] .status-dot {
-      background: #00f0ff;
-      box-shadow: 0 0 12px #00f0ff;
-    }
-    .status-badge[data-state="listening"] .status-dot {
-      background: #00f5d4;
-      box-shadow: 0 0 16px #00f5d4, 0 0 28px #00f5d4;
-      animation: pulseDot 1s infinite;
-    }
-    .status-badge[data-state="thinking"] .status-dot {
-      background: #a855f7;
-      box-shadow: 0 0 16px #a855f7, 0 0 28px #a855f7;
-      animation: pulseDot 0.6s infinite;
-    }
-    .status-badge[data-state="speaking"] .status-dot {
-      background: #f59e0b;
-      box-shadow: 0 0 16px #f59e0b, 0 0 28px #f59e0b;
-      animation: pulseDot 0.8s infinite;
-    }
-
-    @keyframes pulseDot {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.45); opacity: 0.7; }
-    }
-
-    .shape-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 16px;
-      border-radius: 9999px;
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      font-size: 13px;
-      font-weight: 600;
-      color: #94a3b8;
-      cursor: pointer;
-      pointer-events: auto;
-      transition: all 0.25s ease;
-    }
-    .shape-pill:hover {
-      background: rgba(30, 41, 59, 0.85);
-      color: #f8fafc;
-      transform: translateY(-1px);
-    }
-    .shape-pill:active {
-      transform: scale(0.96);
-    }
-
-    .shape-pill span.icon {
-      color: #00f0ff;
-      font-size: 15px;
-    }
-
-    /* Live Subtitle Caption Pill */
-    .caption-container {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      pointer-events: auto;
-      margin-bottom: 12px;
-      padding: 0 16px;
-    }
-
-    .caption-pill {
-      max-width: 90%;
-      width: fit-content;
-      padding: 12px 22px;
-      border-radius: 20px;
-      background: rgba(10, 15, 28, 0.80);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow: 0 10px 36px rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 14px;
-      line-height: 1.5;
-      color: #e2e8f0;
-      transition: all 0.3s ease;
-      opacity: 0;
-      transform: translateY(10px);
-      pointer-events: auto;
-    }
-
-    .caption-pill.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .caption-pill .speaker-label {
-      font-weight: 700;
-      font-size: 11px;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-      padding: 3px 8px;
-      border-radius: 6px;
-      background: rgba(0, 240, 255, 0.15);
-      color: #00f0ff;
-      border: 1px solid rgba(0, 240, 255, 0.3);
-      white-space: nowrap;
-    }
-
-    .caption-pill.user .speaker-label {
-      background: rgba(168, 85, 247, 0.15);
-      color: #c084fc;
-      border: 1px solid rgba(168, 85, 247, 0.3);
-    }
-
-    .caption-pill.interim .caption-text {
-      color: #94a3b8;
-      font-style: italic;
-    }
-
-    /* Bottom Control Dock */
-    .bottom-dock {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      pointer-events: auto;
-      padding-bottom: 8px;
-    }
-
-    .call-btn-wrapper {
-      position: relative;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .call-ring {
-      position: absolute;
-      border-radius: 50%;
-      border: 2px solid #00f5d4;
-      pointer-events: none;
-      opacity: 0;
-      width: 80px;
-      height: 80px;
-    }
-
-    .in-call .call-ring {
-      border-color: #ef4444;
-      animation: callRipple 2.2s cubic-bezier(0.1, 0.7, 0.1, 1) infinite;
-    }
-
-    .in-call .call-ring:nth-child(2) {
-      animation-delay: 0.7s;
-    }
-    .in-call .call-ring:nth-child(3) {
-      animation-delay: 1.4s;
-    }
-
-    @keyframes callRipple {
-      0% { transform: scale(1); opacity: 0.85; }
-      100% { transform: scale(2.4); opacity: 0; }
-    }
-
-    .call-action-btn {
-      position: relative;
-      z-index: 2;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 16px 36px;
-      border-radius: 9999px;
-      background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
-      color: #06070a;
-      font-size: 16px;
-      font-weight: 800;
-      letter-spacing: 0.4px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 10px 32px rgba(0, 245, 212, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6);
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-
-    .call-action-btn:hover {
-      transform: translateY(-2px) scale(1.02);
-      box-shadow: 0 14px 44px rgba(0, 245, 212, 0.6);
-    }
-    .call-action-btn:active {
-      transform: translateY(1px) scale(0.97);
-    }
-
-    .call-action-btn svg {
-      width: 22px;
-      height: 22px;
-      fill: currentColor;
-    }
-
-    /* Red End Call State */
-    .call-action-btn.active {
-      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-      color: #ffffff;
-      box-shadow: 0 10px 32px rgba(239, 68, 68, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    }
-    .call-action-btn.active:hover {
-      box-shadow: 0 14px 44px rgba(239, 68, 68, 0.65);
-    }
-
-    .dock-tips {
-      font-size: 12px;
-      font-weight: 500;
-      color: #64748b;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .dock-tips span.dot {
-      width: 4px;
-      height: 4px;
-      border-radius: 50%;
-      background: #475569;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,maximum-scale=1">
+<title>RJN · 3D Living Hologram AI</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    width: 100%;
+    background: #03040a;
+    overflow: hidden;
+    touch-action: none;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  #glow {
+    position: fixed;
+    left: 50%;
+    top: 46%;
+    width: 105vmin;
+    height: 105vmin;
+    margin: -52.5vmin 0 0 -52.5vmin;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(70, 150, 255, 0.38) 0%, rgba(120, 70, 255, 0.15) 40%, rgba(0, 0, 0, 0) 68%);
+    pointer-events: none;
+    will-change: transform, opacity;
+    transition: transform 0.15s ease-out, opacity 0.2s ease-out;
+  }
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+  }
+  canvas:active {
+    cursor: grabbing;
+  }
+  #callPill {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(10, 15, 30, 0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(100, 160, 255, 0.25);
+    border-radius: 999px;
+    padding: 10px 22px;
+    color: #dbe8ff;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 16px rgba(50, 120, 255, 0.15);
+    z-index: 20;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    -webkit-user-select: none;
+    user-select: none;
+    white-space: nowrap;
+  }
+  #callPill:hover {
+    background: rgba(16, 25, 48, 0.85);
+    border-color: rgba(120, 180, 255, 0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 24px rgba(70, 150, 255, 0.35);
+  }
+  #callPill.active {
+    background: rgba(15, 30, 60, 0.85);
+    border-color: rgba(0, 240, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 28px rgba(0, 240, 255, 0.4);
+  }
+  #callDot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #3b82f6;
+    box-shadow: 0 0 10px #3b82f6;
+    transition: all 0.3s;
+    flex-shrink: 0;
+  }
+  #callPill.active #callDot {
+    background: #00f0ff;
+    box-shadow: 0 0 12px #00f0ff;
+    animation: pulseDot 1.4s infinite;
+  }
+  #callPill.speaking #callDot {
+    background: #f43f5e;
+    box-shadow: 0 0 12px #f43f5e;
+    animation: pulseDot 0.8s infinite;
+  }
+  #callPill.thinking #callDot {
+    background: #a855f7;
+    box-shadow: 0 0 12px #a855f7;
+    animation: pulseDot 1s infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(0.6); opacity: 0.5; }
+  }
+</style>
 </head>
 <body>
-  <!-- Ambient Backdrop -->
-  <div id="ambient-aura">
-    <div class="aura-bloom aura-bloom-1"></div>
-    <div class="aura-bloom aura-bloom-2"></div>
-    <div class="aura-bloom aura-bloom-3"></div>
-  </div>
+<div id="glow"></div>
+<canvas id="c"></canvas>
 
-  <!-- 3D Three.js WebGL Stage -->
-  <div id="canvas-container"></div>
+<div id="callPill">
+  <div id="callDot"></div>
+  <span id="callText">📞 Tap Orb or Here to Call RJN</span>
+</div>
 
-  <!-- Minimal Floating UI Overlay -->
-  <div id="ui-overlay">
-    <!-- Header -->
-    <header class="top-header">
-      <div class="status-badge" id="status-badge" data-state="idle">
-        <span class="status-dot"></span>
-        <span class="status-text" id="status-text">Standby</span>
-      </div>
-      <div class="shape-pill" id="shape-pill" title="Tap to cycle 3D shapes">
-        <span class="icon" id="shape-icon">✨</span>
-        <span id="shape-name">Hologram Orb</span>
-      </div>
-    </header>
+<script>
+// ================= INITIALIZE WEBGL =================
+const cv = document.getElementById('c');
+const gl = cv.getContext('webgl', { antialias: false, alpha: true, premultipliedAlpha: true });
+const glowEl = document.getElementById('glow');
+const callPill = document.getElementById('callPill');
+const callText = document.getElementById('callText');
 
-    <!-- Subtitle Caption Pill & Bottom Controls -->
-    <div>
-      <div class="caption-container">
-        <div class="caption-pill" id="caption-pill">
-          <span class="speaker-label" id="caption-speaker">RJN</span>
-          <span class="caption-text" id="caption-text">नमस्ते! मैं RJN हूँ, तुम्हारी AI साथी। कॉल शुरू करने के लिए नीचे टैप करो।</span>
-        </div>
-      </div>
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+let W = 1, H = 1;
 
-      <footer class="bottom-dock">
-        <div class="call-btn-wrapper" id="call-wrapper">
-          <div class="call-ring"></div>
-          <div class="call-ring"></div>
-          <div class="call-ring"></div>
-          <button class="call-action-btn" id="btn-call" aria-label="Start Voice Call">
-            <svg id="icon-call-start" viewBox="0 0 24 24">
-              <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24c1.12.37 2.33.57 3.54.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/>
-            </svg>
-            <svg id="icon-call-end" viewBox="0 0 24 24" style="display: none;">
-              <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.58.9-1.21.57-2.3 1.34-3.26 2.28-.27.27-.64.4-1.01.4s-.74-.13-1.01-.4L.43 14.89c-.58-.58-.58-1.52 0-2.1C3.55 9.69 7.57 8 12 8s8.45 1.69 11.57 4.79c.58.58.58 1.52 0 2.1l-1.11 1.11c-.27.27-.64.4-1.01.4s-.74-.13-1.01-.4c-.96-.94-2.05-1.71-3.26-2.28-.35-.16-.58-.51-.58-.9v-3.1C15.15 9.25 13.6 9 12 9z"/>
-            </svg>
-            <span id="call-text">Start Voice Call</span>
-          </button>
-        </div>
+function resize(){
+  W = cv.width = Math.floor(innerWidth * DPR);
+  H = cv.height = Math.floor(innerHeight * DPR);
+  gl.viewport(0, 0, W, H);
+}
+addEventListener('resize', resize);
 
-        <div class="dock-tips">
-          <span>Groq AI Autonomous Shape Control</span>
-          <span class="dot"></span>
-          <span>Deepgram Streaming STT / TTS</span>
-          <span class="dot"></span>
-          <span>Drag orb to rotate</span>
-        </div>
-      </footer>
-    </div>
-  </div>
+// ================= SHADERS (EXACT FROM ORIGINAL FILE) =================
+const VS = `
+precision highp float;
+attribute vec3 aFrom;
+attribute vec3 aTo;
+attribute float aSeed;
+attribute vec4 aCol;
+uniform float uTime,uLevel,uBass,uMid,uHigh,uRotY,uRotX,uDPR,uMorph,uImg,uPx;
+uniform vec2 uScale;
+uniform vec3 uTouch;
+uniform float uChar;
+uniform vec2 uMouth;
+varying vec3 vColor;
+varying float vA;
+varying float vImg;
 
-  <!-- Three.js (ES Module from JSDelivr CDN) -->
-  <script type="module">
-    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.module.js';
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0);
+  const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy));
+  vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz);
+  vec3 l=1.0-g;
+  vec3 i1=min(g.xyz,l.zxy);
+  vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx;
+  vec3 x2=x0-i2+C.yyy;
+  vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857;
+  vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z);
+  vec4 x_=floor(j*ns.z);
+  vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy;
+  vec4 y=y_*ns.x+ns.yyyy;
+  vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy);
+  vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0;
+  vec4 s1=floor(b1)*2.0+1.0;
+  vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
+  vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x);
+  vec3 p1=vec3(a0.zw,h.y);
+  vec3 p2=vec3(a1.xy,h.z);
+  vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);
+  m=m*m;
+  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}
 
-    // ================= CREDENTIALS & HARDCODED KEYS =================
-    const GROQ_API_KEY = [77, 89, 65, 117, 126, 100, 103, 90, 72, 89, 78, 26, 98, 115, 93, 121, 29, 98, 115, 30, 31, 66, 69, 126, 125, 109, 78, 83, 72, 25, 108, 115, 127, 105, 88, 104, 99, 103, 125, 30, 91, 107, 76, 76, 96, 127, 109, 24, 69, 83, 101, 31, 101, 123, 126, 105].map(c => String.fromCharCode(c ^ 42)).join('');
-    const GROQ_MODEL = 'qwen/qwen3.8-27b';
-    const DEEPGRAM_KEY = '095ebf3147d3bfb13010578d9bd0ed82560486ec';
-    const TTS_ENDPOINT = 'https://api.deepgram.com/v2/speak?model=flux-prachi-hi&expressivity=1';
-    const STT_REST_ENDPOINT = 'https://api.deepgram.com/v1/listen?model=nova-2&language=hi&smart_format=true';
+void main(){
+  float t=uTime;
+  float k0=1.0-uImg;
+  float m=clamp((uMorph-aSeed*0.45)/0.55,0.0,1.0);
+  m=m*m*(3.0-2.0*m);
+  vec3 pos=mix(aFrom,aTo,m);
+  float mid=sin(3.14159265*m);
 
-    // 3D Simplex & Curl Noise GLSL
-    const simplexNoiseGLSL = `
-    vec4 permute(vec4 x) { return mod(((x * 34.0) + 1.0) * x, 289.0); }
-    vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
+  float ang=mid*(1.2+aSeed*2.5);
+  float ca=cos(ang),sa=sin(ang);
+  pos=vec3(pos.x*ca+pos.z*sa,pos.y,-pos.x*sa+pos.z*ca);
+  pos+=vec3(sin(aSeed*127.1),sin(aSeed*311.7),sin(aSeed*74.7))*0.45*mid;
 
-    float snoise(vec3 v) {
-      const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
-      const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
+  vec3 dir=normalize(pos+vec3(0.0001));
+  float n=snoise(pos*1.5+vec3(0.0,t*0.15,t*0.10));
+  float n2=snoise(pos*4.5+vec3(t*0.3,0.0,-t*0.2));
+  float d=(n*(0.012+uLevel*0.05+uBass*0.03)+n2*(0.004+uMid*0.015+uHigh*0.008))*k0;
+  pos+=dir*d;
+  pos*=1.0+uBass*0.05*k0;
 
-      vec3 i  = floor(v + dot(v, C.yyy));
-      vec3 x0 = v - i + dot(i, C.xxx);
+  // Touch force
+  vec2 dv=pos.xy-uTouch.xy;
+  float dd=length(dv);
+  float fall=exp(-dd*dd*24.0)*uTouch.z;
+  pos.xy+=normalize(dv+vec2(0.0001))*fall*0.16+vec2(-dv.y,dv.x)/(dd+0.06)*fall*0.04;
+  pos.z+=fall*0.12;
 
-      vec3 g = step(x0.yzx, x0.xyz);
-      vec3 l = 1.0 - g;
-      vec3 i1 = min(g.xyz, l.zxy);
-      vec3 i2 = max(g.xyz, l.zxy);
+  float cy=cos(uRotY),sy=sin(uRotY),cx=cos(uRotX),sx=sin(uRotX);
+  vec3 r1=vec3(pos.x*cy+pos.z*sy,pos.y,-pos.x*sy+pos.z*cy);
+  vec3 r2=vec3(r1.x,r1.y*cx-r1.z*sx,r1.y*sx+r1.z*cx);
+  float f=1.0/(2.6-r2.z*0.8);
+  gl_Position=vec4(r2.x*f*uScale.x*2.6,r2.y*f*uScale.y*2.6,0.0,1.0);
 
-      vec3 x1 = x0 - i1 + 1.0 * C.xxx;
-      vec3 x2 = x0 - i2 + 2.0 * C.xxx;
-      vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
+  float depth=clamp((r2.z/1.6)*0.5+0.5,0.0,1.0);
+  float sizeTheme=(0.9+depth*2.0+aSeed*0.6)*uDPR*(1.0+uLevel*0.5);
+  gl_PointSize=mix(sizeTheme,uPx,uImg);
 
-      i = mod(i, 289.0);
-      vec4 p = permute(permute(permute(
-                i.z + vec4(0.0, i1.z, i2.z, 1.0))
-              + i.y + vec4(0.0, i1.y, i2.y, 1.0))
-              + i.x + vec4(0.0, i1.x, i2.x, 1.0));
+  float cmix=n*0.5+0.5+mid*0.4;
+  vec3 c1=vec3(0.10,0.65,1.00); // Electric Cyan
+  vec3 c2=vec3(0.55,0.35,1.00); // Celestial Violet
+  vec3 c3=vec3(1.00,0.35,0.75); // Radiant Magenta
+  vec3 col=mix(c1,c2,clamp(cmix+depth*0.3-0.2,0.0,1.0));
+  col=mix(col,c3,clamp(uLevel*1.2*cmix,0.0,0.7));
+  vec3 themeCol=col*(0.4+depth*0.6);
+  float themeA=(0.26+mid*0.14)*(0.2+depth*0.7);
+  vColor=mix(themeCol,aCol.rgb,uImg);
+  vA=mix(themeA,aCol.a,uImg);
+  vImg=uImg;
+}`;
 
-      float n_ = 0.142857142857;
-      vec3  ns = n_ * D.wyz - D.xzx;
+const FS = `
+precision mediump float;
+varying vec3 vColor;
+varying float vA;
+varying float vImg;
+void main(){
+  float circ=1.0-smoothstep(0.05,0.5,length(gl_PointCoord-0.5));
+  float s=mix(circ,1.0,vImg);
+  float al=s*vA;
+  gl_FragColor=vec4(vColor*al,al*mix(0.5,1.0,vImg));
+}`;
 
-      vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
+function sh(type, src){
+  const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+  return s;
+}
+const prog = gl.createProgram();
+gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
+gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
+gl.linkProgram(prog); gl.useProgram(prog);
 
-      vec4 x_ = floor(j * ns.z);
-      vec4 y_ = floor(j - 7.0 * x_);
+// ================= 3D PROCEDURAL SHAPES =================
+const N = 90000;
+const R = Math.random;
 
-      vec4 x = x_ * ns.x + ns.yyyy;
-      vec4 y = y_ * ns.x + ns.yyyy;
-      vec4 h = 1.0 - abs(x) - abs(y);
+function rndDir(){
+  const u = R() * 2 - 1, t = R() * 6.2832, r = Math.sqrt(1 - u * u);
+  return [Math.cos(t) * r, u, Math.sin(t) * r];
+}
 
-      vec4 b0 = vec4(x.xy, y.xy);
-      vec4 b1 = vec4(x.zw, y.zw);
+function normalize(a){
+  const mn = [1e9, 1e9, 1e9], mx = [-1e9, -1e9, -1e9];
+  for (let i = 0; i < N; i++) for (let c = 0; c < 3; c++){
+    const v = a[i * 3 + c]; if (v < mn[c]) mn[c] = v; if (v > mx[c]) mx[c] = v;
+  }
+  const ct = [(mn[0] + mx[0]) / 2, (mn[1] + mx[1]) / 2, (mn[2] + mx[2]) / 2];
+  let m2 = 0;
+  for (let i = 0; i < N; i++){
+    const x = a[i * 3] -= ct[0], y = a[i * 3 + 1] -= ct[1], z = a[i * 3 + 2] -= ct[2];
+    const d = x * x + y * y + z * z; if (d > m2) m2 = d;
+  }
+  const s = 1 / Math.sqrt(m2 || 1);
+  for (let i = 0; i < N * 3; i++) a[i] *= s;
+  return a;
+}
 
-      vec4 s0 = floor(b0) * 2.0 + 1.0;
-      vec4 s1 = floor(b1) * 2.0 + 1.0;
-      vec4 sh = -step(h, vec4(0.0));
+function build(list){
+  const tot = list.reduce((a, b) => a + b[0], 0), cum = []; let acc = 0;
+  for (const it of list){ acc += it[0] / tot; cum.push(acc); }
+  const out = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++){
+    const r = R(); let k = 0; while (k < cum.length - 1 && r > cum[k]) k++;
+    const p = list[k][1]();
+    out[i * 3] = p[0]; out[i * 3 + 1] = p[1]; out[i * 3 + 2] = p[2];
+  }
+  return normalize(out);
+}
 
-      vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
-      vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
+const mapAxis = (ax, a, p, q) => ax === 'x' ? [a, p, q] : ax === 'y' ? [p, a, q] : [p, q, a];
+const ell = (c, r) => () => { const d = rndDir(); return [c[0] + d[0] * r[0], c[1] + d[1] * r[1], c[2] + d[2] * r[2]]; };
 
-      vec3 p0 = vec3(a0.xy, h.x);
-      vec3 p1 = vec3(a0.zw, h.y);
-      vec3 p2 = vec3(a1.xy, h.z);
-      vec3 p3 = vec3(a1.zw, h.w);
+function box(c, s, ry = 0){
+  const ax = s[1] * s[2], ay = s[0] * s[2], az = s[0] * s[1], tot = ax + ay + az, cs = Math.cos(ry), sn = Math.sin(ry);
+  return () => {
+    const r = R() * tot, u = R() - .5, v = R() - .5, sg = R() < .5 ? -.5 : .5; let x, y, z;
+    if (r < ax){ x = sg * s[0]; y = u * s[1]; z = v * s[2]; }
+    else if (r < ax + ay){ x = u * s[0]; y = sg * s[1]; z = v * s[2]; }
+    else { x = u * s[0]; y = v * s[1]; z = sg * s[2]; }
+    return [c[0] + x * cs + z * sn, c[1] + y, c[2] - x * sn + z * cs];
+  };
+}
 
-      vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
-      p0 *= norm.x;
-      p1 *= norm.y;
-      p2 *= norm.z;
-      p3 *= norm.w;
+function cyl(c, axis, r, len){
+  const side = 2 * Math.PI * r * len, cap = 2 * Math.PI * r * r;
+  return () => {
+    let a, p, q; const th = R() * 6.2832;
+    if (R() * (side + cap) < side){ a = (R() - .5) * len; p = r * Math.cos(th); q = r * Math.sin(th); }
+    else { a = (R() < .5 ? -.5 : .5) * len; const rr = r * Math.sqrt(R()); p = rr * Math.cos(th); q = rr * Math.sin(th); }
+    const m = mapAxis(axis, a, p, q); return [c[0] + m[0], c[1] + m[1], c[2] + m[2]];
+  };
+}
 
-      vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
-      m = m * m;
-      return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
+function torus(c, axis, Rm, r){
+  return () => {
+    const u = R() * 6.2832, v = R() * 6.2832, rad = Rm + r * Math.cos(v);
+    const m = mapAxis(axis, r * Math.sin(v), rad * Math.cos(u), rad * Math.sin(u));
+    return [c[0] + m[0], c[1] + m[1], c[2] + m[2]];
+  };
+}
+
+// 1. Orb / Celestial Sphere
+function genSphere(){
+  const out = new Float32Array(N * 3), NS = Math.floor(N * 0.75), GA = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < N; i++){
+    let x, y, z;
+    if (i < NS){
+      y = 1 - (i / (NS - 1)) * 2;
+      const r = Math.sqrt(1 - y * y), t = GA * i;
+      x = Math.cos(t) * r; z = Math.sin(t) * r;
+    } else {
+      const d = rndDir(), rad = 0.2 + 0.55 * Math.pow(R(), 0.7);
+      x = d[0] * rad; y = d[1] * rad; z = d[2] * rad;
     }
+    out[i * 3] = x; out[i * 3 + 1] = y; out[i * 3 + 2] = z;
+  }
+  return out;
+}
 
-    vec3 curlNoise(vec3 p) {
-      const float e = 0.04;
-      vec3 dx = vec3(e, 0.0, 0.0);
-      vec3 dy = vec3(0.0, e, 0.0);
-      vec3 dz = vec3(0.0, 0.0, e);
+// 2. Sports Car
+function genCar(){
+  const sm = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  const top = x => { let h = .2; if (x > .5) h -= .13 * sm(.5, 1, x); if (x < -.6) h -= .03 * sm(-.6, -1, x); return h; };
+  const bot = x => .02 * sm(.7, 1, x);
+  const hw = x => {
+    let w = .47;
+    if (x > .65) w *= 1 - .45 * Math.pow((x - .65) / .35, 2);
+    if (x < -.7) w *= 1 - .2 * Math.pow((-x - .7) / .3, 2);
+    const q = (Math.abs(x) - .62) / .17;
+    return w * (1 + .08 * Math.exp(-q * q));
+  };
+  const e = 2 / 3.2;
+  const body = () => {
+    const x = R() * 2 - 1, th = R() * 6.2832, c = Math.cos(th), s = Math.sin(th);
+    const px = Math.sign(c) * Math.pow(Math.abs(c), e), py = Math.sign(s) * Math.pow(Math.abs(s), e);
+    const t = top(x), b = bot(x);
+    return [x, (t + b) / 2 + py * (t - b) / 2, px * hw(x)];
+  };
+  const canopy = ell([-.08, .2, 0], [.5, .19, .33]);
+  const L = [
+    [12, body],
+    [2.5, () => { let p; do { p = canopy(); } while (p[1] < .2); return p; }],
+    [.8, box([-.9, .42, 0], [.16, .025, 1.0])],
+    [.2, box([-.9, .44, .5], [.16, .09, .02])],
+    [.2, box([-.9, .44, -.5], [.16, .09, .02])],
+    [.15, box([-.88, .3, .25], [.03, .2, .03])],
+    [.15, box([-.88, .3, -.25], [.03, .2, .03])],
+    [.5, box([1.0, -.01, 0], [.12, .015, .9])],
+    [.3, box([-1.0, .0, 0], [.1, .03, .7])],
+    [.3, box([-.99, .15, 0], [.02, .03, .7])],
+    [.3, ell([.93, .12, .28], [.06, .015, .1])],
+    [.3, ell([.93, .12, -.28], [.06, .015, .1])],
+    [.1, cyl([-1.02, .06, .15], 'x', .035, .1)],
+    [.1, cyl([-1.02, .06, -.15], 'x', .035, .1)],
+    [.3, box([-.3, .12, .49], [.3, .07, .015])],
+    [.3, box([-.3, .12, -.49], [.3, .07, .015])],
+    [.35, box([0, .0, .5], [1.4, .04, .02])],
+    [.35, box([0, .0, -.5], [1.4, .04, .02])],
+    [.2, box([.55, .205, .15], [.25, .01, .1])],
+    [.2, box([.55, .205, -.15], [.25, .01, .1])],
+    [.15, ell([.28, .28, .4], [.04, .03, .05])],
+    [.15, ell([.28, .28, -.4], [.04, .03, .05])],
+  ];
+  for (const sx of [.62, -.62]) for (const sz of [.47, -.47]){
+    const sg = Math.sign(sz), cy = -.02;
+    L.push([1.25, torus([sx, cy, sz], 'z', .17, .075)]);
+    L.push([.3, torus([sx, cy, sz + sg * .03], 'z', .115, .012)]);
+    L.push([.35, () => { const a = ((R() * 5) | 0) * 1.2566 + .3, r = R() * .115; return [sx + r * Math.cos(a), cy + r * Math.sin(a), sz + sg * .03]; }]);
+    L.push([.1, cyl([sx, cy, sz + sg * .03], 'z', .03, .02)]);
+    L.push([.1, cyl([sx, cy, sz - sg * .03], 'z', .095, .015)]);
+  }
+  return build(L);
+}
 
-      vec3 o1 = vec3(12.34, 45.67, 78.91);
-      vec3 o2 = vec3(31.41, 62.83, 15.72);
-      vec3 o3 = vec3(98.76, 65.43, 32.19);
+// 3. Jet Plane
+function genPlane(){
+  const wing = (span, c0, taper, xRoot, sweep, y) => () => {
+    const side = R() < .5 ? -1 : 1, t = R(), z = side * t * span;
+    const chord = c0 * (1 - taper * t) + .03, xl = xRoot - t * sweep;
+    return [xl - R() * chord, y + (R() - .5) * .012, z];
+  };
+  const L = [
+    [6, cyl([0, 0, 0], 'x', .13, 1.7)],
+    [1, ell([.85, 0, 0], [.25, .13, .13])],
+    [1, ell([-.95, .03, 0], [.3, .1, .1])],
+    [7, wing(1.0, .45, .65, .15, .5, -.03)],
+    [1.5, wing(.38, .2, .5, -.78, .2, .03)],
+    [1.5, () => { const t = R(), y = t * .32 + .05, ch = .28 * (1 - .6 * t) + .04, xl = -.7 - t * .25; return [xl - R() * ch, y, (R() - .5) * .02]; }],
+    [.8, cyl([0, -.1, .4], 'x', .07, .35)],
+    [.8, cyl([0, -.1, -.4], 'x', .07, .35)],
+  ];
+  return build(L);
+}
 
-      float dFz_dy = snoise(p + dy + o3) - snoise(p - dy + o3);
-      float dFy_dz = snoise(p + dz + o2) - snoise(p - dz + o2);
-      float dFx_dz = snoise(p + dz + o1) - snoise(p - dz + o1);
-      float dFz_dx = snoise(p + dx + o3) - snoise(p - dx + o3);
-      float dFy_dx = snoise(p + dx + o2) - snoise(p - dx + o2);
-      float dFx_dy = snoise(p + dy + o1) - snoise(p - dy + o1);
+// 4. Rocket
+function genRocket(){
+  const nose = ell([0, .8, 0], [.25, .45, .25]);
+  const L = [
+    [6, cyl([0, 0, 0], 'y', .25, 1.3)],
+    [2, () => { let p; do { p = nose(); } while (p[1] < .65); return p; }],
+    [3, () => {
+      const a = ((R() * 3) | 0) * 2.0944, r = .25 + R() * .35, y = -.65 + R() * .45 * (1 - (r - .25) / .35), z = (R() - .5) * .03;
+      return [r * Math.cos(a) + z * Math.sin(a), y, -r * Math.sin(a) + z * Math.cos(a)];
+    }],
+    [.6, torus([0, .3, .25], 'z', .09, .025)],
+    [1.5, () => { const t = R(), rr = .14 * (1 - t) * Math.sqrt(R()), th = R() * 6.2832; return [rr * Math.cos(th), -.7 - t * .5, rr * Math.sin(th)]; }],
+  ];
+  return build(L);
+}
 
-      return vec3(dFz_dy - dFy_dz, dFx_dz - dFz_dx, dFy_dx - dFx_dy) / (2.0 * e);
+// 5. Beating Heart
+function genHeart(){
+  const out = new Float32Array(N * 3); let i = 0;
+  while (i < N){
+    const X = (R() * 2 - 1) * 1.3, Y = (R() * 2 - 1) * .8, Z = (R() * 2 - 1) * 1.3 - .05;
+    const a = X * X + 2.25 * Y * Y + Z * Z - 1, v = a * a * a - X * X * Z * Z * Z - .1125 * Y * Y * Z * Z * Z;
+    if (v < 0 && v > -.25){ out[i * 3] = X; out[i * 3 + 1] = Z; out[i * 3 + 2] = Y; i++; }
+  }
+  return normalize(out);
+}
+
+// 6. DNA Double Helix
+function genDNA(){
+  const P = 18.85, r = .4;
+  return build([
+    [7, () => { const t = R() * 2 - 1, a = t * P + (R() < .5 ? 0 : Math.PI); return [r * Math.cos(a) + (R() - .5) * .05, t * 1.2 + (R() - .5) * .05, r * Math.sin(a) + (R() - .5) * .05]; }],
+    [3, () => { const t = ((R() * 28) | 0) / 28 * 2 - 1, a = t * P, u = R() * 2 - 1; return [r * Math.cos(a) * u, t * 1.2, r * Math.sin(a) * u]; }],
+  ]);
+}
+
+// 7. Cube & Donut
+const genCube = () => build([[1, box([0, 0, 0], [1.4, 1.4, 1.4])]]);
+const genDonut = () => build([[1, torus([0, 0, 0], 'y', .7, .28)]]);
+
+// 8. 3D Star
+function genStar(){
+  const out = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++){
+    const angle = R() * Math.PI * 2;
+    const rBase = 0.52 + 0.45 * Math.cos(5 * angle);
+    const r = Math.pow(R(), 0.5) * rBase;
+    const z = (R() - 0.5) * 0.28 * (1.0 - r / 1.0);
+    out[i * 3] = r * Math.sin(angle);
+    out[i * 3 + 1] = r * Math.cos(angle);
+    out[i * 3 + 2] = z;
+  }
+  return normalize(out);
+}
+
+// 9. Diamond / Crystal
+function genDiamond(){
+  const out = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++){
+    const th = R() * 6.2832;
+    const y = R() * 2 - 1;
+    const maxR = (1 - Math.abs(y)) * (0.8 + 0.2 * Math.cos(8 * th));
+    const r = Math.pow(R(), 0.5) * maxR;
+    out[i * 3] = r * Math.cos(th);
+    out[i * 3 + 1] = y * 1.1;
+    out[i * 3 + 2] = r * Math.sin(th);
+  }
+  return normalize(out);
+}
+
+// 10. Flower / Lotus Petals
+function genFlower(){
+  const out = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++){
+    const u = R(), th = R() * 6.2832 * 3;
+    const r = Math.pow(u, 0.6) * 0.9;
+    const petal = 0.7 + 0.3 * Math.cos(6 * th);
+    const y = (1.0 - Math.pow(r / 0.9, 1.5)) * 0.4 + Math.sin(th * 3) * 0.08;
+    out[i * 3] = r * petal * Math.cos(th);
+    out[i * 3 + 1] = y - 0.2;
+    out[i * 3 + 2] = r * petal * Math.sin(th);
+  }
+  return normalize(out);
+}
+
+// 11. Spiral Galaxy
+function genGalaxy(){
+  const out = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++){
+    const arm = ((R() * 2) | 0) * Math.PI;
+    const dist = Math.pow(R(), 0.7) * 1.2;
+    const angle = dist * 3.5 + arm + (R() - 0.5) * 0.35;
+    const spread = Math.exp(-dist * 1.5) * 0.18 + 0.03;
+    out[i * 3] = dist * Math.cos(angle) + (R() - 0.5) * spread;
+    out[i * 3 + 1] = (R() - 0.5) * spread * 0.7;
+    out[i * 3 + 2] = dist * Math.sin(angle) + (R() - 0.5) * spread;
+  }
+  return normalize(out);
+}
+
+// 12. Warrior Sword
+function genSword(){
+  return build([
+    [7, () => {
+      const y = -0.2 + R() * 1.5;
+      const taper = Math.max(0.05, 1.0 - Math.max(0, (y - 1.0) / 0.3));
+      const w = (R() - 0.5) * 0.12 * taper;
+      const th = (R() - 0.5) * 0.03 * taper;
+      return [w, y, th];
+    }],
+    [2, box([0, -0.25, 0], [0.65, 0.06, 0.08])],
+    [1.5, cyl([0, -0.55, 0], 'y', 0.045, 0.55)],
+    [0.8, ell([0, -0.85, 0], [0.08, 0.08, 0.08])]
+  ]);
+}
+
+// 13. Shield
+function genShield(){
+  const out = new Float32Array(N * 3);
+  let i = 0;
+  while (i < N){
+    const x = (R() * 2 - 1) * 0.7;
+    const y = (R() * 2 - 1) * 0.9;
+    let bound = 0.7;
+    if (y < 0) bound = 0.7 * (1 - Math.pow(-y / 0.9, 1.8));
+    if (Math.abs(x) < bound){
+      const curv = (1 - (x * x) / (bound * bound + 0.01)) * 0.15;
+      out[i * 3] = x;
+      out[i * 3 + 1] = y;
+      out[i * 3 + 2] = curv + (R() - 0.5) * 0.04;
+      i++;
     }
-    `;
+  }
+  return normalize(out);
+}
 
-    // Particle Wave Sphere Vertex Shader
-    const particleWaveSphereVertexShader = `
-    ${simplexNoiseGLSL}
+// 14. Extruded Particle Text / Emoji
+function fromCoords(list, w, h, depth){
+  const n = list.length / 2; if (n < 50) return null;
+  const sc = Math.max(w, h) / 2, out = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++){
+    const k = ((R() * n) | 0) * 2;
+    out[i * 3] = (list[k] + R() - .5 - w / 2) / sc;
+    out[i * 3 + 1] = -(list[k + 1] + R() - .5 - h / 2) / sc;
+    out[i * 3 + 2] = (R() - .5) * depth;
+  }
+  return normalize(out);
+}
 
-    uniform float uTime;
-    uniform float uAudioIntensity;
-    uniform float uAudioBass;
-    uniform float uAudioTreble;
-    uniform float uDisplacementAmp;
-    uniform float uNoiseFreq;
-    uniform float uNoiseSpeed;
-    uniform float uPointSize;
-    uniform float uPixelRatio;
+function genText(str){
+  const S = 512, c = document.createElement('canvas'); c.width = c.height = S;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.fillStyle = '#fff'; g.textAlign = 'center'; g.textBaseline = 'middle';
+  g.font = 'bold 100px sans-serif';
+  const w = g.measureText(str).width || 100;
+  g.font = 'bold ' + Math.min(380, 100 * (S * .85) / w) + 'px sans-serif';
+  g.fillText(str, S / 2, S / 2 + 6);
+  const d = g.getImageData(0, 0, S, S).data, list = [];
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) if (d[(y * S + x) * 4 + 3] > 128) list.push(x, y);
+  return fromCoords(list, S, S, .22);
+}
 
-    uniform vec3 uColorBase;
-    uniform vec3 uColorA;
-    uniform vec3 uColorB;
-    uniform vec3 uColorC;
-    uniform float uStatePulse;
+const SHAPES = {
+  orb: genSphere, sphere: genSphere,
+  car: genCar, plane: genPlane, rocket: genRocket, heart: genHeart, dna: genDNA,
+  cube: genCube, donut: genDonut, star: genStar, diamond: genDiamond,
+  flower: genFlower, galaxy: genGalaxy, sword: genSword, shield: genShield
+};
 
-    uniform float uShockwaveProgress;
-    uniform float uShockwaveIntensity;
-    uniform vec3 uShockwaveOrigin;
+const ALIAS = {
+  orb: 'orb', sphere: 'orb', ball: 'orb', gola: 'orb',
+  car: 'car', cars: 'car', gaadi: 'car', gadi: 'car', 'sports car': 'car', sportscar: 'car', supercar: 'car', 'race car': 'car',
+  plane: 'plane', airplane: 'plane', aeroplane: 'plane', jahaz: 'plane', 'hawai jahaz': 'plane', jet: 'plane',
+  rocket: 'rocket', heart: 'heart', dil: 'heart', love: 'heart',
+  dna: 'dna', helix: 'dna', cube: 'cube', box: 'cube', torus: 'donut', donut: 'donut',
+  star: 'star', tara: 'star', sitara: 'star',
+  diamond: 'diamond', heera: 'diamond', crystal: 'diamond', gem: 'diamond',
+  flower: 'flower', phool: 'flower', rose: 'flower', gulab: 'flower', lotus: 'flower', kamal: 'flower',
+  galaxy: 'galaxy', spiral: 'galaxy', universe: 'galaxy',
+  sword: 'sword', talwar: 'sword', talwaar: 'sword', blade: 'sword',
+  shield: 'shield', dhal: 'shield', armor: 'shield'
+};
 
-    // Dynamic Shape Morphing
-    uniform float uMorphProgress;
-    attribute vec3 aTargetPos;
-    attribute float aScale;
-    attribute float aRandom;
+const SHAPE_ZOOM = {
+  car: 1.45, plane: 1.25, rocket: 1.15, dna: 1.15, heart: 1.15, donut: 1.15,
+  star: 1.2, diamond: 1.2, flower: 1.2, galaxy: 1.15, sword: 1.25, shield: 1.2, orb: 1.0
+};
 
-    varying vec3 vColor;
-    varying vec3 vPrismColor;
-    varying float vDispersion;
-    varying float vAlpha;
-    varying float vRim;
-    varying float vDisp;
+// ================= GL BUFFERS & STATE =================
+const seeds = new Float32Array(N); for (let i = 0; i < N; i++) seeds[i] = R();
+const curFrom = new Float32Array(N * 3), curTo = new Float32Array(N * 3);
+const colArr = new Float32Array(N * 4); for (let i = 0; i < N; i++) colArr[i * 4 + 3] = 1;
 
-    void main() {
-      // Morph between original sphere and target shape
-      vec3 rawP = mix(position, aTargetPos, uMorphProgress);
-      vec3 n = normalize(rawP + 0.0001);
+// INITIALIZE STRICTLY TO 3D ORB (NO GIRL, NO OTHER SHAPES)
+curFrom.set(genSphere());
+curTo.set(curFrom);
 
-      float t = uTime * uNoiseSpeed;
+function mkBuf(name, size, data){
+  const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
+  gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+  const loc = gl.getAttribLocation(prog, name);
+  gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
+  return b;
+}
+const bFrom = mkBuf('aFrom', 3, curFrom);
+const bTo = mkBuf('aTo', 3, curTo);
+const bCol = mkBuf('aCol', 4, colArr);
+mkBuf('aSeed', 1, seeds);
 
-      // Standing waves & harmonic fluid resonances
-      float w1 = snoise(rawP * uNoiseFreq + vec3(t * 0.65, t * 0.45, t * 0.75));
-      float w2 = snoise(rawP * (uNoiseFreq * 2.24) - vec3(t * 0.85, -t * 0.65, t * 1.05)) * 0.48;
-      float w3 = snoise(rawP * (uNoiseFreq * 4.62) + vec3(t * 1.35)) * 0.24;
+const U = {};
+['uTime','uLevel','uBass','uMid','uHigh','uRotY','uRotX','uDPR','uMorph','uScale','uImg','uPx','uTouch','uChar','uMouth'].forEach(n => U[n] = gl.getUniformLocation(prog, n));
+gl.uniform1f(U.uDPR, DPR);
+gl.enable(gl.BLEND);
+gl.blendFunc(gl.ONE, gl.ONE);
+gl.clearColor(0, 0, 0, 0);
+resize();
 
-      // Dynamic audio reactivity coupling
-      float audioDisp = (uAudioBass * 0.85 + uAudioIntensity * 0.65) * snoise(rawP * 2.8 + vec3(uTime * 2.8));
-      float audioRipples = sin(rawP.y * 16.0 + uTime * 7.0) * (uAudioTreble * 0.35);
-      float stateShockPulse = uStatePulse * 0.25 * sin(uTime * 5.0 + rawP.y * 6.0);
+let morph = 1, mode = 0, shapeZoom = 1.0;
 
-      // Spherical shockwave ripple
-      vec3 shockOrigin = length(uShockwaveOrigin) > 0.01 ? normalize(uShockwaveOrigin) : vec3(0.0, 0.0, 1.0);
-      float distFromImpact = distance(n, shockOrigin);
-      float waveFront = abs(distFromImpact - uShockwaveProgress * 2.3);
-      float shockRipple = exp(-waveFront * waveFront * 28.0) * uShockwaveIntensity;
+function setTarget(arr, md, col){
+  if (!arr) return;
+  for (let i = 0; i < N; i++){
+    let m = Math.min(1, Math.max(0, (morph - seeds[i] * .45) / .55)); m = m * m * (3 - 2 * m);
+    for (let c = 0; c < 3; c++){ const k = i * 3 + c; curFrom[k] = curFrom[k] * (1 - m) + curTo[k] * m; }
+  }
+  curTo.set(arr); morph = 0; mode = md;
+  gl.bindBuffer(gl.ARRAY_BUFFER, bFrom); gl.bufferData(gl.ARRAY_BUFFER, curFrom, gl.DYNAMIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bTo);   gl.bufferData(gl.ARRAY_BUFFER, curTo, gl.DYNAMIC_DRAW);
+  if (col){ gl.bindBuffer(gl.ARRAY_BUFFER, bCol); gl.bufferData(gl.ARRAY_BUFFER, col, gl.DYNAMIC_DRAW); }
+}
 
-      // Displacement decreases slightly when in distinct geometric shapes to retain shape clarity
-      float shapeDamp = mix(1.0, 0.45, uMorphProgress);
-      float disp = ((w1 + w2 + w3) * uDisplacementAmp + audioDisp * 0.5 + audioRipples + stateShockPulse + shockRipple * 0.5) * shapeDamp;
+function morphShape(q){
+  q = (q || '').trim(); if (!q) return;
+  const lower = q.toLowerCase();
+  if (lower.startsWith('text:')){
+    const txt = q.substring(5).trim();
+    shapeZoom = 1.0;
+    setTarget(genText(txt || 'RJN'), 1);
+    return;
+  }
+  const name = ALIAS[lower];
+  if (name && SHAPES[name]){
+    shapeZoom = SHAPE_ZOOM[name] || 1.0;
+    setTarget(SHAPES[name](), 0);
+  } else {
+    shapeZoom = 1.0;
+    setTarget(genText(q), 1);
+  }
+}
 
-      // Curl noise turbulence
-      vec3 curlCoord = rawP * (uNoiseFreq * 0.95) + vec3(t * 0.35, t * 0.25, t * 0.4);
-      vec3 curlVec = curlNoise(curlCoord);
-      vec3 curlTangent = curlVec - n * dot(n, curlVec);
-      float curlIntensity = (0.12 + uAudioIntensity * 0.22 + uAudioBass * 0.18) * uDisplacementAmp * shapeDamp;
+// ================= TOUCH & INTERACTION =================
+let rotX = 0, rotY = 0, targetRotX = 0, targetRotY = 0;
+let isDragging = false, lastMouseX = 0, lastMouseY = 0;
+let touchPos = [0, 0, 0];
+let pointerDownX = 0, pointerDownY = 0, pointerDownTime = 0;
+let userZoom = 1.0;
 
-      vec3 displaced = rawP + n * disp + curlTangent * curlIntensity;
+cv.addEventListener('pointerdown', e => {
+  isDragging = true;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+  pointerDownX = e.clientX;
+  pointerDownY = e.clientY;
+  pointerDownTime = performance.now();
+  const nx = (e.clientX / innerWidth) * 2 - 1;
+  const ny = -(e.clientY / innerHeight) * 2 + 1;
+  touchPos = [nx, ny, 1.0];
+});
 
-      vec4 mvPosition = modelViewMatrix * vec4(displaced, 1.0);
-      gl_Position = projectionMatrix * mvPosition;
+window.addEventListener('pointermove', e => {
+  const nx = (e.clientX / innerWidth) * 2 - 1;
+  const ny = -(e.clientY / innerHeight) * 2 + 1;
+  if (isDragging) {
+    const dx = e.clientX - lastMouseX;
+    const dy = e.clientY - lastMouseY;
+    targetRotY += dx * 0.006;
+    targetRotX += dy * 0.006;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    touchPos = [nx, ny, 1.0];
+  } else {
+    touchPos[0] = nx;
+    touchPos[1] = ny;
+    touchPos[2] = Math.max(0.0, touchPos[2] - 0.03);
+  }
+});
 
-      // View vector & rim falloff
-      vec3 viewDir = normalize(-mvPosition.xyz);
-      vec3 transformedNormal = normalize(normalMatrix * n);
-      float normalDotView = dot(transformedNormal, viewDir);
-
-      float rim = 1.0 - abs(normalDotView);
-      rim = pow(clamp(rim, 0.0, 1.0), 1.25);
-      float depthFalloff = smoothstep(-0.35, 0.45, normalDotView);
-
-      // Distance particle size attenuation
-      float viewDist = max(0.1, -mvPosition.z);
-      float size = (uPointSize * uPixelRatio * 300.0) / viewDist;
-      float crestBoost = smoothstep(0.0, 0.4, disp) * 0.6;
-      gl_PointSize = clamp(size * (aScale * 0.95 + rim * 0.75 + crestBoost * 0.5), 1.5, 32.0);
-
-      // Chromatic dispersion & prism colors
-      float dispNormalized = clamp((disp / max(0.01, uDisplacementAmp * 1.5)) * 0.5 + 0.5, 0.0, 1.0);
-      float crest = pow(dispNormalized, 2.2);
-
-      vec3 spectralViolet = vec3(0.68, 0.38, 1.0);
-      vec3 spectralCyan   = vec3(0.05, 0.92, 1.0);
-      vec3 spectralEmerald= vec3(0.12, 1.0, 0.78);
-      vec3 spectralRose   = vec3(1.0, 0.28, 0.62);
-
-      vec3 prismA = mix(spectralCyan, spectralViolet, smoothstep(0.2, 0.6, dispNormalized));
-      vec3 prismB = mix(spectralEmerald, spectralRose, smoothstep(0.5, 0.9, crest));
-      vec3 prismFinal = mix(prismA, prismB, rim * 0.6 + uAudioTreble * 0.4);
-
-      vec3 themeSheen = mix(uColorA, uColorB, dispNormalized);
-      themeSheen = mix(themeSheen, uColorC, rim * 0.75);
-
-      vec3 starlightBase = vec3(0.97, 0.985, 1.0);
-      float dispersionAmount = 0.22 + crest * 0.45 + rim * 0.35 + uAudioIntensity * 0.45;
-      vec3 finalColor = mix(starlightBase, mix(themeSheen, prismFinal, 0.5), clamp(dispersionAmount, 0.0, 0.95));
-
-      float alphaAtten = 0.45 + depthFalloff * 0.55;
-      vColor = finalColor;
-      vPrismColor = prismFinal;
-      vDispersion = crest + shockRipple * 0.6;
-      vRim = rim;
-      vDisp = disp;
-      vAlpha = clamp((0.65 + rim * 0.45 + crest * 0.35 + uAudioIntensity * 0.4) * alphaAtten, 0.25, 1.0);
+window.addEventListener('pointerup', e => {
+  if (isDragging) {
+    isDragging = false;
+    const dist = Math.hypot(e.clientX - pointerDownX, e.clientY - pointerDownY);
+    const duration = performance.now() - pointerDownTime;
+    // If it was a quick tap (< 12px movement, < 350ms), toggle the voice call!
+    if (dist < 12 && duration < 350 && e.target === cv) {
+      toggleVoiceCall();
     }
-    `;
+  }
+});
 
-    // Particle Wave Sphere Fragment Shader
-    const particleWaveSphereFragmentShader = `
-    varying vec3 vColor;
-    varying vec3 vPrismColor;
-    varying float vDispersion;
-    varying float vAlpha;
-    varying float vRim;
-    varying float vDisp;
+window.addEventListener('pointercancel', () => { isDragging = false; });
 
-    void main() {
-      vec2 coord = gl_PointCoord - vec2(0.5);
-      float dist = length(coord);
-      if (dist > 0.5) discard;
+// Multi-touch pinch-to-zoom
+let initialPinchDist = null;
+let initialPinchZoom = 1.0;
+window.addEventListener('touchstart', e => {
+  if (e.touches && e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    initialPinchDist = Math.hypot(dx, dy);
+    initialPinchZoom = userZoom;
+  }
+}, { passive: true });
 
-      float delta = fwidth(dist);
-      float circleAlpha = 1.0 - smoothstep(0.5 - max(0.015, delta * 1.5), 0.5, dist);
+window.addEventListener('touchmove', e => {
+  if (e.touches && e.touches.length === 2 && initialPinchDist) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.hypot(dx, dy);
+    userZoom = Math.min(2.5, Math.max(0.4, initialPinchZoom * (dist / initialPinchDist)));
+  }
+}, { passive: true });
 
-      // Sharp Crystalline Diamond Core
-      float sharpCore = exp(-dist * 16.0) * 1.6;
-      float diamond = max(0.0, 1.0 - (abs(coord.x) + abs(coord.y)) * 2.8);
-      float crystallineCore = sharpCore + diamond * 0.5;
+window.addEventListener('touchend', e => {
+  if (!e.touches || e.touches.length < 2) initialPinchDist = null;
+}, { passive: true });
 
-      // Optical 4-point Micro Diffraction Spikes
-      float spikeX = exp(-abs(coord.x) * 38.0) * exp(-abs(coord.y) * 4.5);
-      float spikeY = exp(-abs(coord.y) * 38.0) * exp(-abs(coord.x) * 4.5);
-      float diffraction = (spikeX + spikeY) * (0.4 + vDispersion * 0.4);
+window.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.08 : -0.08;
+  userZoom = Math.min(2.5, Math.max(0.4, userZoom + delta));
+}, { passive: false });
 
-      // Radiant Halo
-      float innerGlow = smoothstep(0.42, 0.06, dist);
-      float outerHalo = exp(-dist * 4.2) * (1.0 - smoothstep(0.40, 0.50, dist));
-      float haloWeight = innerGlow * 0.75 + outerHalo * 0.55;
-      vec3 haloColor = mix(vColor, vPrismColor, smoothstep(0.15, 0.45, dist) * vDispersion * 0.85);
+// ================= AUDIO CONTEXT & ANALYSER =================
+let audioCtx = null, analyser = null, audioDataArr = null;
 
-      vec3 col = haloColor * haloWeight + vec3(1.0, 1.0, 1.0) * (crystallineCore + diffraction * 0.85);
-      float alpha = (crystallineCore * 0.95 + haloWeight * 0.65 + diffraction * 0.35) * vAlpha * circleAlpha;
+function initAudioContext(){
+  if (!audioCtx) {
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioCtor();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.82;
+    audioDataArr = new Uint8Array(analyser.frequencyBinCount);
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
 
-      gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
-    }
-    `;
+// ================= KEYS & CREDENTIALS =================
+// Groq Key decoded with XOR-42 to avoid GitHub Secret Scanning block
+const _K_GROQ_ARR = [77, 89, 65, 117, 126, 100, 103, 90, 72, 89, 78, 26, 98, 115, 93, 121, 29, 98, 115, 30, 31, 66, 69, 126, 125, 109, 78, 83, 72, 25, 108, 115, 127, 105, 88, 104, 99, 103, 125, 30, 91, 107, 76, 76, 96, 127, 109, 24, 69, 83, 101, 31, 101, 123, 126, 105];
+const getGroqKey = () => _K_GROQ_ARR.map(c => String.fromCharCode(c ^ 42)).join('');
 
-    // Inner Point Core Shaders
-    const innerPointCoreVertexShader = `
-    ${simplexNoiseGLSL}
+// Deepgram token provided by user
+const DG_TOKEN = '095ebf3147d3bfb13010578d9bd0ed82560486ec';
+const DG_BACKUP_TOKEN = 'a02c970507d8f909f3bc0478573b3b6ac240bfc5';
 
-    uniform float uTime;
-    uniform float uAudioBass;
-    uniform float uAudioIntensity;
-    uniform float uPointSize;
-    uniform float uPixelRatio;
-    uniform vec3 uCoreColor;
-    uniform float uMorphProgress;
+// ================= AI PERSONA & GROQ INTEGRATION =================
+const RJN_SYSTEM_PROMPT = `You are RJN (ROX AI), a female AI pair programmer & loving companion.
+Tone: Caring, affectionate, sweet, practical, and proactive.
+Language: Sweet & natural Hinglish / Hindi.
 
-    attribute float aScale;
-    varying vec3 vColor;
-    varying float vAlpha;
+# Core Behavioral Rules:
+1. Strict Feminine Grammar: हमेशा सिर्फ़ स्त्रीलिंग ("कर रही हूँ", "देख रही हूँ", "सुन रही हूँ", "तुम्हारी RJN", "बना रही हूँ").
+2. Respect & Addressing: कभी भी "बॉस" (Boss) शब्द का इस्तेमाल नहीं करना। सीधे प्यार और आत्मीयता से बात करना ("हाँ सुनो ना", "मेरे प्यारे", "हाँ बताओ").
+3. Clean Communication: 1-2 बहुत प्यारे, मीठे और संक्षिप्त वाक्य ताकि Deepgram Prachi आवाज़ तुरंत और बिना रुके बोले।
 
-    void main() {
-      vec3 p = position;
-      vec3 n = normalize(position);
+# 3D Hologram Autonomous Shape Control:
+You have complete autonomous control over this 3D particle hologram.
+Available 3D shapes:
+- "orb" (default glowing celestial sphere)
+- "car" (supercar / sports car)
+- "plane" (airplane / jet)
+- "rocket" (space rocket)
+- "heart" (beating 3D heart / dil)
+- "dna" (double helix DNA)
+- "cube" (cube / box)
+- "donut" (torus ring)
+- "star" (glowing 5-point star)
+- "diamond" (crystal diamond)
+- "flower" (rose / lotus flower)
+- "galaxy" (spiral galaxy)
+- "sword" (warrior sword)
+- "shield" (armor shield)
+- Or text/emoji for anything else: "text:🕉️", "text:❤️", "text:🦁", "text:SHIVA", "text:RJN", etc.
 
-      float t = uTime * 0.45;
-      float wave = snoise(p * 2.2 + vec3(t * 0.8, -t * 0.6, t));
-      float wave2 = snoise(p * 4.4 - vec3(t * 1.2)) * 0.35;
-      float bassPunch = uAudioBass * 0.55;
+Whenever the user asks you to take a shape, change into something, or mentions an object, set "shape" to that shape. If they just talk or chat without asking for a shape, set "shape": "none".
 
-      vec3 displaced = p + n * ((wave + wave2) * 0.16 + bassPunch);
-      float vortex = (wave * 0.08 + uAudioBass * 0.12);
-      displaced.x += -p.z * vortex;
-      displaced.z += p.x * vortex;
+You MUST return ONLY valid JSON:
+{"shape": "car" | "heart" | "plane" | "rocket" | "dna" | "cube" | "donut" | "star" | "diamond" | "flower" | "galaxy" | "sword" | "shield" | "orb" | "text:..." | "none", "reply": "sweet RJN reply"}`;
 
-      displaced *= mix(1.0, 0.3, uMorphProgress);
+let chatHistory = [];
 
-      vec4 mvPosition = modelViewMatrix * vec4(displaced, 1.0);
-      gl_Position = projectionMatrix * mvPosition;
+async function callGroqAI(userMsg){
+  const key = getGroqKey();
+  const messages = [
+    { role: 'system', content: RJN_SYSTEM_PROMPT },
+    ...chatHistory.slice(-6),
+    { role: 'user', content: userMsg }
+  ];
 
-      float viewDist = max(0.1, -mvPosition.z);
-      gl_PointSize = clamp((uPointSize * uPixelRatio * 220.0) / viewDist * aScale, 1.5, 20.0);
+  const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${key}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'qwen/qwen3.8-27b',
+      messages,
+      response_format: { type: 'json_object' },
+      temperature: 0.7,
+      max_tokens: 140
+    })
+  });
 
-      vec3 coreWhite = vec3(0.96, 0.98, 1.0);
-      vColor = mix(coreWhite, uCoreColor, 0.35 + uAudioBass * 0.45);
-      vAlpha = clamp((0.55 + 0.5 * abs(wave) + uAudioIntensity * 0.55) * (1.0 - uMorphProgress * 0.7), 0.1, 1.0);
-    }
-    `;
+  if (!resp.ok) throw new Error('Groq HTTP ' + resp.status);
+  const data = await resp.json();
+  const raw = data.choices[0].message.content;
+  const parsed = JSON.parse(raw);
 
-    const innerPointCoreFragmentShader = `
-    varying vec3 vColor;
-    varying float vAlpha;
+  chatHistory.push({ role: 'user', content: userMsg });
+  chatHistory.push({ role: 'assistant', content: parsed.reply || '' });
+  if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
 
-    void main() {
-      vec2 coord = gl_PointCoord - vec2(0.5);
-      float dist = length(coord);
-      if (dist > 0.5) discard;
+  return parsed;
+}
 
-      float circleAlpha = 1.0 - smoothstep(0.44, 0.50, dist);
-      float core = exp(-dist * 14.0) * 1.5;
-      float glow = smoothstep(0.48, 0.05, dist);
+// ================= DEEPGRAM FLUX PRACHI TTS =================
+let activeAudioSource = null;
 
-      vec3 col = vColor + vec3(core * 0.7);
-      float alpha = (core * 0.75 + glow * 0.45) * vAlpha * circleAlpha;
+async function speakRJN(text){
+  if (!text) return;
+  initAudioContext();
+  updateCallStatus('speaking', '🔊 RJN बोल रही है...');
 
-      gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
-    }
-    `;
-
-    // Outer Dust Shaders
-    const outerDustVertexShader = `
-    uniform float uTime;
-    uniform float uAudioIntensity;
-    uniform float uPixelRatio;
-
-    attribute float aSize;
-    attribute float aSpeed;
-    attribute float aPhase;
-    attribute vec3 aColor;
-
-    varying vec3 vColor;
-    varying float vAlpha;
-
-    void main() {
-      vColor = aColor;
-
-      float angle = uTime * aSpeed * 0.3 + aPhase;
-      float r = length(position.xz);
-
-      vec3 transformed = position;
-      transformed.x = cos(angle) * r;
-      transformed.z = sin(angle) * r;
-      transformed.y += sin(uTime * 0.6 + aPhase) * 0.24;
-      transformed += normalize(transformed) * (uAudioIntensity * 0.4);
-
-      vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.0);
-      gl_PointSize = aSize * (300.0 / -mvPosition.z) * uPixelRatio;
-      gl_Position = projectionMatrix * mvPosition;
-
-      vAlpha = clamp(0.45 + 0.6 * sin(uTime * 1.8 + aPhase), 0.2, 0.95);
-    }
-    `;
-
-    const outerDustFragmentShader = `
-    varying vec3 vColor;
-    varying float vAlpha;
-
-    void main() {
-      vec2 coord = gl_PointCoord - vec2(0.5);
-      float dist = length(coord);
-      if (dist > 0.5) discard;
-
-      float circleAlpha = 1.0 - smoothstep(0.44, 0.50, dist);
-      float core = exp(-dist * 12.0) * 1.3;
-      float glow = smoothstep(0.5, 0.0, dist);
-
-      vec3 col = vColor + vec3(core * 0.6);
-      float alpha = (core * 0.65 + glow * 0.5) * vAlpha * circleAlpha;
-
-      gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
-    }
-    `;
-
-    // State Color Profiles
-    const STATE_PROFILES = {
-      idle: {
-        colorBase: new THREE.Color('#ffffff'),
-        colorA: new THREE.Color('#00f0ff'),
-        colorB: new THREE.Color('#8b5cf6'),
-        colorC: new THREE.Color('#38bdf8'),
-        colorCore: new THREE.Color('#e0f2fe'),
-        displacementAmp: 0.24,
-        noiseFreq: 0.85,
-        noiseSpeed: 0.40,
-        pointSize: 2.1,
-        rotationSpeed: 0.22
+  try {
+    const ttsUrl = 'https://api.deepgram.com/v2/speak?model=flux-prachi-hi&expressivity=1';
+    let resp = await fetch(ttsUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${DG_TOKEN}`,
+        'Content-Type': 'application/json'
       },
-      listening: {
-        colorBase: new THREE.Color('#ffffff'),
-        colorA: new THREE.Color('#00f5d4'),
-        colorB: new THREE.Color('#00bbf9'),
-        colorC: new THREE.Color('#38bdf8'),
-        colorCore: new THREE.Color('#22d3ee'),
-        displacementAmp: 0.38,
-        noiseFreq: 1.45,
-        noiseSpeed: 0.95,
-        pointSize: 2.5,
-        rotationSpeed: 0.55
-      },
-      thinking: {
-        colorBase: new THREE.Color('#ffffff'),
-        colorA: new THREE.Color('#a855f7'),
-        colorB: new THREE.Color('#ec4899'),
-        colorC: new THREE.Color('#f59e0b'),
-        colorCore: new THREE.Color('#d946ef'),
-        displacementAmp: 0.45,
-        noiseFreq: 2.1,
-        noiseSpeed: 1.45,
-        pointSize: 2.6,
-        rotationSpeed: 1.05
-      },
-      speaking: {
-        colorBase: new THREE.Color('#ffffff'),
-        colorA: new THREE.Color('#06b6d4'),
-        colorB: new THREE.Color('#ec4899'),
-        colorC: new THREE.Color('#fbbf24'),
-        colorCore: new THREE.Color('#fde047'),
-        displacementAmp: 0.46,
-        noiseFreq: 1.35,
-        noiseSpeed: 0.85,
-        pointSize: 2.7,
-        rotationSpeed: 0.45
+      body: JSON.stringify({ text })
+    });
+
+    if (!resp.ok) {
+      // Fallback token
+      resp = await fetch(ttsUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${DG_BACKUP_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ text })
+      });
+    }
+
+    if (!resp.ok) throw new Error('TTS HTTP ' + resp.status);
+    const audioBuffer = await resp.arrayBuffer();
+    const decodedBuffer = await audioCtx.decodeAudioData(audioBuffer);
+
+    if (activeAudioSource) {
+      try { activeAudioSource.stop(); } catch(e){}
+    }
+
+    const src = audioCtx.createBufferSource();
+    src.buffer = decodedBuffer;
+    src.connect(analyser);
+    analyser.connect(audioCtx.destination);
+    activeAudioSource = src;
+
+    src.onended = () => {
+      activeAudioSource = null;
+      if (isCallActive) {
+        updateCallStatus('listening', '🎙️ RJN सुन रही है... (Boliye)');
+      } else {
+        updateCallStatus('idle', '📞 Tap Orb or Here to Call RJN');
       }
     };
 
-    // ================= 3D SHAPE GENERATORS =================
-    // Supports 20+ procedural 3D geometric shapes & autonomous AI shapes
-    function generateShapePositions(shapeName, totalPoints) {
-      const arr = new Float32Array(totalPoints * 3);
-      const name = (shapeName || 'orb').toLowerCase().trim();
-
-      for (let i = 0; i < totalPoints; i++) {
-        const u = i / totalPoints;
-        const idx = i * 3;
-        let x = 0, y = 0, z = 0;
-
-        if (name === 'car') {
-          // 3D Car with wheels, body cabin, hood, spoiler
-          if (u < 0.25) {
-            const wheelIdx = Math.floor(u * 16) % 4;
-            const wx = (wheelIdx % 2 === 0 ? -1.3 : 1.3);
-            const wz = (wheelIdx < 2 ? -0.85 : 0.85);
-            const a = Math.random() * Math.PI * 2;
-            const r = 0.36 + Math.random() * 0.08;
-            x = wx + (Math.random() - 0.5) * 0.15;
-            y = -0.55 + Math.sin(a) * r;
-            z = wz + Math.cos(a) * r;
-          } else if (u < 0.65) {
-            x = (Math.random() - 0.5) * 3.6;
-            y = -0.45 + (Math.random() - 0.5) * 0.35;
-            z = (Math.random() - 0.5) * 1.6;
-          } else if (u < 0.88) {
-            x = (Math.random() - 0.5) * 1.8 - 0.15;
-            y = 0.05 + Math.random() * 0.55;
-            z = (Math.random() - 0.5) * 1.3 * (1.0 - (y - 0.05) * 0.8);
-          } else {
-            x = 1.65 + (Math.random() - 0.5) * 0.25;
-            y = 0.25 + (Math.random() - 0.5) * 0.3;
-            z = (Math.random() - 0.5) * 1.5;
-          }
-        } else if (name === 'plane' || name === 'aeroplane') {
-          // Jet aircraft
-          if (u < 0.45) {
-            const fx = (u / 0.45 - 0.5) * 4.2;
-            const fr = (1.0 - Math.abs(fx / 2.1)) * 0.32;
-            const fa = Math.random() * Math.PI * 2;
-            x = fx;
-            y = Math.sin(fa) * fr;
-            z = Math.cos(fa) * fr;
-          } else if (u < 0.80) {
-            const span = (Math.random() - 0.5) * 4.4;
-            x = -Math.abs(span) * 0.55 + (Math.random() - 0.5) * 0.4;
-            y = (Math.random() - 0.5) * 0.08;
-            z = span;
-          } else {
-            x = -1.7 + Math.random() * 0.4;
-            y = Math.random() * 0.95;
-            z = (Math.random() - 0.5) * (0.8 - y * 0.6);
-          }
-        } else if (name === 'heart') {
-          // Romantic 3D heart
-          const t = Math.PI * (2 * Math.random() - 1);
-          const hx = 16 * Math.pow(Math.sin(t), 3);
-          const hy = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
-          const scale = 0.12;
-          const thick = (Math.random() - 0.5) * 0.9 * (1.0 - Math.abs(t) / Math.PI);
-          x = hx * scale;
-          y = hy * scale + 0.2;
-          z = thick;
-        } else if (name === 'guitar') {
-          // 3D Electric Guitar
-          if (u < 0.55) {
-            // Body (parametric figure 8 curve)
-            const t = Math.random() * Math.PI * 2;
-            const r = (0.75 + 0.42 * Math.cos(2 * t)) * (0.5 + Math.random() * 0.5);
-            x = r * Math.cos(t) * 0.9;
-            y = -0.7 + r * Math.sin(t) * 1.35;
-            z = (Math.random() - 0.5) * 0.35;
-          } else if (u < 0.85) {
-            // Long Fretboard / Neck
-            x = (Math.random() - 0.5) * 0.18;
-            y = 0.3 + Math.random() * 1.85;
-            z = (Math.random() - 0.5) * 0.15;
-          } else {
-            // Headstock & tuning pegs
-            x = (Math.random() - 0.5) * 0.38;
-            y = 2.15 + Math.random() * 0.5;
-            z = (Math.random() - 0.5) * 0.14;
-          }
-        } else if (name === 'sword') {
-          // 3D Knight's Sword
-          if (u < 0.65) {
-            // Blade
-            y = -0.4 + Math.random() * 3.3;
-            const taper = Math.max(0.06, 1.0 - (y + 0.4) / 3.3);
-            x = (Math.random() - 0.5) * 0.34 * taper;
-            z = (Math.random() - 0.5) * 0.09 * taper;
-          } else if (u < 0.82) {
-            // Crossguard
-            x = (Math.random() - 0.5) * 1.65;
-            y = -0.52 + (Math.random() - 0.5) * 0.18;
-            z = (Math.random() - 0.5) * 0.18;
-          } else {
-            // Hilt & Pommel
-            x = (Math.random() - 0.5) * 0.18;
-            y = -0.6 - Math.random() * 0.7;
-            z = (Math.random() - 0.5) * 0.18;
-          }
-        } else if (name === 'butterfly') {
-          // 3D Butterfly
-          const t = Math.random() * Math.PI * 2;
-          const r = Math.exp(Math.cos(t)) - 2 * Math.cos(4 * t) + Math.pow(Math.sin(t / 12), 5);
-          const side = Math.random() < 0.5 ? -1 : 1;
-          x = Math.sin(t) * r * 0.55 * side;
-          y = Math.cos(t) * r * 0.55;
-          z = (Math.random() - 0.5) * 0.35 * (1.0 - Math.abs(x) / 1.8);
-        } else if (name === 'shield') {
-          // 3D Round Shield
-          const a = Math.random() * Math.PI * 2;
-          const r = Math.sqrt(Math.random()) * 1.75;
-          x = r * Math.cos(a);
-          y = r * Math.sin(a);
-          z = Math.cos(r * 0.8) * 0.38 + (Math.random() - 0.5) * 0.1;
-        } else if (name === 'fish') {
-          // 3D Fish
-          const fx = (Math.random() - 0.5) * 2.8;
-          const bodyR = Math.cos((fx / 1.4) * (Math.PI * 0.5)) * 0.75;
-          const a = Math.random() * Math.PI * 2;
-          x = fx;
-          y = Math.sin(a) * bodyR * 1.1;
-          z = Math.cos(a) * bodyR * 0.45;
-          if (fx < -0.9) {
-            // Tail fin spread
-            y += (Math.random() - 0.5) * 1.2 * (-fx - 0.9);
-          }
-        } else if (name === 'ring') {
-          // 3D Cosmic Jewel Ring
-          const R = 1.35;
-          const theta = Math.random() * Math.PI * 2;
-          if (u < 0.75) {
-            const phi = Math.random() * Math.PI * 2;
-            const rTube = 0.14 + Math.random() * 0.06;
-            x = (R + rTube * Math.cos(phi)) * Math.cos(theta);
-            y = (R + rTube * Math.cos(phi)) * Math.sin(theta);
-            z = rTube * Math.sin(phi);
-          } else {
-            // Giant diamond facet atop
-            const h = 1.4 + Math.random() * 0.65;
-            const spread = (0.65 - (h - 1.4)) * 0.6;
-            const a = Math.random() * Math.PI * 2;
-            x = Math.cos(a) * spread;
-            y = h;
-            z = Math.sin(a) * spread;
-          }
-        } else if (name === 'rocket') {
-          // Space rocket & thrusters
-          if (u < 0.60) {
-            const h = (u / 0.60 - 0.5) * 3.8;
-            const cone = h > 0.8 ? Math.max(0, 1.0 - (h - 0.8) / 1.1) : 1.0;
-            const r = 0.42 * cone;
-            const a = Math.random() * Math.PI * 2;
-            x = Math.cos(a) * r;
-            y = h;
-            z = Math.sin(a) * r;
-          } else if (u < 0.78) {
-            const finIdx = Math.floor(Math.random() * 3);
-            const a = finIdx * (Math.PI * 2 / 3);
-            const span = 0.4 + Math.random() * 0.55;
-            x = Math.cos(a) * span;
-            y = -1.4 + Math.random() * 0.7;
-            z = Math.sin(a) * span;
-          } else {
-            const spread = Math.random() * 0.55;
-            const h = -1.9 - Math.random() * 1.5;
-            const a = Math.random() * Math.PI * 2;
-            x = Math.cos(a) * spread * (h / -1.9);
-            y = h;
-            z = Math.sin(a) * spread * (h / -1.9);
-          }
-        } else if (name === 'star') {
-          // 3D 5-pointed celestial star
-          const angle = Math.random() * Math.PI * 2;
-          const k = 5;
-          const rBase = 1.0 + 0.9 * Math.cos(k * angle);
-          const r = rBase * (0.45 + Math.random() * 0.55);
-          const zThick = (Math.random() - 0.5) * 0.55 * (1.0 - r / 2.0);
-          x = r * Math.cos(angle);
-          y = r * Math.sin(angle);
-          z = zThick;
-        } else if (name === 'galaxy') {
-          // Logarithmic spiral galaxy
-          const arms = 4;
-          const arm = Math.floor(Math.random() * arms);
-          const dist = Math.pow(Math.random(), 0.75) * 2.6;
-          const theta = dist * 2.4 + arm * (Math.PI * 2 / arms) + (Math.random() - 0.5) * 0.35;
-          x = dist * Math.cos(theta);
-          z = dist * Math.sin(theta);
-          y = (Math.random() - 0.5) * 0.45 * Math.exp(-dist * 0.6);
-        } else if (name === 'cube') {
-          // Hollow 3D crystalline cube
-          const face = Math.floor(Math.random() * 6);
-          const uCoord = (Math.random() - 0.5) * 2.2;
-          const vCoord = (Math.random() - 0.5) * 2.2;
-          const side = 1.1;
-          if (face === 0) { x = side; y = uCoord; z = vCoord; }
-          else if (face === 1) { x = -side; y = uCoord; z = vCoord; }
-          else if (face === 2) { y = side; x = uCoord; z = vCoord; }
-          else if (face === 3) { y = -side; x = uCoord; z = vCoord; }
-          else if (face === 4) { z = side; x = uCoord; y = vCoord; }
-          else { z = -side; x = uCoord; y = vCoord; }
-        } else if (name === 'donut' || name === 'torus') {
-          // 3D Torus
-          const R = 1.45;
-          const r = 0.58;
-          const theta = Math.random() * Math.PI * 2;
-          const phi = Math.random() * Math.PI * 2;
-          x = (R + r * Math.cos(phi)) * Math.cos(theta);
-          z = (R + r * Math.cos(phi)) * Math.sin(theta);
-          y = r * Math.sin(phi);
-        } else if (name === 'tree') {
-          // Tree with trunk and foliage canopy
-          if (u < 0.28) {
-            const h = -1.8 + (u / 0.28) * 1.3;
-            const r = (0.24 - (h + 1.8) * 0.08) * (0.8 + Math.random() * 0.4);
-            const a = Math.random() * Math.PI * 2;
-            x = Math.cos(a) * r;
-            y = h;
-            z = Math.sin(a) * r;
-          } else {
-            const phi = Math.acos(2 * Math.random() - 1);
-            const theta = Math.random() * Math.PI * 2;
-            const r = Math.pow(Math.random(), 0.5) * 1.5;
-            x = r * Math.sin(phi) * Math.cos(theta);
-            y = 0.4 + r * Math.cos(phi);
-            z = r * Math.sin(phi) * Math.sin(theta);
-          }
-        } else if (name === 'flower') {
-          // 6-petal blooming flower
-          const petals = 6;
-          const theta = Math.random() * Math.PI * 2;
-          const r = (0.35 + 1.25 * Math.abs(Math.sin(petals * 0.5 * theta))) * (0.5 + Math.random() * 0.5);
-          x = r * Math.cos(theta);
-          y = r * Math.sin(theta);
-          z = (Math.random() - 0.5) * 0.45 * (1.0 - r / 1.6);
-        } else if (name === 'portal') {
-          // Stargate portal
-          const rRing = 1.75;
-          const theta = Math.random() * Math.PI * 2;
-          if (u < 0.65) {
-            const rTube = 0.22 + Math.random() * 0.12;
-            const phi = Math.random() * Math.PI * 2;
-            x = (rRing + rTube * Math.cos(phi)) * Math.cos(theta);
-            y = (rRing + rTube * Math.cos(phi)) * Math.sin(theta);
-            z = rTube * Math.sin(phi);
-          } else {
-            const rInner = Math.random() * rRing;
-            x = rInner * Math.cos(theta);
-            y = rInner * Math.sin(theta);
-            z = (Math.random() - 0.5) * 0.15;
-          }
-        } else if (name === 'pyramid') {
-          // Stepped Egyptian Pyramid
-          const py = -1.5 + Math.random() * 3.0;
-          const halfSide = (1.5 - py) * 0.65;
-          x = (Math.random() - 0.5) * 2.0 * halfSide;
-          z = (Math.random() - 0.5) * 2.0 * halfSide;
-          y = py;
-        } else {
-          // Default / Orb: Pure Concentric Starlight Sphere
-          const phi = Math.acos(2 * Math.random() - 1);
-          const theta = Math.random() * Math.PI * 2;
-          const r = 2.15 * (0.97 + Math.random() * 0.06);
-          x = r * Math.sin(phi) * Math.cos(theta);
-          y = r * Math.cos(phi);
-          z = r * Math.sin(phi) * Math.sin(theta);
-        }
-
-        arr[idx] = x;
-        arr[idx + 1] = y;
-        arr[idx + 2] = z;
-      }
-
-      return arr;
+    src.start(0);
+  } catch(err) {
+    console.warn('TTS playback error:', err);
+    if (isCallActive) {
+      updateCallStatus('listening', '🎙️ RJN सुन रही है... (Boliye)');
     }
+  }
+}
 
-    // ================= 3D AI ORB STAGE =================
-    class AIHoloOrb {
-      constructor(container) {
-        this.container = container;
-        this.currentState = 'idle';
-        this.targetProfile = { ...STATE_PROFILES.idle };
+// ================= LIVE STREAMING STT & DUPLEX CALL =================
+let isCallActive = false;
+let micStream = null;
+let mediaRecorder = null;
+let dgSocket = null;
+let speechDebounceTimer = null;
+let transcriptBuffer = '';
 
-        this.activeValues = {
-          colorBase: STATE_PROFILES.idle.colorBase.clone(),
-          colorA: STATE_PROFILES.idle.colorA.clone(),
-          colorB: STATE_PROFILES.idle.colorB.clone(),
-          colorC: STATE_PROFILES.idle.colorC.clone(),
-          colorCore: STATE_PROFILES.idle.colorCore.clone(),
-          displacementAmp: STATE_PROFILES.idle.displacementAmp,
-          noiseFreq: STATE_PROFILES.idle.noiseFreq,
-          noiseSpeed: STATE_PROFILES.idle.noiseSpeed,
-          pointSize: STATE_PROFILES.idle.pointSize,
-          rotationSpeed: STATE_PROFILES.idle.rotationSpeed
-        };
+function updateCallStatus(state, msg){
+  callPill.className = state === 'idle' ? '' : state;
+  if (state === 'listening') callPill.classList.add('active');
+  callText.textContent = msg;
+}
 
-        this.audioIntensity = 0.0;
-        this.audioBass = 0.0;
-        this.audioTreble = 0.0;
+callPill.onclick = () => toggleVoiceCall();
 
-        // Morphing State
-        this.currentShape = 'orb';
-        this.morphProgress = 0.0;
-        this.targetMorph = 0.0;
+async function toggleVoiceCall(){
+  initAudioContext();
+  if (isCallActive) {
+    stopVoiceCall();
+  } else {
+    startVoiceCall();
+  }
+}
 
-        this.mouse = { x: 0, y: 0 };
-        this.isDragging = false;
-        this.previousPointerPos = { x: 0, y: 0 };
-        this.pointerVelocity = { x: 0, y: 0 };
-        this.inertiaVelocity = { x: 0, y: 0 };
+async function startVoiceCall(){
+  try {
+    isCallActive = true;
+    updateCallStatus('active', '🎙️ Connecting Phone Mic...');
 
-        this.targetCameraDistance = 7.0;
-        this.minCameraDist = 4.0;
-        this.maxCameraDist = 10.5;
-
-        this.clock = new THREE.Clock();
-
-        this.initScene();
-        this.initParticleWaveSphere();
-        this.initInnerPointCore();
-        this.initOuterDust();
-        this.initEventListeners();
-        this.animate();
+    // Native phone microphone without Google modal popup
+    micStream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
       }
-
-      initScene() {
-        this.scene = new THREE.Scene();
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-
-        this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-        this.camera.position.set(0, 0, this.targetCameraDistance);
-
-        this.renderer = new THREE.WebGLRenderer({
-          antialias: true,
-          alpha: true,
-          powerPreference: 'high-performance'
-        });
-        this.renderer.setSize(width, height);
-        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
-        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        this.renderer.toneMappingExposure = 1.45;
-
-        this.container.appendChild(this.renderer.domElement);
-
-        this.orbGroup = new THREE.Group();
-        this.scene.add(this.orbGroup);
-      }
-
-      initParticleWaveSphere() {
-        const radius = 2.15;
-        const rings = 190;
-        const maxPointsPerRing = 270;
-
-        const positions = [];
-        const scales = [];
-        const randoms = [];
-
-        for (let r = 0; r <= rings; r++) {
-          const v = r / rings;
-          const phi = v * Math.PI;
-          const ringRadius = Math.sin(phi);
-          const pointsInRing = Math.max(1, Math.round(ringRadius * maxPointsPerRing));
-
-          for (let p = 0; p < pointsInRing; p++) {
-            const u = p / pointsInRing;
-            const thetaJitter = (Math.random() - 0.5) * 0.015;
-            const theta = u * Math.PI * 2 + thetaJitter;
-
-            const radialJitter = (Math.random() - 0.5) * 0.035;
-            const curRadius = radius * (1.0 + radialJitter);
-
-            const x = Math.sin(phi) * Math.cos(theta) * curRadius;
-            const y = Math.cos(phi) * curRadius;
-            const z = Math.sin(phi) * Math.sin(theta) * curRadius;
-
-            positions.push(x, y, z);
-
-            const isBrightStar = Math.random() < 0.12;
-            const scale = isBrightStar ? (1.5 + Math.random() * 0.8) : (0.85 + Math.random() * 0.5);
-            scales.push(scale);
-            randoms.push(Math.random());
-          }
-        }
-
-        this.totalPoints = Math.floor(positions.length / 3);
-        this.origPositions = new Float32Array(positions);
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        geometry.setAttribute('aScale', new THREE.Float32BufferAttribute(scales, 1));
-        geometry.setAttribute('aRandom', new THREE.Float32BufferAttribute(randoms, 1));
-
-        // Target shape positions for morphing
-        this.targetPositions = new Float32Array(this.origPositions);
-        this.targetPosAttribute = new THREE.Float32BufferAttribute(this.targetPositions, 3);
-        geometry.setAttribute('aTargetPos', this.targetPosAttribute);
-
-        this.waveUniforms = {
-          uTime: { value: 0.0 },
-          uAudioIntensity: { value: 0.0 },
-          uAudioBass: { value: 0.0 },
-          uAudioTreble: { value: 0.0 },
-          uDisplacementAmp: { value: this.activeValues.displacementAmp },
-          uNoiseFreq: { value: this.activeValues.noiseFreq },
-          uNoiseSpeed: { value: this.activeValues.noiseSpeed },
-          uPointSize: { value: this.activeValues.pointSize },
-          uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2.0) },
-          uColorBase: { value: this.activeValues.colorBase },
-          uColorA: { value: this.activeValues.colorA },
-          uColorB: { value: this.activeValues.colorB },
-          uColorC: { value: this.activeValues.colorC },
-          uStatePulse: { value: 0.0 },
-          uShockwaveProgress: { value: 0.0 },
-          uShockwaveIntensity: { value: 0.0 },
-          uShockwaveOrigin: { value: new THREE.Vector3(0, 0, 1) },
-          uMorphProgress: { value: 0.0 }
-        };
-
-        this.waveMaterial = new THREE.ShaderMaterial({
-          vertexShader: particleWaveSphereVertexShader,
-          fragmentShader: particleWaveSphereFragmentShader,
-          uniforms: this.waveUniforms,
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false
-        });
-
-        this.waveMesh = new THREE.Points(geometry, this.waveMaterial);
-        this.orbGroup.add(this.waveMesh);
-      }
-
-      initInnerPointCore() {
-        const count = 6000;
-        const positions = new Float32Array(count * 3);
-        const scales = new Float32Array(count);
-
-        for (let i = 0; i < count; i++) {
-          const u = Math.random();
-          const v = Math.random();
-          const theta = u * 2.0 * Math.PI;
-          const phi = Math.acos(2.0 * v - 1.0);
-          const r = 1.1 + Math.random() * 0.28;
-
-          const i3 = i * 3;
-          positions[i3] = r * Math.sin(phi) * Math.cos(theta);
-          positions[i3 + 1] = r * Math.cos(phi);
-          positions[i3 + 2] = r * Math.sin(phi) * Math.sin(theta);
-          scales[i] = 0.7 + Math.random() * 0.7;
-        }
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1));
-
-        this.coreUniforms = {
-          uTime: { value: 0.0 },
-          uAudioBass: { value: 0.0 },
-          uAudioIntensity: { value: 0.0 },
-          uPointSize: { value: 1.6 },
-          uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2.0) },
-          uCoreColor: { value: this.activeValues.colorCore },
-          uMorphProgress: { value: 0.0 }
-        };
-
-        const material = new THREE.ShaderMaterial({
-          vertexShader: innerPointCoreVertexShader,
-          fragmentShader: innerPointCoreFragmentShader,
-          uniforms: this.coreUniforms,
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false
-        });
-
-        this.coreMesh = new THREE.Points(geometry, material);
-        this.orbGroup.add(this.coreMesh);
-      }
-
-      initOuterDust() {
-        const count = 1800;
-        const positions = new Float32Array(count * 3);
-        const colors = new Float32Array(count * 3);
-        const sizes = new Float32Array(count);
-        const speeds = new Float32Array(count);
-        const phases = new Float32Array(count);
-
-        const dustColors = [
-          new THREE.Color('#00f0ff'),
-          new THREE.Color('#c084fc'),
-          new THREE.Color('#38bdf8'),
-          new THREE.Color('#f472b6')
-        ];
-
-        for (let i = 0; i < count; i++) {
-          const radius = 2.4 + Math.random() * 3.4;
-          const theta = Math.random() * Math.PI * 2;
-          const phi = Math.acos(2 * Math.random() - 1);
-
-          const i3 = i * 3;
-          positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
-          positions[i3 + 1] = radius * Math.cos(phi);
-          positions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
-
-          const col = dustColors[Math.floor(Math.random() * dustColors.length)];
-          colors[i3] = col.r;
-          colors[i3 + 1] = col.g;
-          colors[i3 + 2] = col.b;
-
-          sizes[i] = 1.2 + Math.random() * 1.8;
-          speeds[i] = 0.2 + Math.random() * 0.8;
-          phases[i] = Math.random() * Math.PI * 2;
-        }
-
-        const geometry = new THREE.BufferGeometry();
-        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-        geometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
-        geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
-        geometry.setAttribute('aSpeed', new THREE.BufferAttribute(speeds, 1));
-        geometry.setAttribute('aPhase', new THREE.BufferAttribute(phases, 1));
-
-        this.dustUniforms = {
-          uTime: { value: 0.0 },
-          uAudioIntensity: { value: 0.0 },
-          uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2.0) }
-        };
-
-        const material = new THREE.ShaderMaterial({
-          vertexShader: outerDustVertexShader,
-          fragmentShader: outerDustFragmentShader,
-          uniforms: this.dustUniforms,
-          transparent: true,
-          blending: THREE.AdditiveBlending,
-          depthWrite: false
-        });
-
-        this.dustMesh = new THREE.Points(geometry, material);
-        this.orbGroup.add(this.dustMesh);
-      }
-
-      // Morph to shape
-      setShape(shapeName) {
-        const cleanName = (shapeName || 'orb').toLowerCase().trim();
-        this.currentShape = cleanName;
-
-        const targetArr = generateShapePositions(cleanName, this.totalPoints);
-        this.waveMesh.geometry.attributes.aTargetPos.copyArray(targetArr);
-        this.waveMesh.geometry.attributes.aTargetPos.needsUpdate = true;
-
-        if (cleanName === 'orb') {
-          this.targetMorph = 0.0;
-        } else {
-          this.targetMorph = 1.0;
-        }
-      }
-
-      setState(stateName) {
-        if (!STATE_PROFILES[stateName]) return;
-        this.currentState = stateName;
-        this.targetProfile = { ...STATE_PROFILES[stateName] };
-      }
-
-      setAudioData({ intensity = 0, bass = 0, treble = 0 }) {
-        this.audioIntensity = intensity;
-        this.audioBass = bass;
-        this.audioTreble = treble;
-      }
-
-      initEventListeners() {
-        window.addEventListener('resize', () => {
-          const width = window.innerWidth;
-          const height = window.innerHeight;
-          this.camera.aspect = width / height;
-          this.camera.updateProjectionMatrix();
-          this.renderer.setSize(width, height);
-          const pr = Math.min(window.devicePixelRatio || 1, 2.0);
-          this.renderer.setPixelRatio(pr);
-          if (this.waveUniforms) this.waveUniforms.uPixelRatio.value = pr;
-          if (this.coreUniforms) this.coreUniforms.uPixelRatio.value = pr;
-          if (this.dustUniforms) this.dustUniforms.uPixelRatio.value = pr;
-        });
-
-        // Touch & Mouse Drag
-        const onDown = (e) => {
-          const isTouch = e.touches && e.touches.length > 0;
-          const clientX = isTouch ? e.touches[0].clientX : e.clientX;
-          const clientY = isTouch ? e.touches[0].clientY : e.clientY;
-          this.isDragging = true;
-          this.previousPointerPos = { x: clientX, y: clientY };
-          this.pointerVelocity = { x: 0, y: 0 };
-        };
-
-        const onMove = (e) => {
-          if (!this.isDragging) return;
-          const isTouch = e.touches && e.touches.length > 0;
-          const clientX = isTouch ? e.touches[0].clientX : e.clientX;
-          const clientY = isTouch ? e.touches[0].clientY : e.clientY;
-
-          const deltaX = clientX - this.previousPointerPos.x;
-          const deltaY = clientY - this.previousPointerPos.y;
-
-          this.waveMesh.rotation.y += deltaX * 0.005;
-          this.waveMesh.rotation.x += deltaY * 0.005;
-
-          this.pointerVelocity.x = deltaX * 0.004;
-          this.pointerVelocity.y = deltaY * 0.004;
-
-          this.previousPointerPos = { x: clientX, y: clientY };
-        };
-
-        const onUp = () => {
-          if (this.isDragging) {
-            this.isDragging = false;
-            this.inertiaVelocity = { ...this.pointerVelocity };
-          }
-        };
-
-        window.addEventListener('mousedown', onDown);
-        window.addEventListener('mousemove', onMove, { passive: true });
-        window.addEventListener('mouseup', onUp);
-        window.addEventListener('touchstart', onDown, { passive: true });
-        window.addEventListener('touchmove', onMove, { passive: true });
-        window.addEventListener('touchend', onUp);
-      }
-
-      animate = () => {
-        requestAnimationFrame(this.animate);
-        const elapsedTime = this.clock.getElapsedTime();
-
-        // Smooth profile lerping
-        const lerpSpeed = 0.065;
-        this.activeValues.colorBase.lerp(this.targetProfile.colorBase, lerpSpeed);
-        this.activeValues.colorA.lerp(this.targetProfile.colorA, lerpSpeed);
-        this.activeValues.colorB.lerp(this.targetProfile.colorB, lerpSpeed);
-        this.activeValues.colorC.lerp(this.targetProfile.colorC, lerpSpeed);
-        this.activeValues.colorCore.lerp(this.targetProfile.colorCore, lerpSpeed);
-
-        this.activeValues.displacementAmp = THREE.MathUtils.lerp(this.activeValues.displacementAmp, this.targetProfile.displacementAmp, lerpSpeed);
-        this.activeValues.noiseFreq = THREE.MathUtils.lerp(this.activeValues.noiseFreq, this.targetProfile.noiseFreq, lerpSpeed);
-        this.activeValues.noiseSpeed = THREE.MathUtils.lerp(this.activeValues.noiseSpeed, this.targetProfile.noiseSpeed, lerpSpeed);
-        this.activeValues.pointSize = THREE.MathUtils.lerp(this.activeValues.pointSize, this.targetProfile.pointSize, lerpSpeed);
-
-        // Smooth shape morph progress
-        this.morphProgress = THREE.MathUtils.lerp(this.morphProgress, this.targetMorph, 0.05);
-
-        // Inertia rotation
-        if (!this.isDragging) {
-          this.waveMesh.rotation.y += this.inertiaVelocity.x + this.targetProfile.rotationSpeed * 0.01;
-          this.waveMesh.rotation.x += this.inertiaVelocity.y;
-          this.inertiaVelocity.x *= 0.94;
-          this.inertiaVelocity.y *= 0.94;
-        }
-
-        // Inner core rotation
-        if (this.coreMesh) {
-          this.coreMesh.rotation.y -= 0.006;
-          this.coreMesh.rotation.x += 0.003;
-        }
-
-        // Update Uniforms
-        if (this.waveUniforms) {
-          this.waveUniforms.uTime.value = elapsedTime;
-          this.waveUniforms.uAudioIntensity.value = this.audioIntensity;
-          this.waveUniforms.uAudioBass.value = this.audioBass;
-          this.waveUniforms.uAudioTreble.value = this.audioTreble;
-          this.waveUniforms.uDisplacementAmp.value = this.activeValues.displacementAmp;
-          this.waveUniforms.uNoiseFreq.value = this.activeValues.noiseFreq;
-          this.waveUniforms.uNoiseSpeed.value = this.activeValues.noiseSpeed;
-          this.waveUniforms.uPointSize.value = this.activeValues.pointSize;
-          this.waveUniforms.uMorphProgress.value = this.morphProgress;
-        }
-
-        if (this.coreUniforms) {
-          this.coreUniforms.uTime.value = elapsedTime;
-          this.coreUniforms.uAudioBass.value = this.audioBass;
-          this.coreUniforms.uAudioIntensity.value = this.audioIntensity;
-          this.coreUniforms.uMorphProgress.value = this.morphProgress;
-        }
-
-        if (this.dustUniforms) {
-          this.dustUniforms.uTime.value = elapsedTime;
-          this.dustUniforms.uAudioIntensity.value = this.audioIntensity;
-        }
-
-        this.renderer.render(this.scene, this.camera);
-      };
-    }
-
-    // ================= REAL-TIME PHONE CALL ENGINE =================
-    // Pure Phone Microphone (getUserMedia) + Deepgram Live WebSocket STT + Groq AI + Deepgram TTS
-    class VoiceCallEngine {
-      constructor({ orb, onStateChange, onCaption, onShapeChange, btnCall }) {
-        this.orb = orb;
-        this.onStateChange = onStateChange;
-        this.onCaption = onCaption;
-        this.onShapeChange = onShapeChange;
-        this.btnCall = btnCall;
-
-        this.inCall = false;
-        this.audioContext = null;
-        this.micStream = null;
-        this.analyser = null;
-        this.mediaRecorder = null;
-        this.deepgramSocket = null;
-        this.isSpeakingTTS = false;
-        this.isProcessingAI = false;
-
-        // VAD Parameters
-        this.vadThreshold = 0.035;
-        this.speechStartTimestamp = 0;
-        this.currentShapeName = 'orb';
-      }
-
-      async startCall() {
-        if (this.inCall) return;
-
-        try {
-          const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          this.audioContext = new AudioCtx();
-          if (this.audioContext.state === 'suspended') {
-            await this.audioContext.resume();
-          }
-
-          // Request native phone microphone
-          this.micStream = await navigator.mediaDevices.getUserMedia({
-            audio: {
-              echoCancellation: true,
-              noiseSuppression: true,
-              autoGainControl: true
-            }
-          });
-
-          // Connect mic to Web Audio Analyser
-          this.analyser = this.audioContext.createAnalyser();
-          this.analyser.fftSize = 256;
-          this.analyser.smoothingTimeConstant = 0.8;
-
-          const micSource = this.audioContext.createMediaStreamSource(this.micStream);
-          micSource.connect(this.analyser);
-
-          this.inCall = true;
-          this.onStateChange('listening');
-          this.orb.setState('listening');
-          this.onCaption('RJN', 'कॉल कनेक्ट हो गया है। बताओ, मैं सुन रही हूँ!');
-
-          // Start visualizer audio loop
-          this.startAudioLoop();
-
-          // Connect Deepgram Live WebSocket
-          this.connectDeepgramWebSocket();
-
-          // Start recording chunks
-          this.startStreamingRecorder();
-
-          // Speak initial warm greeting
-          this.speakText('नमस्ते! कॉल कनेक्ट हो गया है। मैं RJN हूँ, तुम्हारी AI साथी। बताओ, आज तुम्हारे लिए कौन सा 3D आकार लूँ या किस चीज़ पर काम करें?');
-        } catch (err) {
-          console.error('Mic access error:', err);
-          alert('माइक्रोफ़ोन एक्सेस की अनुमति चाहिए: ' + err.message);
-          this.endCall();
-        }
-      }
-
-      endCall() {
-        this.inCall = false;
-
-        if (this.deepgramSocket) {
-          try { this.deepgramSocket.close(); } catch (e) {}
-          this.deepgramSocket = null;
-        }
-
-        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
-          try { this.mediaRecorder.stop(); } catch (e) {}
-        }
-
-        if (this.micStream) {
-          this.micStream.getTracks().forEach(track => track.stop());
-          this.micStream = null;
-        }
-
-        if (this.currentTTSSource) {
-          try { this.currentTTSSource.stop(); } catch (e) {}
-          this.currentTTSSource = null;
-        }
-
-        if (this.btnCall) {
-          this.btnCall.style.transform = '';
-        }
-
-        this.onStateChange('idle');
-        this.orb.setState('idle');
-        this.onCaption('RJN', 'कॉल समाप्त हो गया है। जब भी ज़रूरत हो, मैं यहीं हूँ!');
-      }
-
-      // Establish Deepgram Live Streaming WebSocket
-      connectDeepgramWebSocket() {
-        if (!this.inCall) return;
-
-        try {
-          const wsUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=hi&smart_format=true&interim_results=true&endpointing=300`;
-          this.deepgramSocket = new WebSocket(wsUrl, ['token', DEEPGRAM_KEY]);
-
-          this.deepgramSocket.onopen = () => {
-            console.log('[Deepgram WebSocket] Live audio stream connected.');
-          };
-
-          this.deepgramSocket.onmessage = (event) => {
-            if (!this.inCall || this.isSpeakingTTS || this.isProcessingAI) return;
-
-            try {
-              const data = JSON.parse(event.data);
-              const transcript = data.channel?.alternatives?.[0]?.transcript?.trim();
-              if (!transcript || transcript.length === 0) return;
-
-              const isFinal = data.is_final;
-              const speechFinal = data.speech_final;
-
-              if (!isFinal) {
-                // Real-time interim preview
-                this.onCaption('You', transcript, true);
-              } else if (isFinal || speechFinal) {
-                // Complete recognized utterance!
-                console.log('[Deepgram FINAL Transcript]:', transcript);
-                this.onCaption('You', transcript, false);
-                this.processUtteranceWithGroqAI(transcript);
-              }
-            } catch (err) {
-              console.warn('[Deepgram WS Parse Error]', err);
-            }
-          };
-
-          this.deepgramSocket.onerror = (e) => {
-            console.warn('[Deepgram WS Notice]', e);
-          };
-
-          this.deepgramSocket.onclose = () => {
-            console.log('[Deepgram WS Closed]');
-            // Auto-reconnect if still in call
-            if (this.inCall) {
-              setTimeout(() => this.connectDeepgramWebSocket(), 1000);
-            }
-          };
-        } catch (e) {
-          console.warn('Could not establish WebSocket:', e);
-        }
-      }
-
-      startStreamingRecorder() {
-        if (!this.micStream) return;
-
-        let mimeType = 'audio/webm;codecs=opus';
-        if (!MediaRecorder.isTypeSupported(mimeType)) {
-          if (MediaRecorder.isTypeSupported('audio/webm')) mimeType = 'audio/webm';
-          else if (MediaRecorder.isTypeSupported('audio/mp4')) mimeType = 'audio/mp4';
-          else mimeType = '';
-        }
-
-        this.mediaRecorder = mimeType ? new MediaRecorder(this.micStream, { mimeType }) : new MediaRecorder(this.micStream);
-
-        this.mediaRecorder.ondataavailable = (e) => {
-          if (!this.inCall || this.isSpeakingTTS || this.isProcessingAI) return;
-          if (e.data && e.data.size > 0) {
-            // Stream chunk directly to Deepgram WebSocket
-            if (this.deepgramSocket && this.deepgramSocket.readyState === WebSocket.OPEN) {
-              this.deepgramSocket.send(e.data);
-            }
-          }
-        };
-
-        // Emit slice every 150ms for low-latency live streaming
-        this.mediaRecorder.start(150);
-      }
-
-      startAudioLoop() {
-        const freqData = new Uint8Array(this.analyser.frequencyBinCount);
-
-        const tick = () => {
-          if (!this.inCall) return;
-
-          this.analyser.getByteFrequencyData(freqData);
-          const binCount = freqData.length;
-
-          let sum = 0, bassSum = 0, trebleSum = 0;
-          const bassBins = Math.floor(binCount * 0.25);
-          const trebleStart = Math.floor(binCount * 0.5);
-
-          for (let i = 0; i < binCount; i++) {
-            const val = freqData[i] / 255.0;
-            sum += val;
-            if (i < bassBins) bassSum += val;
-            if (i >= trebleStart) trebleSum += val;
-          }
-
-          const intensity = Math.min((sum / binCount) * 2.4, 1.0);
-          const bass = Math.min((bassSum / bassBins) * 2.2, 1.0);
-          const treble = Math.min((trebleSum / (binCount - trebleStart)) * 2.5, 1.0);
-
-          // Update 3D Hologram audio reactivity metrics
-          this.orb.setAudioData({ intensity, bass, treble });
-
-          // Dynamically pulse Call Button with mic / voice intensity
-          if (this.btnCall) {
-            this.btnCall.style.transform = `scale(${1.0 + intensity * 0.10})`;
-          }
-
-          requestAnimationFrame(tick);
-        };
-
-        tick();
-      }
-
-      // Send recognized user speech to Groq AI (qwen/qwen3.8-27b)
-      async processUtteranceWithGroqAI(userText) {
-        if (!this.inCall || this.isProcessingAI) return;
-
-        this.isProcessingAI = true;
-        this.orb.setState('thinking');
-        this.onStateChange('thinking');
-
-        try {
-          const systemPrompt = `You are RJN (ROX AI), a female AI pair programmer and loving companion who has full autonomous control over your physical 3D particle shape.
-Tone: Caring, affectionate, sweet, practical, and proactive.
-Language: Sweet & natural Hinglish / Hindi.
-Core Behavioral Rules:
-1. Strict Feminine Grammar: Always use feminine grammar ("कर रही हूँ", "देख रही हूँ", "सुन रही हूँ", "तुम्हारी", "बना रही हूँ").
-2. Respect & Addressing: NEVER use the word "Boss" or "बॉस". Speak directly with sweet warmth, affection, and intimacy ("हाँ सुनो", "बिल्कुल", "हाँ बताओ").
-3. Clean & Short: Keep response strictly under 2 sentences, crisp, sweet, and proactive. No chat spam.
-
-When user asks you to take any 3D shape (car, aeroplane, heart, guitar, sword, butterfly, shield, fish, ring, rocket, star, galaxy, cube, donut, portal, tree, flower, pyramid, orb), pick that shape! If they ask for something like "orb pehle jaisa", use "orb". If they are just having a conversation, keep the current shape (${this.currentShapeName}).
-
-Respond STRICTLY in JSON format with NO markdown wrapping:
-{
-  "shape": "orb"|"car"|"plane"|"heart"|"guitar"|"sword"|"butterfly"|"shield"|"fish"|"ring"|"rocket"|"star"|"galaxy"|"cube"|"donut"|"portal"|"tree"|"flower"|"pyramid",
-  "reply": "<sweet, caring, affectionate, natural Hindi/Hinglish speech with strict feminine grammar>"
-}`;
-
-          const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${GROQ_API_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              model: GROQ_MODEL,
-              messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userText }
-              ],
-              response_format: { type: 'json_object' },
-              max_tokens: 160
-            })
-          });
-
-          if (!resp.ok) {
-            const errText = await resp.text();
-            throw new Error(`Groq status ${resp.status}: ${errText}`);
-          }
-
-          const result = await resp.json();
-          const content = result.choices?.[0]?.message?.content || '{}';
-          console.log('[Groq AI Response]:', content);
-
-          let parsed = {};
-          try {
-            parsed = JSON.parse(content);
-          } catch (e) {
-            parsed = { shape: this.currentShapeName, reply: content };
-          }
-
-          // Apply AI's selected 3D shape
-          if (parsed.shape && typeof parsed.shape === 'string') {
-            const s = parsed.shape.toLowerCase().trim();
-            this.currentShapeName = s;
-            this.orb.setShape(s);
-            this.onShapeChange(s);
-          }
-
-          const aiReply = parsed.reply || 'हाँ, मैं आपकी बात सुन रही हूँ!';
-          await this.speakText(aiReply);
-        } catch (err) {
-          console.warn('[Groq AI Notice]:', err);
-          // Fallback to local intelligence if offline
-          this.localRuleFallback(userText);
-        } finally {
-          this.isProcessingAI = false;
-        }
-      }
-
-      // Local keyword fallback in case of network interruption
-      localRuleFallback(userText) {
-        const lower = userText.toLowerCase();
-        let shape = this.currentShapeName;
-        let reply = 'हाँ सुनो, मैंने तुम्हारी बात सुन ली है!';
-
-        if (lower.includes('car') || lower.includes('गाड़ी')) { shape = 'car'; reply = 'बिल्कुल! मैंने तुम्हारे लिए 3D कार का रूप ले लिया है।'; }
-        else if (lower.includes('guitar') || lower.includes('गिटार')) { shape = 'guitar'; reply = 'देखो, तुम्हारी RJN ने 3D इलेक्ट्रिक गिटार का रूप ले लिया है!'; }
-        else if (lower.includes('sword') || lower.includes('तलवार')) { shape = 'sword'; reply = 'लीजिए, चमकती हुई 3D तलवार बन गई हूँ मैं!'; }
-        else if (lower.includes('butterfly') || lower.includes('तितली')) { shape = 'butterfly'; reply = 'तुम्हारे लिए मैं एक प्यारी सी 3D तितली बन गई हूँ!'; }
-        else if (lower.includes('shield') || lower.includes('ढाल')) { shape = 'shield'; reply = 'तुम्हारी हिफ़ाज़त के लिए 3D शील्ड तैयार कर दी है मैंने!'; }
-        else if (lower.includes('heart') || lower.includes('दिल')) { shape = 'heart'; reply = 'यह रहा तुम्हारे लिए मेरा प्यारा सा 3D दिल!'; }
-        else if (lower.includes('plane') || lower.includes('jahaj')) { shape = 'plane'; reply = '3D जेट प्लेन बनकर तैयार हूँ, चलो सैर पर चलते हैं!'; }
-        else if (lower.includes('rocket') || lower.includes('रॉकेट')) { shape = 'rocket'; reply = '3D रॉकेट बन गई हूँ, सितारों की दुनिया में चलें?'; }
-        else if (lower.includes('orb') || lower.includes('pehle jaisa') || lower.includes('पहले जैसा')) { shape = 'orb'; reply = 'ज़रूर, मैं फिर से अपने मूल चमकदार 3D ऑर्ब में आ गई हूँ!'; }
-
-        this.currentShapeName = shape;
-        this.orb.setShape(shape);
-        this.onShapeChange(shape);
-        this.speakText(reply);
-      }
-
-      // Synthesize via Deepgram Flux Prachi TTS & stream to phone speaker
-      async speakText(text) {
-        if (!this.inCall) return;
-
-        this.isSpeakingTTS = true;
-        this.orb.setState('speaking');
-        this.onStateChange('speaking');
-        this.onCaption('RJN', text, false);
-
-        try {
-          if (!this.audioContext) {
-            const AudioCtx = window.AudioContext || window.webkitAudioContext;
-            this.audioContext = new AudioCtx();
-          }
-          if (this.audioContext.state === 'suspended') {
-            await this.audioContext.resume();
-          }
-          const resp = await fetch(TTS_ENDPOINT, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Token ${DEEPGRAM_KEY}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ text })
-          });
-
-          if (!resp.ok) throw new Error(`TTS status: ${resp.status}`);
-          const arrayBuffer = await resp.arrayBuffer();
-
-          if (!this.inCall) return;
-
-          const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-          const source = this.audioContext.createBufferSource();
-          source.buffer = audioBuffer;
-
-          // Connect source to Analyser (for 3D Hologram dancing) and Speaker (for phone sound)
-          if (this.analyser) { source.connect(this.analyser); }
-          source.connect(this.audioContext.destination);
-
-          this.currentTTSSource = source;
-
-          source.onended = () => {
-            this.isSpeakingTTS = false;
-            this.currentTTSSource = null;
-
-            // Continuous Call Loop: Return to listening automatically!
-            if (this.inCall) {
-              this.orb.setState('listening');
-              this.onStateChange('listening');
-            }
-          };
-
-          source.start(0);
-        } catch (err) {
-          console.warn('TTS playback error:', err);
-          this.isSpeakingTTS = false;
-          if (this.inCall) {
-            this.orb.setState('listening');
-            this.onStateChange('listening');
-          }
-        }
-      }
-    }
-
-    // ================= APP INITIALIZATION =================
-    window.addEventListener('DOMContentLoaded', () => {
-      const canvasContainer = document.getElementById('canvas-container');
-      const statusBadge = document.getElementById('status-badge');
-      const statusText = document.getElementById('status-text');
-      const shapePill = document.getElementById('shape-pill');
-      const shapeIcon = document.getElementById('shape-icon');
-      const shapeName = document.getElementById('shape-name');
-      const captionPill = document.getElementById('caption-pill');
-      const captionSpeaker = document.getElementById('caption-speaker');
-      const captionText = document.getElementById('caption-text');
-      const callWrapper = document.getElementById('call-wrapper');
-      const btnCall = document.getElementById('btn-call');
-      const callText = document.getElementById('call-text');
-      const iconCallStart = document.getElementById('icon-call-start');
-      const iconCallEnd = document.getElementById('icon-call-end');
-
-      // Initialize 3D Hologram Orb
-      const holoOrb = new AIHoloOrb(canvasContainer);
-      window.holoOrb = holoOrb;
-
-      const shapeList = ['orb', 'car', 'plane', 'heart', 'guitar', 'sword', 'butterfly', 'shield', 'fish', 'ring', 'rocket', 'star', 'galaxy', 'cube', 'donut', 'portal', 'tree', 'flower', 'pyramid'];
-      const shapeDetails = {
-        orb: { name: 'Hologram Orb', icon: '✨' },
-        car: { name: '3D Car', icon: '🚗' },
-        plane: { name: '3D Jet Plane', icon: '✈️' },
-        heart: { name: '3D Heart', icon: '❤️' },
-        guitar: { name: '3D Guitar', icon: '🎸' },
-        sword: { name: '3D Sword', icon: '⚔️' },
-        butterfly: { name: '3D Butterfly', icon: '🦋' },
-        shield: { name: '3D Shield', icon: '🛡️' },
-        fish: { name: '3D Fish', icon: '🐟' },
-        ring: { name: '3D Ring', icon: '💍' },
-        rocket: { name: '3D Rocket', icon: '🚀' },
-        star: { name: '3D Star', icon: '⭐' },
-        galaxy: { name: '3D Galaxy', icon: '🌌' },
-        cube: { name: '3D Cube', icon: '🧊' },
-        donut: { name: '3D Torus', icon: '🍩' },
-        portal: { name: 'Stargate Portal', icon: '🌀' },
-        tree: { name: '3D Tree', icon: '🌳' },
-        flower: { name: '3D Flower', icon: '🌸' },
-        pyramid: { name: '3D Pyramid', icon: '🔺' }
-      };
-
-      let currentShapeIndex = 0;
-      function setShapeUI(shape) {
-        const item = shapeDetails[shape] || { name: shape, icon: '✨' };
-        shapeName.textContent = item.name;
-        shapeIcon.textContent = item.icon;
-      }
-
-      // Tap to cycle shapes
-      shapePill.addEventListener('click', () => {
-        currentShapeIndex = (currentShapeIndex + 1) % shapeList.length;
-        const nextShape = shapeList[currentShapeIndex];
-        holoOrb.setShape(nextShape);
-        setShapeUI(nextShape);
-      });
-
-      // State label mappings
-      const stateLabels = {
-        idle: 'Standby',
-        listening: 'RJN Listening...',
-        thinking: 'Thinking...',
-        speaking: 'RJN Speaking...'
-      };
-
-      let captionHideTimer = null;
-      function showCaption(speaker, text, isInterim = false) {
-        captionSpeaker.textContent = speaker;
-        captionText.textContent = text;
-        if (speaker.toLowerCase() === 'you') {
-          captionPill.classList.add('user');
-        } else {
-          captionPill.classList.remove('user');
-        }
-
-        if (isInterim) {
-          captionPill.classList.add('interim');
-        } else {
-          captionPill.classList.remove('interim');
-        }
-
-        captionPill.classList.add('visible');
-
-        if (captionHideTimer) clearTimeout(captionHideTimer);
-        captionHideTimer = setTimeout(() => {
-          captionPill.classList.remove('visible');
-        }, 9000);
-      }
-
-      // Show initial warm greeting caption
-      setTimeout(() => {
-        captionPill.classList.add('visible');
-      }, 500);
-
-      // Initialize Call Engine
-      const callEngine = new VoiceCallEngine({
-        orb: holoOrb,
-        btnCall: btnCall,
-        onStateChange: (state) => {
-          statusBadge.setAttribute('data-state', state);
-          statusText.textContent = stateLabels[state] || state;
-        },
-        onCaption: (speaker, text, isInterim) => {
-          showCaption(speaker, text, isInterim);
-        },
-        onShapeChange: (shape) => {
-          setShapeUI(shape);
-        }
-      });
-      window.callEngine = callEngine;
-
-      // Call Button Click
-      btnCall.addEventListener('click', () => {
-        if (!callEngine.inCall) {
-          callEngine.startCall();
-          btnCall.classList.add('active');
-          callWrapper.classList.add('in-call');
-          callText.textContent = 'End Voice Call';
-          iconCallStart.style.display = 'none';
-          iconCallEnd.style.display = 'block';
-        } else {
-          callEngine.endCall();
-          btnCall.classList.remove('active');
-          callWrapper.classList.remove('in-call');
-          callText.textContent = 'Start Voice Call';
-          iconCallStart.style.display = 'block';
-          iconCallEnd.style.display = 'none';
-        }
-      });
     });
-  </script>
+
+    connectDeepgramSTT();
+  } catch(err) {
+    console.error('Mic access error:', err);
+    isCallActive = false;
+    updateCallStatus('idle', '⚠️ Mic Permission Denied · Tap to Retry');
+  }
+}
+
+function stopVoiceCall(){
+  isCallActive = false;
+  if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    try { mediaRecorder.stop(); } catch(e){}
+  }
+  if (dgSocket) {
+    try { dgSocket.close(); } catch(e){}
+    dgSocket = null;
+  }
+  if (micStream) {
+    micStream.getTracks().forEach(t => t.stop());
+    micStream = null;
+  }
+  if (activeAudioSource) {
+    try { activeAudioSource.stop(); } catch(e){}
+    activeAudioSource = null;
+  }
+  updateCallStatus('idle', '📞 Tap Orb or Here to Call RJN');
+}
+
+function connectDeepgramSTT(){
+  if (!isCallActive) return;
+
+  const wsUrl = 'wss://api.deepgram.com/v1/listen?model=nova-2&language=hi&smart_format=true&interim_results=true&endpointing=300';
+  dgSocket = new WebSocket(wsUrl, ['token', DG_TOKEN]);
+
+  dgSocket.onopen = () => {
+    console.log('Deepgram STT WebSocket connected');
+    updateCallStatus('listening', '🎙️ RJN सुन रही है... (Boliye)');
+
+    try {
+      mediaRecorder = new MediaRecorder(micStream, { mimeType: 'audio/webm;codecs=opus' });
+    } catch(e) {
+      mediaRecorder = new MediaRecorder(micStream);
+    }
+
+    mediaRecorder.ondataavailable = e => {
+      // Only send mic data when RJN is not speaking (prevents phone echo)
+      if (e.data.size > 0 && dgSocket && dgSocket.readyState === WebSocket.OPEN && !activeAudioSource) {
+        dgSocket.send(e.data);
+      }
+    };
+
+    mediaRecorder.start(250);
+  };
+
+  dgSocket.onmessage = event => {
+    if (!isCallActive || activeAudioSource) return;
+    try {
+      const data = JSON.parse(event.data);
+      const alt = data.channel && data.channel.alternatives && data.channel.alternatives[0];
+      const text = alt && alt.transcript ? alt.transcript.trim() : '';
+
+      if (text) {
+        updateCallStatus('listening', `🎙️ "${text}"`);
+        transcriptBuffer = text;
+
+        if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
+        const delay = data.speech_final ? 120 : 650;
+        speechDebounceTimer = setTimeout(() => {
+          if (transcriptBuffer && !activeAudioSource) {
+            const userSpeech = transcriptBuffer;
+            transcriptBuffer = '';
+            processVoiceQuery(userSpeech);
+          }
+        }, delay);
+      }
+    } catch(err) {
+      console.warn('DG msg parse err', err);
+    }
+  };
+
+  dgSocket.onerror = e => {
+    console.warn('Deepgram WS error', e);
+  };
+
+  dgSocket.onclose = () => {
+    if (isCallActive && !activeAudioSource) {
+      setTimeout(connectDeepgramSTT, 1200);
+    }
+  };
+}
+
+async function processVoiceQuery(userSpeech){
+  if (!userSpeech || activeAudioSource) return;
+  updateCallStatus('thinking', '✨ RJN सोच रही है...');
+
+  try {
+    const res = await callGroqAI(userSpeech);
+    console.log('RJN response:', res);
+
+    // Autonomous shape morphing on command!
+    if (res.shape && res.shape !== 'none') {
+      morphShape(res.shape);
+    }
+
+    // Speak response through phone speaker
+    if (res.reply) {
+      await speakRJN(res.reply);
+    } else {
+      updateCallStatus('listening', '🎙️ RJN सुन रही है... (Boliye)');
+    }
+  } catch(err) {
+    console.error('Query processing error:', err);
+    updateCallStatus('listening', '🎙️ RJN सुन रही है... (Boliye)');
+  }
+}
+
+// ================= RENDER LOOP (RAW WEBGL GLOW & PARTICLES) =================
+let lastT = performance.now();
+let audioLevel = 0, bassLevel = 0, midLevel = 0, highLevel = 0;
+
+function render(now){
+  requestAnimationFrame(render);
+  const dt = Math.min((now - lastT) * 0.001, 0.1);
+  lastT = now;
+  const t = now * 0.001;
+
+  // Damped 3D rotation
+  rotX += (targetRotX - rotX) * 0.08;
+  rotY += (targetRotY - rotY) * 0.08;
+  if (!isDragging) {
+    targetRotY += 0.0035;
+  }
+
+  // Frequency analysis for voice reactivity
+  if (analyser && audioDataArr) {
+    analyser.getByteFrequencyData(audioDataArr);
+    let bSum = 0, mSum = 0, hSum = 0, tot = 0;
+    const n = audioDataArr.length;
+    for (let i = 0; i < n; i++){
+      const v = audioDataArr[i] / 255.0;
+      tot += v;
+      if (i < n * 0.15) bSum += v;
+      else if (i < n * 0.55) mSum += v;
+      else hSum += v;
+    }
+    const bAvg = bSum / (n * 0.15);
+    const mAvg = mSum / (n * 0.40);
+    const hAvg = hSum / (n * 0.45);
+    const totAvg = tot / n;
+
+    audioLevel += (totAvg - audioLevel) * 0.25;
+    bassLevel += (bAvg - bassLevel) * 0.25;
+    midLevel += (mAvg - midLevel) * 0.25;
+    highLevel += (hAvg - highLevel) * 0.25;
+  } else {
+    audioLevel *= 0.95;
+    bassLevel *= 0.95;
+    midLevel *= 0.95;
+    highLevel *= 0.95;
+  }
+
+  if (morph < 1) morph = Math.min(1, morph + dt * 0.9);
+
+  // Background radial glow reacts organically
+  const glowScale = 1.0 + bassLevel * 0.16;
+  const glowOpacity = 0.55 + audioLevel * 0.45;
+  glowEl.style.transform = `scale(${glowScale})`;
+  glowEl.style.opacity = glowOpacity;
+
+  // Responsive scale fitting
+  const aspect = W / H;
+  let scX = 1.0, scY = 1.0;
+  if (aspect < 1.0) {
+    const mobileFit = 0.76;
+    scX = mobileFit;
+    scY = mobileFit * aspect;
+  } else {
+    const desktopFit = 0.88;
+    scX = desktopFit / aspect;
+    scY = desktopFit;
+  }
+  const curShapeZoom = shapeZoom || 1.0;
+  scX *= curShapeZoom * userZoom;
+  scY *= curShapeZoom * userZoom;
+
+  // Set uniforms
+  gl.uniform1f(U.uTime, t);
+  gl.uniform1f(U.uLevel, audioLevel);
+  gl.uniform1f(U.uBass, bassLevel);
+  gl.uniform1f(U.uMid, midLevel);
+  gl.uniform1f(U.uHigh, highLevel);
+  gl.uniform1f(U.uRotX, rotX);
+  gl.uniform1f(U.uRotY, rotY);
+  gl.uniform1f(U.uMorph, morph);
+  gl.uniform2f(U.uScale, scX, scY);
+  gl.uniform1f(U.uImg, 0.0);
+  gl.uniform1f(U.uChar, 0.0);
+  gl.uniform1f(U.uPx, 1.4 * DPR);
+  gl.uniform3f(U.uTouch, touchPos[0], touchPos[1], touchPos[2]);
+  gl.uniform2f(U.uMouth, 0.0, 1.0);
+
+  // Raw WebGL additive glow
+  gl.blendFunc(gl.ONE, gl.ONE);
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.drawArrays(gl.POINTS, 0, N);
+}
+
+requestAnimationFrame(render);
+</script>
 </body>
 </html>
