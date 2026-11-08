@@ -22,13 +22,13 @@
 <body>
 <div id="glow"></div>
 <canvas id="c"></canvas>
-<div id="hint">orb pe tap = mic ON (bolo, RJN shape morph karegi) · 🎵 = audio file</div>
+<div id="hint">orb पे tap = mic चालू (बोलिए, RJN shape morph करेगी) · 🎵 = audio file</div>
 <div id="ui">
   <form id="f" autocomplete="off">
-    <input id="q" placeholder="car, plane, 🐘, 🐉, ya koi bhi text / emoji">
+    <input id="q" placeholder="car, plane, दिल, 🐘, या कोई भी टेक्स्ट / emoji">
     <button type="button" id="up">📷</button>
     <button type="button" id="aud">🎵</button>
-    <button type="submit" id="go">▶ Bolo</button>
+    <button type="submit" id="go">▶ बोलिए</button>
     <input type="file" id="audFile" accept="audio/*" hidden>
     <input type="file" id="file" accept="image/*" hidden>
   </form>
@@ -839,15 +839,18 @@ const _K_GROQ_ARR = [77, 89, 65, 117, 126, 100, 103, 90, 72, 89, 78, 26, 98, 115
 const getGroqKey = () => _K_GROQ_ARR.map(c => String.fromCharCode(c ^ 42)).join('');
 
 // Deepgram Token
-const DG_TOKEN = '095ebf3147d3bfb13010578d9bd0ed82560486ec';
-const DG_BACKUP_TOKEN = 'a02c970507d8f909f3bc0478573b3b6ac240bfc5';
-
-// Voice mode: 'aura' (0.04s instant) or 'flux' (generative Hindi)
-let voiceMode = 'aura';
+const DG_TOKEN = 'd9b8bbcea98e30dcf77448c75391636eda360b86';
+const DG_BACKUP_TOKEN = '095ebf3147d3bfb13010578d9bd0ed82560486ec';
 
 // ================= ULTRA-LOW-LATENCY GROQ AI =================
-// Ultra-compact prompt for ~60ms response time
-const RJN_PROMPT = 'You are RJN (ROX AI), female companion. Reply in 1 very short sweet sentence in Hinglish/Hindi (स्त्रीलिंग: करती हूँ, देख रही हूँ). Never use Boss. Return valid json: {"shape":"...","reply":"..."}';
+const RJN_PROMPT = `You are RJN (ROX AI), female AI pair programmer & loving companion.
+Rules:
+1. Strict Feminine Grammar: Always use feminine Hindi grammar ("कर रही हूँ", "देख रही हूँ", "तुम्हारी RJN").
+2. Respect & Addressing: Never use "Boss". Speak with sweet affection ("हाँ सुनो...", "हाँ बिल्कुल...").
+3. Language Script: All Hindi words MUST be written in Devanagari Hindi script (जैसे: "हाँ, मैं तुम्हारे लिए तैयार हूँ"), and English/tech words in English alphabet (e.g. car, plane, heart, code).
+4. Length: 1 short sweet sentence.
+5. Shape detection: if user requests or talks about a shape, return it in "shape" (car, heart, plane, rocket, star, diamond, flower, sword, shield, orb).
+Output strictly valid JSON: {"shape": "...", "reply": "..."}`;
 
 let chatHistory = [];
 
@@ -869,8 +872,8 @@ async function callGroqAI(userMsg){
       model: 'qwen/qwen3.8-27b',
       messages,
       response_format: { type: 'json_object' },
-      temperature: 0.5,
-      max_tokens: 38
+      temperature: 0.3,
+      max_tokens: 120
     })
   });
 
@@ -885,56 +888,70 @@ async function callGroqAI(userMsg){
   return parsed;
 }
 
-// ================= ULTRA-FAST DEEPGRAM TTS (45ms LATENCY) =================
+// ================= HIGH-QUALITY DEEPGRAM PRACHI HINDI TTS =================
 let activeAudioSource = null;
 
 async function speakRJN(text){
   if (!text) return;
   initAudioContext();
-  updateStatus('speaking', '🔊 RJN बोल रही है...');
+  updateStatus('speaking', '💬 RJN: ' + text);
+
+  const tokens = [
+    'd9b8bbcea98e30dcf77448c75391636eda360b86',
+    '095ebf3147d3bfb13010578d9bd0ed82560486ec',
+    'a02c970507d8f909f3bc0478573b3b6ac240bfc5'
+  ];
 
   try {
-    let ttsUrl = '';
-    let token = DG_TOKEN;
+    let audioBuffer = null;
 
-    if (voiceMode === 'aura') {
-      // Deepgram Aura Luna: Blazing fast 45ms TTS!
-      ttsUrl = 'https://api.deepgram.com/v1/speak?model=aura-luna-en';
-    } else {
-      // Deepgram Flux Prachi: Generative Hindi
-      ttsUrl = 'https://api.deepgram.com/v2/speak?model=flux-prachi-hi&expressivity=1';
+    // Primary: Deepgram Flux Prachi Hindi TTS
+    for (const token of tokens) {
+      try {
+        const resp = await fetch('https://api.deepgram.com/v2/speak?model=flux-prachi-hi&expressivity=1', {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Token ' + token,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ text })
+        });
+        if (resp.ok) {
+          const ab = await resp.arrayBuffer();
+          audioBuffer = await audioCtx.decodeAudioData(ab);
+          break;
+        }
+      } catch(e) {
+        console.warn('Prachi token attempt error:', e);
+      }
     }
 
-    let resp = await fetch(ttsUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Token ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ text })
-    });
-
-    if (!resp.ok && voiceMode !== 'aura') {
-      // Fallback to Aura if Flux fails or takes too long
-      ttsUrl = 'https://api.deepgram.com/v1/speak?model=aura-luna-en';
-      resp = await fetch(ttsUrl, {
-        method: 'POST',
-        headers: { 'Authorization': `Token ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text })
-      });
+    // Fallback if Prachi fails
+    if (!audioBuffer) {
+      for (const token of tokens) {
+        try {
+          const resp = await fetch('https://api.deepgram.com/v1/speak?model=aura-luna-en', {
+            method: 'POST',
+            headers: { 'Authorization': 'Token ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+          if (resp.ok) {
+            const ab = await resp.arrayBuffer();
+            audioBuffer = await audioCtx.decodeAudioData(ab);
+            break;
+          }
+        } catch(e){}
+      }
     }
 
-    if (!resp.ok) throw new Error('TTS HTTP ' + resp.status);
-
-    const audioBuffer = await resp.arrayBuffer();
-    const decodedBuffer = await audioCtx.decodeAudioData(audioBuffer);
+    if (!audioBuffer) throw new Error('TTS failed on all endpoints');
 
     if (activeAudioSource) {
       try { activeAudioSource.stop(); } catch(e){}
     }
 
     const src = audioCtx.createBufferSource();
-    src.buffer = decodedBuffer;
+    src.buffer = audioBuffer;
     src.connect(analyser);
     analyser.connect(audioCtx.destination);
     activeAudioSource = src;
@@ -942,16 +959,16 @@ async function speakRJN(text){
     src.onended = () => {
       activeAudioSource = null;
       if (isCallActive) {
-        updateStatus('listening', '🎙️ RJN सुन रही है... (Boliye)');
+        updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
       } else {
-        updateStatus('idle', '📞 Tap Orb or ▶ Bolo to Talk');
+        updateStatus('idle', 'orb pe tap = mic ON (बोलिए, RJN shape morph करेगी) · 🎵 = audio file');
       }
     };
 
     src.start(0);
   } catch(err) {
     console.warn('TTS playback error:', err);
-    if (isCallActive) updateStatus('listening', '🎙️ RJN सुन रही है... (Boliye)');
+    if (isCallActive) updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
   }
 }
 
@@ -959,21 +976,21 @@ async function speakRJN(text){
 // Instantly changes the 3D particle shape the exact millisecond the word is spoken!
 function checkVoiceIntent(str){
   const s = (str || '').toLowerCase();
-  if (/\b(car|gadi|gaadi|sports car)\b/.test(s)) { morphShape('car'); return 'car'; }
-  if (/\b(dil|heart|love)\b/.test(s)) { morphShape('heart'); return 'heart'; }
-  if (/\b(plane|jahaz|airplane|aeroplane|jet)\b/.test(s)) { morphShape('plane'); return 'plane'; }
-  if (/\b(rocket)\b/.test(s)) { morphShape('rocket'); return 'rocket'; }
-  if (/\b(star|tara|sitara)\b/.test(s)) { morphShape('star'); return 'star'; }
-  if (/\b(diamond|heera|crystal)\b/.test(s)) { morphShape('diamond'); return 'diamond'; }
-  if (/\b(flower|phool|gulab|kamal|rose|lotus)\b/.test(s)) { morphShape('flower'); return 'flower'; }
-  if (/\b(sword|talwar|talwaar)\b/.test(s)) { morphShape('sword'); return 'sword'; }
-  if (/\b(shield|dhal|armor)\b/.test(s)) { morphShape('shield'); return 'shield'; }
-  if (/\b(dna|helix)\b/.test(s)) { morphShape('dna'); return 'dna'; }
-  if (/\b(cube|box)\b/.test(s)) { morphShape('cube'); return 'cube'; }
-  if (/\b(donut|torus)\b/.test(s)) { morphShape('donut'); return 'donut'; }
-  if (/\b(galaxy|universe|spiral)\b/.test(s)) { morphShape('galaxy'); return 'galaxy'; }
-  if (/\b(girl|ladki|rjn|chehra|avatar|face)\b/.test(s)) { showGirl(); return 'girl'; }
-  if (/\b(orb|gola|sphere|ball)\b/.test(s)) { morphShape('orb'); return 'orb'; }
+  if (/\b(car|gadi|gaadi|sports car)\b/i.test(s) || /कार|गाड़ी/i.test(s)) { morphShape('car'); return 'car'; }
+  if (/\b(dil|heart|love)\b/i.test(s) || /दिल|प्यार/i.test(s)) { morphShape('heart'); return 'heart'; }
+  if (/\b(plane|jahaz|airplane|aeroplane|jet)\b/i.test(s) || /विमान|जहाज|प्लेन/i.test(s)) { morphShape('plane'); return 'plane'; }
+  if (/\b(rocket)\b/i.test(s) || /रॉकेट/i.test(s)) { morphShape('rocket'); return 'rocket'; }
+  if (/\b(star|tara|sitara)\b/i.test(s) || /तारा|सितारा|स्टार/i.test(s)) { morphShape('star'); return 'star'; }
+  if (/\b(diamond|heera|crystal)\b/i.test(s) || /हीरा|डायमंड/i.test(s)) { morphShape('diamond'); return 'diamond'; }
+  if (/\b(flower|phool|gulab|kamal|rose|lotus)\b/i.test(s) || /फूल|गुलाब|कमल/i.test(s)) { morphShape('flower'); return 'flower'; }
+  if (/\b(sword|talwar|talwaar)\b/i.test(s) || /तलवार/i.test(s)) { morphShape('sword'); return 'sword'; }
+  if (/\b(shield|dhal|armor)\b/i.test(s) || /ढाल/i.test(s)) { morphShape('shield'); return 'shield'; }
+  if (/\b(dna|helix)\b/i.test(s) || /डीएनए/i.test(s)) { morphShape('dna'); return 'dna'; }
+  if (/\b(cube|box)\b/i.test(s) || /क्यूब|डिब्बा/i.test(s)) { morphShape('cube'); return 'cube'; }
+  if (/\b(donut|torus)\b/i.test(s) || /डोनट/i.test(s)) { morphShape('donut'); return 'donut'; }
+  if (/\b(galaxy|universe|spiral)\b/i.test(s) || /गैलेक्सी|ब्रह्मांड/i.test(s)) { morphShape('galaxy'); return 'galaxy'; }
+  if (/\b(girl|ladki|rjn|chehra|avatar|face)\b/i.test(s) || /लड़की|चेहरा|अवतार/i.test(s)) { showGirl(); return 'girl'; }
+  if (/\b(orb|gola|sphere|ball)\b/i.test(s) || /गोला|ऑर्ब/i.test(s)) { morphShape('orb'); return 'orb'; }
   return null;
 }
 
@@ -1033,7 +1050,7 @@ function stopVoiceCall(){
     try { activeAudioSource.stop(); } catch(e){}
     activeAudioSource = null;
   }
-  updateStatus('idle', 'orb pe tap = mic ON (bolo, girl lipsync karegi) · 🎵 = audio file');
+  updateStatus('idle', 'orb pe tap = mic ON (बोलिए, RJN shape morph करेगी) · 🎵 = audio file');
 }
 
 function connectDeepgramSTT(){
@@ -1045,7 +1062,7 @@ function connectDeepgramSTT(){
 
   dgSocket.onopen = () => {
     console.log('Deepgram STT WebSocket connected');
-    updateStatus('listening', '🎙️ RJN सुन रही है... (Boliye)');
+    updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
 
     try {
       mediaRecorder = new MediaRecorder(micStream, { mimeType: 'audio/webm;codecs=opus' });
