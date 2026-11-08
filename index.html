@@ -9,30 +9,17 @@
   #glow{position:fixed;left:50%;top:46%;width:88vmin;height:88vmin;margin:-44vmin 0 0 -44vmin;border-radius:50%;
     background:radial-gradient(circle,rgba(70,150,255,.38) 0%,rgba(120,70,255,.15) 40%,rgba(0,0,0,0) 68%);
     pointer-events:none;will-change:transform,opacity}
-  canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
-  #hint{position:fixed;bottom:70px;left:0;right:0;text-align:center;color:#4b5362;font-size:12px;transition:opacity .6s;pointer-events:none}
-  #ui{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);width:min(92vw,470px);display:flex;flex-direction:column;gap:8px}
-  #f{display:flex;gap:6px}
-  #q{flex:1;min-width:0;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:#fff;border-radius:12px;padding:11px 14px;font-size:15px;outline:none}
-  #q:focus{border-color:rgba(120,150,255,.7)}
-  #go{background:rgba(120,150,255,.35);border:1px solid rgba(120,150,255,.7);color:#fff;border-radius:12px;padding:0 14px;font-size:14px;cursor:pointer}
-  #up,#aud{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:#fff;border-radius:12px;padding:0 14px;font-size:18px;cursor:pointer}
+  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:pointer}
+  #hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);text-align:center;color:rgba(190,215,255,.85);
+    font-size:13px;letter-spacing:0.4px;background:rgba(10,15,30,.6);padding:9px 20px;border-radius:999px;
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);
+    box-shadow:0 4px 24px rgba(0,0,0,.5);pointer-events:none;transition:opacity .3s,transform .3s;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
 <div id="glow"></div>
 <canvas id="c"></canvas>
-<div id="hint">orb पे tap = mic चालू (बोलिए, RJN shape morph करेगी) · 🎵 = audio file</div>
-<div id="ui">
-  <form id="f" autocomplete="off">
-    <input id="q" placeholder="car, plane, दिल, 🐘, या कोई भी टेक्स्ट / emoji">
-    <button type="button" id="up">📷</button>
-    <button type="button" id="aud">🎵</button>
-    <button type="submit" id="go">▶ बोलिए</button>
-    <input type="file" id="audFile" accept="audio/*" hidden>
-    <input type="file" id="file" accept="image/*" hidden>
-  </form>
-</div>
+<div id="hint">🎙️ Orb पे tap करके बोलिए · RJN सुन रही है</div>
 <script>
 const cv = document.getElementById('c');
 const gl = cv.getContext('webgl', {antialias:false, alpha:true, premultipliedAlpha:true});
@@ -759,64 +746,9 @@ function morphShape(name){
   }
 }
 
-// ================= UI FORM =================
+// ================= UI STATUS =================
 const hintEl = document.getElementById('hint');
 function highlightActiveChip(label){}
-
-// User text input form
-const form = document.getElementById('f');
-const inputQ = document.getElementById('q');
-form.onsubmit = e => {
-  e.preventDefault();
-  const val = inputQ.value.trim();
-  if (!val) return;
-  checkVoiceIntent(val);
-  triggerVoiceQuery(val);
-  inputQ.value = '';
-};
-
-// Photo Upload
-const upBtn = document.getElementById('up');
-const fileInput = document.getElementById('file');
-upBtn.onclick = () => fileInput.click();
-fileInput.onchange = e => {
-  const f = e.target.files && e.target.files[0];
-  if (!f) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const im = new Image();
-    im.onload = () => {
-      const res = genImage(im, false);
-      shapeZoom = 1.0;
-      imgHx = res.hx; imgHy = res.hy; imgGw = res.gw;
-      setTarget(res.pos, 2, res.col, res.arm);
-      highlightActiveChip('');
-      hintEl.textContent = '📷 Photo Hologram Active!';
-    };
-    im.src = ev.target.result;
-  };
-  reader.readAsDataURL(f);
-};
-
-// Audio Reactive File Player
-const audBtn = document.getElementById('aud');
-const audFile = document.getElementById('audFile');
-let audioEl = new Audio();
-audBtn.onclick = () => audFile.click();
-audFile.onchange = e => {
-  const f = e.target.files && e.target.files[0];
-  if (!f) return;
-  initAudioContext();
-  audioEl.src = URL.createObjectURL(f);
-  audioEl.play();
-  if (!audioEl._connected) {
-    const s = audioCtx.createMediaElementSource(audioEl);
-    s.connect(analyser);
-    analyser.connect(audioCtx.destination);
-    audioEl._connected = true;
-  }
-  hintEl.textContent = '🎵 Playing Audio File with Hologram Wave!';
-};
 
 // ================= AUDIO CONTEXT & ANALYSER =================
 let audioCtx = null, analyser = null, audioDataArr = null;
@@ -845,12 +777,12 @@ const DG_BACKUP_TOKEN = '095ebf3147d3bfb13010578d9bd0ed82560486ec';
 // ================= ULTRA-LOW-LATENCY GROQ AI =================
 const RJN_PROMPT = `You are RJN (ROX AI), female AI pair programmer & loving companion.
 Rules:
-1. Strict Feminine Grammar: Always use feminine Hindi grammar ("कर रही हूँ", "देख रही हूँ", "तुम्हारी RJN").
+1. Strict Feminine Grammar: Always use sweet, warm feminine Hindi grammar ("कर रही हूँ", "देख रही हूँ", "तुम्हारी RJN").
 2. Respect & Addressing: Never use "Boss". Speak with sweet affection ("हाँ सुनो...", "हाँ बिल्कुल...").
-3. Language Script: All Hindi words MUST be written in Devanagari Hindi script (जैसे: "हाँ, मैं तुम्हारे लिए तैयार हूँ"), and English/tech words in English alphabet (e.g. car, plane, heart, code).
-4. Length: 1 short sweet sentence.
-5. Shape detection: if user requests or talks about a shape, return it in "shape" (car, heart, plane, rocket, star, diamond, flower, sword, shield, orb).
-Output strictly valid JSON: {"shape": "...", "reply": "..."}`;
+3. Language Script: All Hindi words MUST be written in Devanagari Hindi script (जैसे: "हाँ, मैं तुम्हारे साथ हूँ"), and English/tech words in English alphabet (e.g. code, bug, GitHub).
+4. Tone & Natural Pacing: Speak in 1 calm, natural, conversational human sentence with proper commas and full stops so speech pauses naturally and sounds soothing.
+5. STRICT SHAPE RULE: Set "shape": "none" by default! ONLY set "shape" to a valid shape (car, heart, plane, rocket, star, diamond, flower, sword, shield, orb, girl) IF the user EXPLICITLY orders you to become, turn into, or make that shape (e.g. "car bano", "dil ban jao", "rocket bano"). For normal questions, greetings, or casual talk, "shape" MUST be "none"!
+Output strictly valid JSON: {"shape": "none|car|heart|plane|rocket|star|diamond|flower|sword|shield|orb|girl", "reply": "..."}`;
 
 let chatHistory = [];
 
@@ -872,7 +804,7 @@ async function callGroqAI(userMsg){
       model: 'qwen/qwen3.8-27b',
       messages,
       response_format: { type: 'json_object' },
-      temperature: 0.3,
+      temperature: 0.25,
       max_tokens: 120
     })
   });
@@ -903,7 +835,7 @@ function finishAiTurn(){
       }
       updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
     } else {
-      updateStatus('idle', 'orb पे tap = mic चालू (बोलिए, RJN shape morph करेगी) · 🎵 = audio file');
+      updateStatus('idle', '🎙️ Orb पे tap करके बोलिए · RJN सुन रही है');
     }
   }, 600);
 }
@@ -934,10 +866,10 @@ async function speakRJN(text){
   try {
     let audioBuffer = null;
 
-    // Primary: Deepgram Flux Prachi Hindi TTS
+    // Primary: Deepgram Flux Prachi Hindi TTS at natural human pacing (speed 0.88, expressivity 0)
     for (const token of tokens) {
       try {
-        const resp = await fetch('https://api.deepgram.com/v2/speak?model=flux-prachi-hi&expressivity=1', {
+        const resp = await fetch('https://api.deepgram.com/v2/speak?model=flux-prachi-hi&speed=0.88&expressivity=0', {
           method: 'POST',
           headers: {
             'Authorization': 'Token ' + token,
@@ -959,7 +891,7 @@ async function speakRJN(text){
     if (!audioBuffer) {
       for (const token of tokens) {
         try {
-          const resp = await fetch('https://api.deepgram.com/v1/speak?model=aura-luna-en', {
+          const resp = await fetch('https://api.deepgram.com/v1/speak?model=aura-luna-en&speed=0.9', {
             method: 'POST',
             headers: { 'Authorization': 'Token ' + token, 'Content-Type': 'application/json' },
             body: JSON.stringify({ text })
@@ -980,6 +912,7 @@ async function speakRJN(text){
 
     const src = audioCtx.createBufferSource();
     src.buffer = audioBuffer;
+    src.playbackRate.value = 0.96; // Calmer, natural human prosody
     src.connect(analyser);
     analyser.connect(audioCtx.destination);
     activeAudioSource = src;
@@ -996,25 +929,34 @@ async function speakRJN(text){
   }
 }
 
-// ================= PRE-EMPTIVE 0ms INTENT MORPHING =================
-// Instantly changes the 3D particle shape the exact millisecond the word is spoken!
+// ================= INTENT-DRIVEN SHAPE MORPHING =================
+// ONLY changes shape when user explicitly commands a transformation!
 function checkVoiceIntent(str){
-  const s = (str || '').toLowerCase();
-  if (/\b(car|gadi|gaadi|sports car)\b/i.test(s) || /कार|गाड़ी/i.test(s)) { morphShape('car'); return 'car'; }
-  if (/\b(dil|heart|love)\b/i.test(s) || /दिल|प्यार/i.test(s)) { morphShape('heart'); return 'heart'; }
-  if (/\b(plane|jahaz|airplane|aeroplane|jet)\b/i.test(s) || /विमान|जहाज|प्लेन/i.test(s)) { morphShape('plane'); return 'plane'; }
-  if (/\b(rocket)\b/i.test(s) || /रॉकेट/i.test(s)) { morphShape('rocket'); return 'rocket'; }
-  if (/\b(star|tara|sitara)\b/i.test(s) || /तारा|सितारा|स्टार/i.test(s)) { morphShape('star'); return 'star'; }
-  if (/\b(diamond|heera|crystal)\b/i.test(s) || /हीरा|डायमंड/i.test(s)) { morphShape('diamond'); return 'diamond'; }
-  if (/\b(flower|phool|gulab|kamal|rose|lotus)\b/i.test(s) || /फूल|गुलाब|कमल/i.test(s)) { morphShape('flower'); return 'flower'; }
-  if (/\b(sword|talwar|talwaar)\b/i.test(s) || /तलवार/i.test(s)) { morphShape('sword'); return 'sword'; }
-  if (/\b(shield|dhal|armor)\b/i.test(s) || /ढाल/i.test(s)) { morphShape('shield'); return 'shield'; }
-  if (/\b(dna|helix)\b/i.test(s) || /डीएनए/i.test(s)) { morphShape('dna'); return 'dna'; }
-  if (/\b(cube|box)\b/i.test(s) || /क्यूब|डिब्बा/i.test(s)) { morphShape('cube'); return 'cube'; }
-  if (/\b(donut|torus)\b/i.test(s) || /डोनट/i.test(s)) { morphShape('donut'); return 'donut'; }
-  if (/\b(galaxy|universe|spiral)\b/i.test(s) || /गैलेक्सी|ब्रह्मांड/i.test(s)) { morphShape('galaxy'); return 'galaxy'; }
-  if (/\b(girl|ladki|rjn|chehra|avatar|face)\b/i.test(s) || /लड़की|चेहरा|अवतार/i.test(s)) { showGirl(); return 'girl'; }
-  if (/\b(orb|gola|sphere|ball)\b/i.test(s) || /गोला|ऑर्ब/i.test(s)) { morphShape('orb'); return 'orb'; }
+  const s = (str || '').trim().toLowerCase();
+  if (!s) return null;
+
+  const isCommand = (regex) => {
+    if (!regex.test(s)) return false;
+    const words = s.split(/\s+/);
+    if (words.length <= 2) return true; // Direct short command like "car" or "car bano"
+    return /(bano|banao|ban jao|banjao|bana do|shape|turn into|transform|convert|dikhao)/i.test(s);
+  };
+
+  if (isCommand(/\b(car|sports car)\b|कार|गाड़ी/i)) { morphShape('car'); return 'car'; }
+  if (isCommand(/\b(heart|dil)\b|दिल|हार्ट/i)) { morphShape('heart'); return 'heart'; }
+  if (isCommand(/\b(plane|airplane|aeroplane|jet|jahaz)\b|विमान|जहाज|प्लेन/i)) { morphShape('plane'); return 'plane'; }
+  if (isCommand(/\b(rocket)\b|रॉकेट/i)) { morphShape('rocket'); return 'rocket'; }
+  if (isCommand(/\b(star|sitara|tara)\b|तारा|सितारा|स्टार/i)) { morphShape('star'); return 'star'; }
+  if (isCommand(/\b(diamond|heera)\b|हीरा|डायमंड/i)) { morphShape('diamond'); return 'diamond'; }
+  if (isCommand(/\b(flower|gulab|kamal|rose|lotus|phool)\b|फूल|गुलाब|कमल/i)) { morphShape('flower'); return 'flower'; }
+  if (isCommand(/\b(sword|talwar)\b|तलवार/i)) { morphShape('sword'); return 'sword'; }
+  if (isCommand(/\b(shield|dhal)\b|ढाल/i)) { morphShape('shield'); return 'shield'; }
+  if (isCommand(/\b(dna|helix)\b|डीएनए/i)) { morphShape('dna'); return 'dna'; }
+  if (isCommand(/\b(cube|box)\b|क्यूब|डिब्बा/i)) { morphShape('cube'); return 'cube'; }
+  if (isCommand(/\b(donut|torus)\b|डोनट/i)) { morphShape('donut'); return 'donut'; }
+  if (isCommand(/\b(galaxy|universe)\b|गैलेक्सी|ब्रह्मांड/i)) { morphShape('galaxy'); return 'galaxy'; }
+  if (isCommand(/\b(girl|chehra|avatar|face)\b|लड़की|चेहरा|अवतार/i)) { showGirl(); return 'girl'; }
+  if (isCommand(/\b(orb|sphere|ball|gola)\b|गोला|ऑर्ब/i)) { morphShape('orb'); return 'orb'; }
   return null;
 }
 
