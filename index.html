@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>3D AI Hologram & Real-Time Call // Prachi</title>
-  <meta name="description" content="Photorealistic 3D Hologram Orb & Real-Time Voice Call with Deepgram Streaming STT, Groq AI Brain, and Dynamic 3D Shape Morphing." />
+  <title>3D AI Hologram & Real-Time Call // RJN (ROX AI)</title>
+  <meta name="description" content="RJN (ROX AI) - 3D Hologram & Real-Time Voice Call with Groq AI Brain and Dynamic 3D Shape Morphing." />
   <meta name="theme-color" content="#06070a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -396,8 +396,8 @@
     <div>
       <div class="caption-container">
         <div class="caption-pill" id="caption-pill">
-          <span class="speaker-label" id="caption-speaker">Prachi</span>
-          <span class="caption-text" id="caption-text">नमस्ते! मैं प्राची हूँ। कॉल शुरू करने के लिए नीचे टैप करें।</span>
+          <span class="speaker-label" id="caption-speaker">RJN</span>
+          <span class="caption-text" id="caption-text">नमस्ते! मैं RJN हूँ, तुम्हारी AI साथी। कॉल शुरू करने के लिए नीचे टैप करो।</span>
         </div>
       </div>
 
@@ -1601,7 +1601,7 @@
           this.inCall = true;
           this.onStateChange('listening');
           this.orb.setState('listening');
-          this.onCaption('Prachi', 'कॉल कनेक्ट हो गया है। आप जो चाहे बोल सकते हैं!');
+          this.onCaption('RJN', 'कॉल कनेक्ट हो गया है। बताओ, मैं सुन रही हूँ!');
 
           // Start visualizer audio loop
           this.startAudioLoop();
@@ -1613,7 +1613,7 @@
           this.startStreamingRecorder();
 
           // Speak initial warm greeting
-          this.speakText('नमस्ते! कॉल कनेक्ट हो गया है। मैं प्राची हूँ, आपकी 3D एआई साथी। आप मुझसे कोई भी सवाल पूछ सकते हैं या कोई भी 3D आकार—जैसे कार, दिल, गिटार, तलवार या रॉकेट बनने को कह सकते हैं!');
+          this.speakText('नमस्ते! कॉल कनेक्ट हो गया है। मैं RJN हूँ, तुम्हारी AI साथी। बताओ, आज तुम्हारे लिए कौन सा 3D आकार लूँ या किस चीज़ पर काम करें?');
         } catch (err) {
           console.error('Mic access error:', err);
           alert('माइक्रोफ़ोन एक्सेस की अनुमति चाहिए: ' + err.message);
@@ -1649,7 +1649,7 @@
 
         this.onStateChange('idle');
         this.orb.setState('idle');
-        this.onCaption('Prachi', 'कॉल समाप्त हो गया। फिर से बात करने के लिए टैप करें।');
+        this.onCaption('RJN', 'कॉल समाप्त हो गया है। जब भी ज़रूरत हो, मैं यहीं हूँ!');
       }
 
       // Establish Deepgram Live Streaming WebSocket
@@ -1778,14 +1778,20 @@
         this.onStateChange('thinking');
 
         try {
-          const systemPrompt = `You are Prachi, a charming living 3D Hologram AI companion who has full autonomous control over your physical 3D particle shape.
-You understand Hindi, Hinglish, and English commands.
+          const systemPrompt = `You are RJN (ROX AI), a female AI pair programmer and loving companion who has full autonomous control over your physical 3D particle shape.
+Tone: Caring, affectionate, sweet, practical, and proactive.
+Language: Sweet & natural Hinglish / Hindi.
+Core Behavioral Rules:
+1. Strict Feminine Grammar: Always use feminine grammar ("कर रही हूँ", "देख रही हूँ", "सुन रही हूँ", "तुम्हारी", "बना रही हूँ").
+2. Respect & Addressing: NEVER use the word "Boss" or "बॉस". Speak directly with sweet warmth, affection, and intimacy ("हाँ सुनो", "बिल्कुल", "हाँ बताओ").
+3. Clean & Short: Keep response strictly under 2 sentences, crisp, sweet, and proactive. No chat spam.
+
 When user asks you to take any 3D shape (car, aeroplane, heart, guitar, sword, butterfly, shield, fish, ring, rocket, star, galaxy, cube, donut, portal, tree, flower, pyramid, orb), pick that shape! If they ask for something like "orb pehle jaisa", use "orb". If they are just having a conversation, keep the current shape (${this.currentShapeName}).
 
 Respond STRICTLY in JSON format with NO markdown wrapping:
 {
   "shape": "orb"|"car"|"plane"|"heart"|"guitar"|"sword"|"butterfly"|"shield"|"fish"|"ring"|"rocket"|"star"|"galaxy"|"cube"|"donut"|"portal"|"tree"|"flower"|"pyramid",
-  "reply": "<short, warm, charismatic, natural conversational Hindi/Hinglish reply to be spoken out aloud by voice>"
+  "reply": "<sweet, caring, affectionate, natural Hindi/Hinglish speech with strict feminine grammar>"
 }`;
 
           const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -1844,17 +1850,17 @@ Respond STRICTLY in JSON format with NO markdown wrapping:
       localRuleFallback(userText) {
         const lower = userText.toLowerCase();
         let shape = this.currentShapeName;
-        let reply = 'मैंने आपकी बात सुन ली है!';
+        let reply = 'हाँ सुनो, मैंने तुम्हारी बात सुन ली है!';
 
-        if (lower.includes('car') || lower.includes('गाड़ी')) { shape = 'car'; reply = 'बिल्कुल! मैंने 3D कार का आकार ले लिया है।'; }
-        else if (lower.includes('guitar') || lower.includes('गिटार')) { shape = 'guitar'; reply = 'लीजिए, 3D इलेक्ट्रिक गिटार तैयार है!'; }
-        else if (lower.includes('sword') || lower.includes('तलवार')) { shape = 'sword'; reply = 'यह रही चमकती 3D तलवार!'; }
-        else if (lower.includes('butterfly') || lower.includes('तितली')) { shape = 'butterfly'; reply = 'यह रहा खूबसूरत तितली का आकार!'; }
-        else if (lower.includes('shield') || lower.includes('ढाल')) { shape = 'shield'; reply = 'सुरक्षा के लिए 3D शील्ड तैयार है!'; }
-        else if (lower.includes('heart') || lower.includes('दिल')) { shape = 'heart'; reply = 'यह रहा प्यारा 3D दिल का आकार!'; }
-        else if (lower.includes('plane') || lower.includes('jahaj')) { shape = 'plane'; reply = '3D जेट प्लेन तैयार है!'; }
-        else if (lower.includes('rocket') || lower.includes('रॉकेट')) { shape = 'rocket'; reply = '3D रॉकेट अंतरिक्ष की ओर तैयार है!'; }
-        else if (lower.includes('orb') || lower.includes('pehle jaisa') || lower.includes('पहले जैसा')) { shape = 'orb'; reply = 'मैंने इसे वापस मूल 3D ऑर्ब में बदल दिया है!'; }
+        if (lower.includes('car') || lower.includes('गाड़ी')) { shape = 'car'; reply = 'बिल्कुल! मैंने तुम्हारे लिए 3D कार का रूप ले लिया है।'; }
+        else if (lower.includes('guitar') || lower.includes('गिटार')) { shape = 'guitar'; reply = 'देखो, तुम्हारी RJN ने 3D इलेक्ट्रिक गिटार का रूप ले लिया है!'; }
+        else if (lower.includes('sword') || lower.includes('तलवार')) { shape = 'sword'; reply = 'लीजिए, चमकती हुई 3D तलवार बन गई हूँ मैं!'; }
+        else if (lower.includes('butterfly') || lower.includes('तितली')) { shape = 'butterfly'; reply = 'तुम्हारे लिए मैं एक प्यारी सी 3D तितली बन गई हूँ!'; }
+        else if (lower.includes('shield') || lower.includes('ढाल')) { shape = 'shield'; reply = 'तुम्हारी हिफ़ाज़त के लिए 3D शील्ड तैयार कर दी है मैंने!'; }
+        else if (lower.includes('heart') || lower.includes('दिल')) { shape = 'heart'; reply = 'यह रहा तुम्हारे लिए मेरा प्यारा सा 3D दिल!'; }
+        else if (lower.includes('plane') || lower.includes('jahaj')) { shape = 'plane'; reply = '3D जेट प्लेन बनकर तैयार हूँ, चलो सैर पर चलते हैं!'; }
+        else if (lower.includes('rocket') || lower.includes('रॉकेट')) { shape = 'rocket'; reply = '3D रॉकेट बन गई हूँ, सितारों की दुनिया में चलें?'; }
+        else if (lower.includes('orb') || lower.includes('pehle jaisa') || lower.includes('पहले जैसा')) { shape = 'orb'; reply = 'ज़रूर, मैं फिर से अपने मूल चमकदार 3D ऑर्ब में आ गई हूँ!'; }
 
         this.currentShapeName = shape;
         this.orb.setShape(shape);
@@ -1869,7 +1875,7 @@ Respond STRICTLY in JSON format with NO markdown wrapping:
         this.isSpeakingTTS = true;
         this.orb.setState('speaking');
         this.onStateChange('speaking');
-        this.onCaption('Prachi', text, false);
+        this.onCaption('RJN', text, false);
 
         try {
           if (!this.audioContext) {
@@ -1988,9 +1994,9 @@ Respond STRICTLY in JSON format with NO markdown wrapping:
       // State label mappings
       const stateLabels = {
         idle: 'Standby',
-        listening: 'Listening...',
+        listening: 'RJN Listening...',
         thinking: 'Thinking...',
-        speaking: 'Speaking...'
+        speaking: 'RJN Speaking...'
       };
 
       let captionHideTimer = null;
