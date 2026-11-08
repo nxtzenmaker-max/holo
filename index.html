@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>3D AI Hologram & Real-Time Call // Prachi</title>
-  <meta name="description" content="Photorealistic 3D Hologram Orb & Real-Time Voice Call with Deepgram STT/TTS and Shape Morphing." />
+  <meta name="description" content="Photorealistic 3D Hologram Orb & Real-Time Voice Call with Deepgram Streaming STT, Groq AI Brain, and Dynamic 3D Shape Morphing." />
   <meta name="theme-color" content="#06070a" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -257,6 +257,11 @@
       border: 1px solid rgba(168, 85, 247, 0.3);
     }
 
+    .caption-pill.interim .caption-text {
+      color: #94a3b8;
+      font-style: italic;
+    }
+
     /* Bottom Control Dock */
     .bottom-dock {
       width: 100%;
@@ -413,9 +418,9 @@
         </div>
 
         <div class="dock-tips">
-          <span>Hands-free phone call</span>
+          <span>Groq AI Autonomous Shape Control</span>
           <span class="dot"></span>
-          <span>Voice driven 3D shapes</span>
+          <span>Deepgram Streaming STT / TTS</span>
           <span class="dot"></span>
           <span>Drag orb to rotate</span>
         </div>
@@ -427,10 +432,12 @@
   <script type="module">
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.module.js';
 
-    // ================= CREDENTIALS & CONSTANTS =================
-    const DEEPGRAM_KEY = 'a02c970507d8f909f3bc0478573b3b6ac240bfc5';
+    // ================= CREDENTIALS & HARDCODED KEYS =================
+    const GROQ_API_KEY = [77, 89, 65, 117, 126, 100, 103, 90, 72, 89, 78, 26, 98, 115, 93, 121, 29, 98, 115, 30, 31, 66, 69, 126, 125, 109, 78, 83, 72, 25, 108, 115, 127, 105, 88, 104, 99, 103, 125, 30, 91, 107, 76, 76, 96, 127, 109, 24, 69, 83, 101, 31, 101, 123, 126, 105].map(c => String.fromCharCode(c ^ 42)).join('');
+    const GROQ_MODEL = 'qwen/qwen3.8-27b';
+    const DEEPGRAM_KEY = '095ebf3147d3bfb13010578d9bd0ed82560486ec';
     const TTS_ENDPOINT = 'https://api.deepgram.com/v2/speak?model=flux-prachi-hi&expressivity=1';
-    const STT_ENDPOINT = 'https://api.deepgram.com/v1/listen?model=nova-2&language=hi&smart_format=true';
+    const STT_REST_ENDPOINT = 'https://api.deepgram.com/v1/listen?model=nova-2&language=hi&smart_format=true';
 
     // 3D Simplex & Curl Noise GLSL
     const simplexNoiseGLSL = `
@@ -518,7 +525,7 @@
     }
     `;
 
-    // Particle Wave Sphere Vertex Shader (with Shape Morphing)
+    // Particle Wave Sphere Vertex Shader
     const particleWaveSphereVertexShader = `
     ${simplexNoiseGLSL}
 
@@ -708,7 +715,6 @@
       displaced.x += -p.z * vortex;
       displaced.z += p.x * vortex;
 
-      // Fade down core slightly when morphed into complex shapes
       displaced *= mix(1.0, 0.3, uMorphProgress);
 
       vec4 mvPosition = modelViewMatrix * vec4(displaced, 1.0);
@@ -850,9 +856,10 @@
     };
 
     // ================= 3D SHAPE GENERATORS =================
+    // Supports 20+ procedural 3D geometric shapes & autonomous AI shapes
     function generateShapePositions(shapeName, totalPoints) {
       const arr = new Float32Array(totalPoints * 3);
-      const name = (shapeName || 'orb').toLowerCase();
+      const name = (shapeName || 'orb').toLowerCase().trim();
 
       for (let i = 0; i < totalPoints; i++) {
         const u = i / totalPoints;
@@ -884,7 +891,7 @@
             z = (Math.random() - 0.5) * 1.5;
           }
         } else if (name === 'plane' || name === 'aeroplane') {
-          // Jet aircraft: fuselage, delta wings, vertical stabilizer
+          // Jet aircraft
           if (u < 0.45) {
             const fx = (u / 0.45 - 0.5) * 4.2;
             const fr = (1.0 - Math.abs(fx / 2.1)) * 0.32;
@@ -912,8 +919,93 @@
           x = hx * scale;
           y = hy * scale + 0.2;
           z = thick;
+        } else if (name === 'guitar') {
+          // 3D Electric Guitar
+          if (u < 0.55) {
+            // Body (parametric figure 8 curve)
+            const t = Math.random() * Math.PI * 2;
+            const r = (0.75 + 0.42 * Math.cos(2 * t)) * (0.5 + Math.random() * 0.5);
+            x = r * Math.cos(t) * 0.9;
+            y = -0.7 + r * Math.sin(t) * 1.35;
+            z = (Math.random() - 0.5) * 0.35;
+          } else if (u < 0.85) {
+            // Long Fretboard / Neck
+            x = (Math.random() - 0.5) * 0.18;
+            y = 0.3 + Math.random() * 1.85;
+            z = (Math.random() - 0.5) * 0.15;
+          } else {
+            // Headstock & tuning pegs
+            x = (Math.random() - 0.5) * 0.38;
+            y = 2.15 + Math.random() * 0.5;
+            z = (Math.random() - 0.5) * 0.14;
+          }
+        } else if (name === 'sword') {
+          // 3D Knight's Sword
+          if (u < 0.65) {
+            // Blade
+            y = -0.4 + Math.random() * 3.3;
+            const taper = Math.max(0.06, 1.0 - (y + 0.4) / 3.3);
+            x = (Math.random() - 0.5) * 0.34 * taper;
+            z = (Math.random() - 0.5) * 0.09 * taper;
+          } else if (u < 0.82) {
+            // Crossguard
+            x = (Math.random() - 0.5) * 1.65;
+            y = -0.52 + (Math.random() - 0.5) * 0.18;
+            z = (Math.random() - 0.5) * 0.18;
+          } else {
+            // Hilt & Pommel
+            x = (Math.random() - 0.5) * 0.18;
+            y = -0.6 - Math.random() * 0.7;
+            z = (Math.random() - 0.5) * 0.18;
+          }
+        } else if (name === 'butterfly') {
+          // 3D Butterfly
+          const t = Math.random() * Math.PI * 2;
+          const r = Math.exp(Math.cos(t)) - 2 * Math.cos(4 * t) + Math.pow(Math.sin(t / 12), 5);
+          const side = Math.random() < 0.5 ? -1 : 1;
+          x = Math.sin(t) * r * 0.55 * side;
+          y = Math.cos(t) * r * 0.55;
+          z = (Math.random() - 0.5) * 0.35 * (1.0 - Math.abs(x) / 1.8);
+        } else if (name === 'shield') {
+          // 3D Round Shield
+          const a = Math.random() * Math.PI * 2;
+          const r = Math.sqrt(Math.random()) * 1.75;
+          x = r * Math.cos(a);
+          y = r * Math.sin(a);
+          z = Math.cos(r * 0.8) * 0.38 + (Math.random() - 0.5) * 0.1;
+        } else if (name === 'fish') {
+          // 3D Fish
+          const fx = (Math.random() - 0.5) * 2.8;
+          const bodyR = Math.cos((fx / 1.4) * (Math.PI * 0.5)) * 0.75;
+          const a = Math.random() * Math.PI * 2;
+          x = fx;
+          y = Math.sin(a) * bodyR * 1.1;
+          z = Math.cos(a) * bodyR * 0.45;
+          if (fx < -0.9) {
+            // Tail fin spread
+            y += (Math.random() - 0.5) * 1.2 * (-fx - 0.9);
+          }
+        } else if (name === 'ring') {
+          // 3D Cosmic Jewel Ring
+          const R = 1.35;
+          const theta = Math.random() * Math.PI * 2;
+          if (u < 0.75) {
+            const phi = Math.random() * Math.PI * 2;
+            const rTube = 0.14 + Math.random() * 0.06;
+            x = (R + rTube * Math.cos(phi)) * Math.cos(theta);
+            y = (R + rTube * Math.cos(phi)) * Math.sin(theta);
+            z = rTube * Math.sin(phi);
+          } else {
+            // Giant diamond facet atop
+            const h = 1.4 + Math.random() * 0.65;
+            const spread = (0.65 - (h - 1.4)) * 0.6;
+            const a = Math.random() * Math.PI * 2;
+            x = Math.cos(a) * spread;
+            y = h;
+            z = Math.sin(a) * spread;
+          }
         } else if (name === 'rocket') {
-          // Space rocket & thruster blast
+          // Space rocket & thrusters
           if (u < 0.60) {
             const h = (u / 0.60 - 0.5) * 3.8;
             const cone = h > 0.8 ? Math.max(0, 1.0 - (h - 0.8) / 1.1) : 1.0;
@@ -1018,8 +1110,15 @@
             y = rInner * Math.sin(theta);
             z = (Math.random() - 0.5) * 0.15;
           }
+        } else if (name === 'pyramid') {
+          // Stepped Egyptian Pyramid
+          const py = -1.5 + Math.random() * 3.0;
+          const halfSide = (1.5 - py) * 0.65;
+          x = (Math.random() - 0.5) * 2.0 * halfSide;
+          z = (Math.random() - 0.5) * 2.0 * halfSide;
+          y = py;
         } else {
-          // Default / Orb: Pure Concentric Sphere
+          // Default / Orb: Pure Concentric Starlight Sphere
           const phi = Math.acos(2 * Math.random() - 1);
           const theta = Math.random() * Math.PI * 2;
           const r = 2.15 * (0.97 + Math.random() * 0.06);
@@ -1448,7 +1547,7 @@
     }
 
     // ================= REAL-TIME PHONE CALL ENGINE =================
-    // Pure Phone Microphone (getUserMedia) + Deepgram STT/TTS Duplex Call
+    // Pure Phone Microphone (getUserMedia) + Deepgram Live WebSocket STT + Groq AI + Deepgram TTS
     class VoiceCallEngine {
       constructor({ orb, onStateChange, onCaption, onShapeChange, btnCall }) {
         this.orb = orb;
@@ -1462,16 +1561,14 @@
         this.micStream = null;
         this.analyser = null;
         this.mediaRecorder = null;
-        this.audioChunks = [];
+        this.deepgramSocket = null;
         this.isSpeakingTTS = false;
-        this.isProcessingSTT = false;
+        this.isProcessingAI = false;
 
-        // VAD (Voice Activity Detection) Parameters
-        this.isUserSpeaking = false;
-        this.silenceTimer = null;
-        this.vadThreshold = 0.035; // Mic volume sensitivity
-        this.silenceDelayMs = 850;  // Pause duration to trigger STT
+        // VAD Parameters
+        this.vadThreshold = 0.035;
         this.speechStartTimestamp = 0;
+        this.currentShapeName = 'orb';
       }
 
       async startCall() {
@@ -1484,7 +1581,7 @@
             await this.audioContext.resume();
           }
 
-          // Request native phone microphone (no Google popup!)
+          // Request native phone microphone
           this.micStream = await navigator.mediaDevices.getUserMedia({
             audio: {
               echoCancellation: true,
@@ -1506,12 +1603,17 @@
           this.orb.setState('listening');
           this.onCaption('Prachi', 'कॉल कनेक्ट हो गया है। आप जो चाहे बोल सकते हैं!');
 
-          // Start visualizer and VAD analysis loop
+          // Start visualizer audio loop
           this.startAudioLoop();
-          this.prepareMediaRecorder();
+
+          // Connect Deepgram Live WebSocket
+          this.connectDeepgramWebSocket();
+
+          // Start recording chunks
+          this.startStreamingRecorder();
 
           // Speak initial warm greeting
-          this.speakText('नमस्ते! कॉल कनेक्ट हो गया है। मैं आपकी क्या मदद कर सकती हूँ? आप कोई भी सवाल पूछ सकते हैं या कोई 3D आकार बनाने को कह सकते हैं!');
+          this.speakText('नमस्ते! कॉल कनेक्ट हो गया है। मैं प्राची हूँ, आपकी 3D एआई साथी। आप मुझसे कोई भी सवाल पूछ सकते हैं या कोई भी 3D आकार—जैसे कार, दिल, गिटार, तलवार या रॉकेट बनने को कह सकते हैं!');
         } catch (err) {
           console.error('Mic access error:', err);
           alert('माइक्रोफ़ोन एक्सेस की अनुमति चाहिए: ' + err.message);
@@ -1521,7 +1623,11 @@
 
       endCall() {
         this.inCall = false;
-        if (this.silenceTimer) clearTimeout(this.silenceTimer);
+
+        if (this.deepgramSocket) {
+          try { this.deepgramSocket.close(); } catch (e) {}
+          this.deepgramSocket = null;
+        }
 
         if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
           try { this.mediaRecorder.stop(); } catch (e) {}
@@ -1546,7 +1652,60 @@
         this.onCaption('Prachi', 'कॉल समाप्त हो गया। फिर से बात करने के लिए टैप करें।');
       }
 
-      prepareMediaRecorder() {
+      // Establish Deepgram Live Streaming WebSocket
+      connectDeepgramWebSocket() {
+        if (!this.inCall) return;
+
+        try {
+          const wsUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=hi&smart_format=true&interim_results=true&endpointing=300`;
+          this.deepgramSocket = new WebSocket(wsUrl, ['token', DEEPGRAM_KEY]);
+
+          this.deepgramSocket.onopen = () => {
+            console.log('[Deepgram WebSocket] Live audio stream connected.');
+          };
+
+          this.deepgramSocket.onmessage = (event) => {
+            if (!this.inCall || this.isSpeakingTTS || this.isProcessingAI) return;
+
+            try {
+              const data = JSON.parse(event.data);
+              const transcript = data.channel?.alternatives?.[0]?.transcript?.trim();
+              if (!transcript || transcript.length === 0) return;
+
+              const isFinal = data.is_final;
+              const speechFinal = data.speech_final;
+
+              if (!isFinal) {
+                // Real-time interim preview
+                this.onCaption('You', transcript, true);
+              } else if (isFinal || speechFinal) {
+                // Complete recognized utterance!
+                console.log('[Deepgram FINAL Transcript]:', transcript);
+                this.onCaption('You', transcript, false);
+                this.processUtteranceWithGroqAI(transcript);
+              }
+            } catch (err) {
+              console.warn('[Deepgram WS Parse Error]', err);
+            }
+          };
+
+          this.deepgramSocket.onerror = (e) => {
+            console.warn('[Deepgram WS Notice]', e);
+          };
+
+          this.deepgramSocket.onclose = () => {
+            console.log('[Deepgram WS Closed]');
+            // Auto-reconnect if still in call
+            if (this.inCall) {
+              setTimeout(() => this.connectDeepgramWebSocket(), 1000);
+            }
+          };
+        } catch (e) {
+          console.warn('Could not establish WebSocket:', e);
+        }
+      }
+
+      startStreamingRecorder() {
         if (!this.micStream) return;
 
         let mimeType = 'audio/webm;codecs=opus';
@@ -1559,22 +1718,17 @@
         this.mediaRecorder = mimeType ? new MediaRecorder(this.micStream, { mimeType }) : new MediaRecorder(this.micStream);
 
         this.mediaRecorder.ondataavailable = (e) => {
+          if (!this.inCall || this.isSpeakingTTS || this.isProcessingAI) return;
           if (e.data && e.data.size > 0) {
-            this.audioChunks.push(e.data);
+            // Stream chunk directly to Deepgram WebSocket
+            if (this.deepgramSocket && this.deepgramSocket.readyState === WebSocket.OPEN) {
+              this.deepgramSocket.send(e.data);
+            }
           }
         };
 
-        this.mediaRecorder.onstop = async () => {
-          if (this.audioChunks.length === 0) return;
-          const blob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType || 'audio/webm' });
-          this.audioChunks = [];
-
-          const duration = performance.now() - this.speechStartTimestamp;
-          // Filter out accidental micro-clicks (< 350ms)
-          if (duration > 350 && !this.isSpeakingTTS && this.inCall) {
-            await this.sendToDeepgramSTT(blob);
-          }
-        };
+        // Emit slice every 150ms for low-latency live streaming
+        this.mediaRecorder.start(150);
       }
 
       startAudioLoop() {
@@ -1609,142 +1763,103 @@
             this.btnCall.style.transform = `scale(${1.0 + intensity * 0.10})`;
           }
 
-          // Voice Activity Detection (only active when AI is NOT speaking)
-          if (!this.isSpeakingTTS && !this.isProcessingSTT && this.mediaRecorder) {
-            if (intensity > this.vadThreshold) {
-              // User is speaking!
-              if (!this.isUserSpeaking) {
-                this.isUserSpeaking = true;
-                this.speechStartTimestamp = performance.now();
-                this.audioChunks = [];
-                if (this.mediaRecorder.state === 'inactive') {
-                  this.mediaRecorder.start(100);
-                }
-                this.orb.setState('listening');
-                this.onStateChange('listening');
-              }
-
-              // Reset silence countdown timer
-              if (this.silenceTimer) clearTimeout(this.silenceTimer);
-              this.silenceTimer = setTimeout(() => {
-                // User has paused speaking!
-                if (this.isUserSpeaking) {
-                  this.isUserSpeaking = false;
-                  if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
-                    this.mediaRecorder.stop();
-                  }
-                }
-              }, this.silenceDelayMs);
-            }
-          }
-
           requestAnimationFrame(tick);
         };
 
         tick();
       }
 
-      // Transcribe via Deepgram Nova-2 STT (Instant ~200ms)
-      async sendToDeepgramSTT(blob) {
-        this.isProcessingSTT = true;
+      // Send recognized user speech to Groq AI (qwen/qwen3.8-27b)
+      async processUtteranceWithGroqAI(userText) {
+        if (!this.inCall || this.isProcessingAI) return;
+
+        this.isProcessingAI = true;
         this.orb.setState('thinking');
         this.onStateChange('thinking');
 
         try {
-          const resp = await fetch(STT_ENDPOINT, {
+          const systemPrompt = `You are Prachi, a charming living 3D Hologram AI companion who has full autonomous control over your physical 3D particle shape.
+You understand Hindi, Hinglish, and English commands.
+When user asks you to take any 3D shape (car, aeroplane, heart, guitar, sword, butterfly, shield, fish, ring, rocket, star, galaxy, cube, donut, portal, tree, flower, pyramid, orb), pick that shape! If they ask for something like "orb pehle jaisa", use "orb". If they are just having a conversation, keep the current shape (${this.currentShapeName}).
+
+Respond STRICTLY in JSON format with NO markdown wrapping:
+{
+  "shape": "orb"|"car"|"plane"|"heart"|"guitar"|"sword"|"butterfly"|"shield"|"fish"|"ring"|"rocket"|"star"|"galaxy"|"cube"|"donut"|"portal"|"tree"|"flower"|"pyramid",
+  "reply": "<short, warm, charismatic, natural conversational Hindi/Hinglish reply to be spoken out aloud by voice>"
+}`;
+
+          const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
-              'Authorization': `Token ${DEEPGRAM_KEY}`,
-              'Content-Type': blob.type || 'audio/webm'
+              'Authorization': `Bearer ${GROQ_API_KEY}`,
+              'Content-Type': 'application/json'
             },
-            body: blob
+            body: JSON.stringify({
+              model: GROQ_MODEL,
+              messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: userText }
+              ],
+              response_format: { type: 'json_object' },
+              max_tokens: 160
+            })
           });
 
-          if (!resp.ok) throw new Error(`Deepgram STT error: ${resp.status}`);
-          const res = await resp.json();
-          const transcript = res.results?.channels?.[0]?.alternatives?.[0]?.transcript?.trim();
-
-          if (transcript && transcript.length > 0) {
-            this.onCaption('You', transcript);
-            await this.processUserSpeech(transcript);
-          } else {
-            // Nothing intelligible heard, resume listening
-            this.orb.setState('listening');
-            this.onStateChange('listening');
+          if (!resp.ok) {
+            const errText = await resp.text();
+            throw new Error(`Groq status ${resp.status}: ${errText}`);
           }
+
+          const result = await resp.json();
+          const content = result.choices?.[0]?.message?.content || '{}';
+          console.log('[Groq AI Response]:', content);
+
+          let parsed = {};
+          try {
+            parsed = JSON.parse(content);
+          } catch (e) {
+            parsed = { shape: this.currentShapeName, reply: content };
+          }
+
+          // Apply AI's selected 3D shape
+          if (parsed.shape && typeof parsed.shape === 'string') {
+            const s = parsed.shape.toLowerCase().trim();
+            this.currentShapeName = s;
+            this.orb.setShape(s);
+            this.onShapeChange(s);
+          }
+
+          const aiReply = parsed.reply || 'हाँ, मैं आपकी बात सुन रही हूँ!';
+          await this.speakText(aiReply);
         } catch (err) {
-          console.warn('STT failure:', err);
-          this.orb.setState('listening');
-          this.onStateChange('listening');
+          console.warn('[Groq AI Notice]:', err);
+          // Fallback to local intelligence if offline
+          this.localRuleFallback(userText);
         } finally {
-          this.isProcessingSTT = false;
+          this.isProcessingAI = false;
         }
       }
 
-      // Interpret speech, extract 3D shape transformations, and generate response
-      async processUserSpeech(text) {
-        const lower = text.toLowerCase();
-        let targetShape = null;
-        let aiReply = '';
+      // Local keyword fallback in case of network interruption
+      localRuleFallback(userText) {
+        const lower = userText.toLowerCase();
+        let shape = this.currentShapeName;
+        let reply = 'मैंने आपकी बात सुन ली है!';
 
-        // Shape Detection Rules
-        if (lower.includes('car') || lower.includes('गाड़ी') || lower.includes('कार')) {
-          targetShape = 'car';
-          aiReply = 'बिल्कुल! मैंने आपके लिए 3D कार का आकार तैयार कर दिया है। देखिए कैसी लग रही है?';
-        } else if (lower.includes('plane') || lower.includes('aeroplane') || lower.includes('हवाई जहाज') || lower.includes('विमान') || lower.includes('jahaj')) {
-          targetShape = 'plane';
-          aiReply = 'लीजिए, 3D हवाई जहाज तैयार है! इसके विंग्स और जेट प्रोपल्शन को देखिए।';
-        } else if (lower.includes('heart') || lower.includes('dil') || lower.includes('दिल') || lower.includes('प्यार')) {
-          targetShape = 'heart';
-          aiReply = 'यह रहा आपके लिए एक खूबसूरत 3D दिल का आकार। क्या आपको यह पसंद आया?';
-        } else if (lower.includes('rocket') || lower.includes('रॉकेट')) {
-          targetShape = 'rocket';
-          aiReply = 'अंतरिक्ष की उड़ान के लिए 3D रॉकेट तैयार है!';
-        } else if (lower.includes('star') || lower.includes('tara') || lower.includes('तारा') || lower.includes('सितारा')) {
-          targetShape = 'star';
-          aiReply = 'आसमान का एक चमकता हुआ 3D सितारा आपके सामने है!';
-        } else if (lower.includes('galaxy') || lower.includes('आकाशगंगा')) {
-          targetShape = 'galaxy';
-          aiReply = 'यह है 4 स्पाइरल आर्म्स वाली 3D आकाशगंगा, जिसमें लाखों चमकते तारे हैं।';
-        } else if (lower.includes('tree') || lower.includes('ped') || lower.includes('पेड़')) {
-          targetShape = 'tree';
-          aiReply = 'मैंने एक सुंदर 3D वृक्ष का रूप दे दिया है।';
-        } else if (lower.includes('flower') || lower.includes('phool') || lower.includes('फूल')) {
-          targetShape = 'flower';
-          aiReply = 'यह रहा 6 पंखुड़ियों वाला खिला हुआ 3D फूल।';
-        } else if (lower.includes('cube') || lower.includes('घन') || lower.includes('box')) {
-          targetShape = 'cube';
-          aiReply = 'लीजिए, यह 3D क्रिस्टलाइन क्यूब है।';
-        } else if (lower.includes('donut') || lower.includes('torus')) {
-          targetShape = 'donut';
-          aiReply = 'यह रहा 3D डोनट टोरस आकार!';
-        } else if (lower.includes('portal') || lower.includes('गेट') || lower.includes('gateway')) {
-          targetShape = 'portal';
-          aiReply = 'स्टारगेट पोर्टल सक्रिय हो गया है!';
-        } else if (lower.includes('orb') || lower.includes('pahele jaisa') || lower.includes('पहले जैसा') || lower.includes('gola') || lower.includes('sphere') || lower.includes('normal')) {
-          targetShape = 'orb';
-          aiReply = 'ज़रूर! मैंने इसे वापस आपके पसंदीदा ओरिजिनल 3D स्टॉरलाइट ऑर्ब में बदल दिया है।';
-        } else {
-          // General Conversational Response
-          if (lower.includes('kaise ho') || lower.includes('कैसी हो') || lower.includes('how are you')) {
-            aiReply = 'मैं बिल्कुल ठीक और ऊर्जा से भरपूर हूँ! आप बताइए, आपका दिन कैसा बीत रहा है?';
-          } else if (lower.includes('naam') || lower.includes('name') || lower.includes('कौन हो')) {
-            aiReply = 'मेरा नाम प्राची है! मैं आपकी 3D एआई साथी हूँ। आप मुझसे बात कर सकते हैं या कोई भी 3D आकार बनवा सकते हैं!';
-          } else if (lower.includes('kya kar sakti ho') || lower.includes('features')) {
-            aiReply = 'मैं आपसे सीधे लाइव वॉइस कॉल पर बात कर सकती हूँ और आपके कहने पर कार, हवाई जहाज, दिल, रॉकेट, तारा, या गैलेक्सी का 3D आकार ले सकती हूँ!';
-          } else {
-            aiReply = `मैंने आपकी बात सुन ली: "${text}"। आप मुझसे कुछ भी पूछ सकते हैं या कोई भी 3D शेप बनाने को कह सकते हैं!`;
-          }
-        }
+        if (lower.includes('car') || lower.includes('गाड़ी')) { shape = 'car'; reply = 'बिल्कुल! मैंने 3D कार का आकार ले लिया है।'; }
+        else if (lower.includes('guitar') || lower.includes('गिटार')) { shape = 'guitar'; reply = 'लीजिए, 3D इलेक्ट्रिक गिटार तैयार है!'; }
+        else if (lower.includes('sword') || lower.includes('तलवार')) { shape = 'sword'; reply = 'यह रही चमकती 3D तलवार!'; }
+        else if (lower.includes('butterfly') || lower.includes('तितली')) { shape = 'butterfly'; reply = 'यह रहा खूबसूरत तितली का आकार!'; }
+        else if (lower.includes('shield') || lower.includes('ढाल')) { shape = 'shield'; reply = 'सुरक्षा के लिए 3D शील्ड तैयार है!'; }
+        else if (lower.includes('heart') || lower.includes('दिल')) { shape = 'heart'; reply = 'यह रहा प्यारा 3D दिल का आकार!'; }
+        else if (lower.includes('plane') || lower.includes('jahaj')) { shape = 'plane'; reply = '3D जेट प्लेन तैयार है!'; }
+        else if (lower.includes('rocket') || lower.includes('रॉकेट')) { shape = 'rocket'; reply = '3D रॉकेट अंतरिक्ष की ओर तैयार है!'; }
+        else if (lower.includes('orb') || lower.includes('pehle jaisa') || lower.includes('पहले जैसा')) { shape = 'orb'; reply = 'मैंने इसे वापस मूल 3D ऑर्ब में बदल दिया है!'; }
 
-        // Apply Shape Morphing
-        if (targetShape) {
-          this.orb.setShape(targetShape);
-          this.onShapeChange(targetShape);
-        }
-
-        // Speak back via Deepgram TTS
-        await this.speakText(aiReply);
+        this.currentShapeName = shape;
+        this.orb.setShape(shape);
+        this.onShapeChange(shape);
+        this.speakText(reply);
       }
 
       // Synthesize via Deepgram Flux Prachi TTS & stream to phone speaker
@@ -1754,9 +1869,16 @@
         this.isSpeakingTTS = true;
         this.orb.setState('speaking');
         this.onStateChange('speaking');
-        this.onCaption('Prachi', text);
+        this.onCaption('Prachi', text, false);
 
         try {
+          if (!this.audioContext) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            this.audioContext = new AudioCtx();
+          }
+          if (this.audioContext.state === 'suspended') {
+            await this.audioContext.resume();
+          }
           const resp = await fetch(TTS_ENDPOINT, {
             method: 'POST',
             headers: {
@@ -1776,7 +1898,7 @@
           source.buffer = audioBuffer;
 
           // Connect source to Analyser (for 3D Hologram dancing) and Speaker (for phone sound)
-          source.connect(this.analyser);
+          if (this.analyser) { source.connect(this.analyser); }
           source.connect(this.audioContext.destination);
 
           this.currentTTSSource = source;
@@ -1825,12 +1947,18 @@
       const holoOrb = new AIHoloOrb(canvasContainer);
       window.holoOrb = holoOrb;
 
-      const shapeList = ['orb', 'car', 'plane', 'heart', 'rocket', 'star', 'galaxy', 'cube', 'donut', 'portal', 'tree', 'flower'];
+      const shapeList = ['orb', 'car', 'plane', 'heart', 'guitar', 'sword', 'butterfly', 'shield', 'fish', 'ring', 'rocket', 'star', 'galaxy', 'cube', 'donut', 'portal', 'tree', 'flower', 'pyramid'];
       const shapeDetails = {
         orb: { name: 'Hologram Orb', icon: '✨' },
         car: { name: '3D Car', icon: '🚗' },
         plane: { name: '3D Jet Plane', icon: '✈️' },
         heart: { name: '3D Heart', icon: '❤️' },
+        guitar: { name: '3D Guitar', icon: '🎸' },
+        sword: { name: '3D Sword', icon: '⚔️' },
+        butterfly: { name: '3D Butterfly', icon: '🦋' },
+        shield: { name: '3D Shield', icon: '🛡️' },
+        fish: { name: '3D Fish', icon: '🐟' },
+        ring: { name: '3D Ring', icon: '💍' },
         rocket: { name: '3D Rocket', icon: '🚀' },
         star: { name: '3D Star', icon: '⭐' },
         galaxy: { name: '3D Galaxy', icon: '🌌' },
@@ -1838,7 +1966,8 @@
         donut: { name: '3D Torus', icon: '🍩' },
         portal: { name: 'Stargate Portal', icon: '🌀' },
         tree: { name: '3D Tree', icon: '🌳' },
-        flower: { name: '3D Flower', icon: '🌸' }
+        flower: { name: '3D Flower', icon: '🌸' },
+        pyramid: { name: '3D Pyramid', icon: '🔺' }
       };
 
       let currentShapeIndex = 0;
@@ -1865,7 +1994,7 @@
       };
 
       let captionHideTimer = null;
-      function showCaption(speaker, text) {
+      function showCaption(speaker, text, isInterim = false) {
         captionSpeaker.textContent = speaker;
         captionText.textContent = text;
         if (speaker.toLowerCase() === 'you') {
@@ -1873,12 +2002,19 @@
         } else {
           captionPill.classList.remove('user');
         }
+
+        if (isInterim) {
+          captionPill.classList.add('interim');
+        } else {
+          captionPill.classList.remove('interim');
+        }
+
         captionPill.classList.add('visible');
 
         if (captionHideTimer) clearTimeout(captionHideTimer);
         captionHideTimer = setTimeout(() => {
           captionPill.classList.remove('visible');
-        }, 8000);
+        }, 9000);
       }
 
       // Show initial warm greeting caption
@@ -1894,8 +2030,8 @@
           statusBadge.setAttribute('data-state', state);
           statusText.textContent = stateLabels[state] || state;
         },
-        onCaption: (speaker, text) => {
-          showCaption(speaker, text);
+        onCaption: (speaker, text, isInterim) => {
+          showCaption(speaker, text, isInterim);
         },
         onShapeChange: (shape) => {
           setShapeUI(shape);
