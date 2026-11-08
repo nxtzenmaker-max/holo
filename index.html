@@ -10,16 +10,11 @@
     background:radial-gradient(circle,rgba(70,150,255,.38) 0%,rgba(120,70,255,.15) 40%,rgba(0,0,0,0) 68%);
     pointer-events:none;will-change:transform,opacity}
   canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:pointer}
-  #hint{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);text-align:center;color:rgba(190,215,255,.85);
-    font-size:13px;letter-spacing:0.4px;background:rgba(10,15,30,.6);padding:9px 20px;border-radius:999px;
-    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);
-    box-shadow:0 4px 24px rgba(0,0,0,.5);pointer-events:none;transition:opacity .3s,transform .3s;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 </style>
 </head>
 <body>
 <div id="glow"></div>
 <canvas id="c"></canvas>
-<div id="hint">🎙️ Orb पे tap करके बोलिए · RJN सुन रही है</div>
 <script>
 const cv = document.getElementById('c');
 const gl = cv.getContext('webgl', {antialias:false, alpha:true, premultipliedAlpha:true});
@@ -747,7 +742,7 @@ function morphShape(name){
 }
 
 // ================= UI STATUS =================
-const hintEl = document.getElementById('hint');
+const hintEl = { textContent: '' };
 function highlightActiveChip(label){}
 
 // ================= AUDIO CONTEXT & ANALYSER =================
