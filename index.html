@@ -5,11 +5,51 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
 <title>AI Orb</title>
 <style>
-  html,body{margin:0;height:100%;background:#03040a;overflow:hidden;touch-action:none;font-family:system-ui,sans-serif}
-  #glow{position:fixed;left:50%;top:46%;width:88vmin;height:88vmin;margin:-44vmin 0 0 -44vmin;border-radius:50%;
-    background:radial-gradient(circle,rgba(70,150,255,.38) 0%,rgba(120,70,255,.15) 40%,rgba(0,0,0,0) 68%);
-    pointer-events:none;will-change:transform,opacity}
-  canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:pointer}
+  *, *::before, *::after {
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    outline: none !important;
+  }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #03040a;
+    overflow: hidden;
+    touch-action: none;
+    font-family: system-ui, sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  #glow {
+    position: fixed;
+    left: 50%;
+    top: 46%;
+    width: 88vmin;
+    height: 88vmin;
+    margin: -44vmin 0 0 -44vmin;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(70,150,255,.38) 0%, rgba(120,70,255,.15) 40%, rgba(0,0,0,0) 68%);
+    pointer-events: none;
+    will-change: transform, opacity;
+    -webkit-tap-highlight-color: transparent;
+  }
+  canvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    outline: none;
+  }
 </style>
 </head>
 <body>
@@ -1300,6 +1340,7 @@ window.addEventListener('pointerup', e => {
 
 window.addEventListener('pointercancel', () => { isDragging = false; });
 window.addEventListener('touchstart', () => { unlockAudio(); }, { passive: true });
+window.addEventListener('contextmenu', e => e.preventDefault());
 
 // Multi-touch pinch-to-zoom
 let initialPinchDist = null, initialPinchZoom = 1.0;
