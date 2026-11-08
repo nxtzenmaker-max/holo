@@ -235,7 +235,7 @@ void main(){
   gl_Position=vec4(r2.x*f*uScale.x*2.6,r2.y*f*uScale.y*2.6,0.0,1.0);
 
   float depth=clamp((r2.z/1.6)*0.5+0.5,0.0,1.0);
-  float sizeTheme=(0.9+depth*2.0+aSeed*0.6)*uDPR*(1.0+uLevel*0.5);
+  float sizeTheme=(1.1+depth*2.2+aSeed*0.7)*uDPR*(1.0+uLevel*0.5);
   gl_PointSize=mix(sizeTheme,uPx,uImg);
 
   float cmix=n*0.5+0.5+mid*0.4;
@@ -244,8 +244,8 @@ void main(){
   vec3 c3=vec3(1.00,0.35,0.75);
   vec3 col=mix(c1,c2,clamp(cmix+depth*0.3-0.2,0.0,1.0));
   col=mix(col,c3,clamp(uLevel*1.2*cmix,0.0,0.7));
-  vec3 themeCol=col*(0.4+depth*0.6);
-  float themeA=(0.26+mid*0.14)*(0.2+depth*0.7);
+  vec3 themeCol=col*(0.45+depth*0.65);
+  float themeA=(0.30+mid*0.14)*(0.25+depth*0.75);
   vColor=mix(themeCol,aCol.rgb,uImg);
   vA=mix(themeA,aCol.a,uImg);
   if(isFill>0.5){
@@ -281,7 +281,7 @@ gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
 gl.linkProgram(prog); gl.useProgram(prog);
 
 // ================= SHAPES =================
-const N = 90000;
+const N = 65000;
 const R = Math.random;
 function rndDir(){
   const u = R() * 2 - 1, t = R() * 6.2832, r = Math.sqrt(1 - u * u);
