@@ -890,11 +890,40 @@ async function callGroqAI(userMsg){
 
 // ================= HIGH-QUALITY DEEPGRAM PRACHI HINDI TTS =================
 let activeAudioSource = null;
+let isAiBusy = false; // Master Mutex: Prevents multiple AI voices from speaking at once!
+
+function finishAiTurn(){
+  // Acoustic cool-down grace period (600ms) so speaker sound fully clears before mic listens again
+  setTimeout(() => {
+    isAiBusy = false;
+    transcriptBuffer = '';
+    if (isCallActive) {
+      if (mediaRecorder && mediaRecorder.state === 'paused') {
+        try { mediaRecorder.resume(); } catch(e){}
+      }
+      updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+    } else {
+      updateStatus('idle', 'orb पे tap = mic चालू (बोलिए, RJN shape morph करेगी) · 🎵 = audio file');
+    }
+  }, 600);
+}
 
 async function speakRJN(text){
-  if (!text) return;
+  if (!text) {
+    finishAiTurn();
+    return;
+  }
   initAudioContext();
   updateStatus('speaking', '💬 RJN: ' + text);
+
+  // Immediately stop any currently playing audio
+  if (activeAudioSource) {
+    try {
+      activeAudioSource.onended = null;
+      activeAudioSource.stop();
+    } catch(e){}
+    activeAudioSource = null;
+  }
 
   const tokens = [
     'd9b8bbcea98e30dcf77448c75391636eda360b86',
@@ -944,10 +973,9 @@ async function speakRJN(text){
       }
     }
 
-    if (!audioBuffer) throw new Error('TTS failed on all endpoints');
-
-    if (activeAudioSource) {
-      try { activeAudioSource.stop(); } catch(e){}
+    if (!audioBuffer) {
+      finishAiTurn();
+      return;
     }
 
     const src = audioCtx.createBufferSource();
@@ -958,17 +986,13 @@ async function speakRJN(text){
 
     src.onended = () => {
       activeAudioSource = null;
-      if (isCallActive) {
-        updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
-      } else {
-        updateStatus('idle', 'orb pe tap = mic ON (बोलिए, RJN shape morph करेगी) · 🎵 = audio file');
-      }
+      finishAiTurn();
     };
 
     src.start(0);
   } catch(err) {
     console.warn('TTS playback error:', err);
-    if (isCallActive) updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+    finishAiTurn();
   }
 }
 
@@ -1016,13 +1040,16 @@ async function toggleVoiceCall(){
 }
 
 async function startVoiceCall(){
+  if (isCallActive) return; // Prevent double invocation
   try {
     isCallActive = true;
     updateStatus('active', '🎙️ Connecting Phone Mic...');
 
-    micStream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
-    });
+    if (!micStream) {
+      micStream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      });
+    }
 
     connectDeepgramSTT();
   } catch(err) {
@@ -1034,12 +1061,18 @@ async function startVoiceCall(){
 
 function stopVoiceCall(){
   isCallActive = false;
+  isAiBusy = false;
   if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
+  transcriptBuffer = '';
   if (mediaRecorder && mediaRecorder.state !== 'inactive') {
     try { mediaRecorder.stop(); } catch(e){}
+    mediaRecorder = null;
   }
   if (dgSocket) {
-    try { dgSocket.close(); } catch(e){}
+    try {
+      dgSocket.onopen = dgSocket.onmessage = dgSocket.onerror = dgSocket.onclose = null;
+      dgSocket.close();
+    } catch(e){}
     dgSocket = null;
   }
   if (micStream) {
@@ -1047,17 +1080,34 @@ function stopVoiceCall(){
     micStream = null;
   }
   if (activeAudioSource) {
-    try { activeAudioSource.stop(); } catch(e){}
+    try {
+      activeAudioSource.onended = null;
+      activeAudioSource.stop();
+    } catch(e){}
     activeAudioSource = null;
   }
-  updateStatus('idle', 'orb pe tap = mic ON (बोलिए, RJN shape morph करेगी) · 🎵 = audio file');
+  updateStatus('idle', 'orb पे tap = mic चालू (बोलिए, RJN shape morph करेगी) · 🎵 = audio file');
 }
 
 function connectDeepgramSTT(){
   if (!isCallActive) return;
 
-  // Ultra-low latency endpointing: 150ms silence detection
-  const wsUrl = 'wss://api.deepgram.com/v1/listen?model=nova-2&language=hi&smart_format=true&interim_results=true&endpointing=150';
+  // Clean up any stale socket/recorder to guarantee only ONE socket exists!
+  if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
+  if (dgSocket) {
+    try {
+      dgSocket.onopen = dgSocket.onmessage = dgSocket.onerror = dgSocket.onclose = null;
+      dgSocket.close();
+    } catch(e){}
+    dgSocket = null;
+  }
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    try { mediaRecorder.stop(); } catch(e){}
+    mediaRecorder = null;
+  }
+
+  // Deepgram endpointing
+  const wsUrl = 'wss://api.deepgram.com/v1/listen?model=nova-2&language=hi&smart_format=true&interim_results=true&endpointing=200';
   dgSocket = new WebSocket(wsUrl, ['token', DG_TOKEN]);
 
   dgSocket.onopen = () => {
@@ -1071,18 +1121,19 @@ function connectDeepgramSTT(){
     }
 
     mediaRecorder.ondataavailable = e => {
-      // Prevent speaker audio feedback
-      if (e.data.size > 0 && dgSocket && dgSocket.readyState === WebSocket.OPEN && !activeAudioSource) {
+      // STRICT MUTEX: DO NOT stream mic audio while RJN is thinking, fetching, or speaking!
+      if (e.data.size > 0 && dgSocket && dgSocket.readyState === WebSocket.OPEN && !isAiBusy && !activeAudioSource) {
         dgSocket.send(e.data);
       }
     };
 
-    // 100ms slices for instant streaming
+    // 100ms slices for responsive streaming
     mediaRecorder.start(100);
   };
 
   dgSocket.onmessage = event => {
-    if (!isCallActive || activeAudioSource) return;
+    // Drop incoming transcription while AI is speaking or thinking
+    if (!isCallActive || isAiBusy || activeAudioSource) return;
     try {
       const data = JSON.parse(event.data);
       const alt = data.channel && data.channel.alternatives && data.channel.alternatives[0];
@@ -1097,10 +1148,10 @@ function connectDeepgramSTT(){
 
         if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
 
-        // If speech_final is true, trigger IMMEDIATELY (0ms delay)!
-        const delay = data.speech_final ? 0 : 250;
+        // Safe debounce: 150ms on speech_final, or 850ms on interim pause
+        const delay = data.speech_final ? 150 : 850;
         speechDebounceTimer = setTimeout(() => {
-          if (transcriptBuffer && !activeAudioSource) {
+          if (transcriptBuffer && !isAiBusy && !activeAudioSource) {
             const userSpeech = transcriptBuffer;
             transcriptBuffer = '';
             triggerVoiceQuery(userSpeech);
@@ -1114,14 +1165,29 @@ function connectDeepgramSTT(){
 
   dgSocket.onerror = e => console.warn('Deepgram WS error', e);
   dgSocket.onclose = () => {
-    if (isCallActive && !activeAudioSource) {
+    if (isCallActive && !activeAudioSource && !isAiBusy) {
       setTimeout(connectDeepgramSTT, 1000);
     }
   };
 }
 
 async function triggerVoiceQuery(userSpeech){
-  if (!userSpeech || activeAudioSource) return;
+  if (!userSpeech) return;
+  // STRICT MUTEX: Block duplicate queries from firing while AI is thinking/speaking
+  if (isAiBusy) {
+    console.log('RJN is already answering, ignoring overlapping query:', userSpeech);
+    return;
+  }
+  isAiBusy = true;
+
+  if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
+  transcriptBuffer = '';
+
+  // Pause mic stream during thinking + speaking to prevent speaker acoustic feedback
+  if (mediaRecorder && mediaRecorder.state === 'recording') {
+    try { mediaRecorder.pause(); } catch(e){}
+  }
+
   updateStatus('thinking', '✨ RJN सोच रही है...');
 
   try {
@@ -1135,11 +1201,11 @@ async function triggerVoiceQuery(userSpeech){
     if (res.reply) {
       await speakRJN(res.reply);
     } else {
-      updateStatus('listening', '🎙️ RJN सुन रही है... (Boliye)');
+      finishAiTurn();
     }
   } catch(err) {
     console.error('Query processing error:', err);
-    updateStatus('listening', '🎙️ RJN सुन रही है... (Boliye)');
+    finishAiTurn();
   }
 }
 
