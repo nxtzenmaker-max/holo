@@ -1,1098 +1,1927 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>NEXUS // Living 3D AI Hologram</title>
-<style>
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body {
-  margin: 0; padding: 0; width: 100%; height: 100%;
-  background: #020308; overflow: hidden;
-  font-family: system-ui, -apple-system, 'SF Pro Display', Roboto, sans-serif;
-  color: #fff; user-select: none; touch-action: none;
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>3D AI Hologram & Real-Time Call // Prachi</title>
+  <meta name="description" content="Photorealistic 3D Hologram Orb & Real-Time Voice Call with Deepgram STT/TTS and Shape Morphing." />
+  <meta name="theme-color" content="#06070a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+    }
 
-#glow {
-  position: fixed; left: 50%; top: 50%;
-  width: 120vmin; height: 120vmin; margin: -60vmin 0 0 -60vmin;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 229, 255, 0.18) 0%, rgba(138, 43, 226, 0.12) 40%, rgba(0, 0, 0, 0) 70%);
-  pointer-events: none; transition: transform 0.2s ease-out, opacity 0.3s ease-out;
-  will-change: transform, opacity; z-index: 1;
-}
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #06070a;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    }
 
-canvas {
-  position: fixed; inset: 0; width: 100%; height: 100%;
-  display: block; cursor: grab; z-index: 2;
-}
-canvas:active { cursor: grabbing; }
+    /* Ambient Dynamic Aura Backdrop */
+    #ambient-aura {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+      background: radial-gradient(circle at 50% 50%, #0d1222 0%, #06070a 100%);
+      transition: opacity 0.8s ease;
+    }
 
-/* Minimalist Voice Control Bar */
-#voiceBar {
-  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
-  display: flex; align-items: center; gap: 12px;
-  background: rgba(10, 14, 28, 0.72);
-  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 229, 255, 0.25);
-  border-radius: 999px; padding: 10px 24px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 229, 255, 0.15);
-  cursor: pointer; z-index: 10;
-  transition: all 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-}
-#voiceBar:hover {
-  background: rgba(18, 24, 48, 0.85);
-  border-color: rgba(0, 240, 255, 0.6);
-  transform: translateX(-50%) scale(1.03);
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 32px rgba(0, 240, 255, 0.3);
-}
-#voiceBar:active { transform: translateX(-50%) scale(0.97); }
+    .aura-bloom {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.55;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      animation: floatBloom 16s ease-in-out infinite alternate;
+    }
 
-#micIcon {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: radial-gradient(circle, #00f0ff 0%, #0077ff 100%);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; color: #fff; box-shadow: 0 0 16px rgba(0, 240, 255, 0.5);
-  position: relative; transition: all 0.3s ease;
-}
-#voiceBar.listening #micIcon {
-  background: radial-gradient(circle, #ff2d55 0%, #ff5e3a 100%);
-  box-shadow: 0 0 24px rgba(255, 45, 85, 0.8);
-  animation: pulseMic 1.2s infinite;
-}
-#voiceBar.speaking #micIcon {
-  background: radial-gradient(circle, #00ff88 0%, #00aa55 100%);
-  box-shadow: 0 0 24px rgba(0, 255, 136, 0.8);
-  animation: pulseMic 1.0s infinite;
-}
+    .aura-bloom-1 {
+      top: 15%;
+      left: 15%;
+      width: 55vw;
+      height: 55vw;
+      background: radial-gradient(circle, rgba(0, 240, 255, 0.40) 0%, transparent 70%);
+    }
 
-@keyframes pulseMic {
-  0% { transform: scale(1); box-shadow: 0 0 16px rgba(255, 45, 85, 0.5); }
-  50% { transform: scale(1.15); box-shadow: 0 0 28px rgba(255, 45, 85, 0.9); }
-  100% { transform: scale(1); box-shadow: 0 0 16px rgba(255, 45, 85, 0.5); }
-}
+    .aura-bloom-2 {
+      bottom: 15%;
+      right: 15%;
+      width: 60vw;
+      height: 60vw;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.38) 0%, transparent 70%);
+      animation-duration: 20s;
+      animation-delay: -5s;
+    }
 
-#statusText {
-  font-size: 14px; font-weight: 500; letter-spacing: 0.5px;
-  color: #e2f1ff; white-space: nowrap;
-}
+    .aura-bloom-3 {
+      top: 40%;
+      left: 40%;
+      width: 45vw;
+      height: 45vw;
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.28) 0%, transparent 70%);
+      animation-duration: 14s;
+      animation-delay: -9s;
+    }
 
-/* Subtle Transcription Toast */
-#toast {
-  position: fixed; top: 32px; left: 50%; transform: translateX(-50%);
-  max-width: min(90vw, 480px); padding: 10px 20px;
-  background: rgba(8, 12, 24, 0.78);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px; font-size: 13px; font-weight: 500;
-  color: #a8d5ff; text-align: center; pointer-events: none;
-  opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease;
-  z-index: 10; box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-}
-#toast.show { opacity: 1; transform: translateX(-50%) translateY(4px); }
+    @keyframes floatBloom {
+      0% { transform: translate(-8%, -8%) scale(0.95); }
+      50% { transform: translate(8%, 6%) scale(1.08); }
+      100% { transform: translate(-6%, 8%) scale(0.98); }
+    }
 
-/* Settings gear */
-#settingsBtn {
-  position: fixed; top: 18px; right: 18px; width: 36px; height: 36px;
-  border-radius: 50%; background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  display: flex; align-items: center; justify-content: center;
-  color: #9ab4d6; font-size: 16px; cursor: pointer; z-index: 15;
-  transition: all 0.2s;
-}
-#settingsBtn:hover { background: rgba(255, 255, 255, 0.16); color: #00f0ff; }
+    /* 3D WebGL Canvas */
+    #canvas-container {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      cursor: grab;
+      touch-action: none;
+    }
+    #canvas-container:active {
+      cursor: grabbing;
+    }
 
-/* Settings Modal */
-#modal {
-  position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  display: none; align-items: center; justify-content: center; z-index: 30;
-}
-#modal.open { display: flex; }
-#modalCard {
-  width: min(90vw, 420px); background: #0c111e;
-  border: 1px solid rgba(0, 229, 255, 0.3); border-radius: 20px;
-  padding: 24px; box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-}
-#modalCard h3 { margin: 0 0 16px; font-size: 18px; color: #00f0ff; }
-.inputGroup { margin-bottom: 16px; }
-.inputGroup label { display: block; font-size: 12px; color: #8fa5c4; margin-bottom: 6px; }
-.inputGroup input {
-  width: 100%; background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px;
-  padding: 10px 14px; color: #fff; font-size: 13px; outline: none;
-}
-.inputGroup input:focus { border-color: #00f0ff; }
-.modalBtns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
-.modalBtns button {
-  padding: 9px 18px; border-radius: 10px; font-size: 13px; font-weight: 500;
-  cursor: pointer; border: none;
-}
-#saveBtn { background: #00f0ff; color: #020308; }
-#closeBtn { background: rgba(255, 255, 255, 0.1); color: #fff; }
-</style>
+    /* Minimalist Floating UI Overlay */
+    #ui-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: env(safe-area-inset-top, 20px) env(safe-area-inset-right, 20px) env(safe-area-inset-bottom, 24px) env(safe-area-inset-left, 20px);
+    }
+
+    /* Header Bar */
+    .top-header {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: auto;
+      padding: 12px 16px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 18px;
+      border-radius: 9999px;
+      background: rgba(15, 23, 42, 0.70);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #00f0ff;
+      box-shadow: 0 0 14px #00f0ff;
+      transition: background 0.3s, box-shadow 0.3s;
+    }
+
+    .status-badge[data-state="idle"] .status-dot {
+      background: #00f0ff;
+      box-shadow: 0 0 12px #00f0ff;
+    }
+    .status-badge[data-state="listening"] .status-dot {
+      background: #00f5d4;
+      box-shadow: 0 0 16px #00f5d4, 0 0 28px #00f5d4;
+      animation: pulseDot 1s infinite;
+    }
+    .status-badge[data-state="thinking"] .status-dot {
+      background: #a855f7;
+      box-shadow: 0 0 16px #a855f7, 0 0 28px #a855f7;
+      animation: pulseDot 0.6s infinite;
+    }
+    .status-badge[data-state="speaking"] .status-dot {
+      background: #f59e0b;
+      box-shadow: 0 0 16px #f59e0b, 0 0 28px #f59e0b;
+      animation: pulseDot 0.8s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.45); opacity: 0.7; }
+    }
+
+    .shape-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 9999px;
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      font-size: 13px;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      pointer-events: auto;
+      transition: all 0.25s ease;
+    }
+    .shape-pill:hover {
+      background: rgba(30, 41, 59, 0.85);
+      color: #f8fafc;
+      transform: translateY(-1px);
+    }
+    .shape-pill:active {
+      transform: scale(0.96);
+    }
+
+    .shape-pill span.icon {
+      color: #00f0ff;
+      font-size: 15px;
+    }
+
+    /* Live Subtitle Caption Pill */
+    .caption-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      pointer-events: auto;
+      margin-bottom: 12px;
+      padding: 0 16px;
+    }
+
+    .caption-pill {
+      max-width: 90%;
+      width: fit-content;
+      padding: 12px 22px;
+      border-radius: 20px;
+      background: rgba(10, 15, 28, 0.80);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow: 0 10px 36px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: #e2e8f0;
+      transition: all 0.3s ease;
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: auto;
+    }
+
+    .caption-pill.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .caption-pill .speaker-label {
+      font-weight: 700;
+      font-size: 11px;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(0, 240, 255, 0.15);
+      color: #00f0ff;
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      white-space: nowrap;
+    }
+
+    .caption-pill.user .speaker-label {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    /* Bottom Control Dock */
+    .bottom-dock {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      pointer-events: auto;
+      padding-bottom: 8px;
+    }
+
+    .call-btn-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .call-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid #00f5d4;
+      pointer-events: none;
+      opacity: 0;
+      width: 80px;
+      height: 80px;
+    }
+
+    .in-call .call-ring {
+      border-color: #ef4444;
+      animation: callRipple 2.2s cubic-bezier(0.1, 0.7, 0.1, 1) infinite;
+    }
+
+    .in-call .call-ring:nth-child(2) {
+      animation-delay: 0.7s;
+    }
+    .in-call .call-ring:nth-child(3) {
+      animation-delay: 1.4s;
+    }
+
+    @keyframes callRipple {
+      0% { transform: scale(1); opacity: 0.85; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+
+    .call-action-btn {
+      position: relative;
+      z-index: 2;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px 36px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #00f5d4 0%, #00bbf9 100%);
+      color: #06070a;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 10px 32px rgba(0, 245, 212, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .call-action-btn:hover {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 14px 44px rgba(0, 245, 212, 0.6);
+    }
+    .call-action-btn:active {
+      transform: translateY(1px) scale(0.97);
+    }
+
+    .call-action-btn svg {
+      width: 22px;
+      height: 22px;
+      fill: currentColor;
+    }
+
+    /* Red End Call State */
+    .call-action-btn.active {
+      background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      color: #ffffff;
+      box-shadow: 0 10px 32px rgba(239, 68, 68, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+    .call-action-btn.active:hover {
+      box-shadow: 0 14px 44px rgba(239, 68, 68, 0.65);
+    }
+
+    .dock-tips {
+      font-size: 12px;
+      font-weight: 500;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dock-tips span.dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #475569;
+    }
+  </style>
 </head>
 <body>
-<div id="glow"></div>
-<canvas id="c"></canvas>
+  <!-- Ambient Backdrop -->
+  <div id="ambient-aura">
+    <div class="aura-bloom aura-bloom-1"></div>
+    <div class="aura-bloom aura-bloom-2"></div>
+    <div class="aura-bloom aura-bloom-3"></div>
+  </div>
 
-<div id="toast">✨ Living 3D Hologram AI Active</div>
+  <!-- 3D Three.js WebGL Stage -->
+  <div id="canvas-container"></div>
 
-<div id="voiceBar">
-  <div id="micIcon">🎙️</div>
-  <span id="statusText">Tap to Talk</span>
-</div>
+  <!-- Minimal Floating UI Overlay -->
+  <div id="ui-overlay">
+    <!-- Header -->
+    <header class="top-header">
+      <div class="status-badge" id="status-badge" data-state="idle">
+        <span class="status-dot"></span>
+        <span class="status-text" id="status-text">Standby</span>
+      </div>
+      <div class="shape-pill" id="shape-pill" title="Tap to cycle 3D shapes">
+        <span class="icon" id="shape-icon">✨</span>
+        <span id="shape-name">Hologram Orb</span>
+      </div>
+    </header>
 
-<div id="settingsBtn" title="AI Settings">⚙️</div>
+    <!-- Subtitle Caption Pill & Bottom Controls -->
+    <div>
+      <div class="caption-container">
+        <div class="caption-pill" id="caption-pill">
+          <span class="speaker-label" id="caption-speaker">Prachi</span>
+          <span class="caption-text" id="caption-text">नमस्ते! मैं प्राची हूँ। कॉल शुरू करने के लिए नीचे टैप करें।</span>
+        </div>
+      </div>
 
-<div id="modal">
-  <div id="modalCard">
-    <h3>⚙️ AI & Voice Settings</h3>
-    <div class="inputGroup">
-      <label>Deepgram API Key (TTS Voice):</label>
-      <input id="deepgramKeyInput" type="password" placeholder="Deepgram Key">
-    </div>
-    <div class="inputGroup">
-      <label>Groq / OpenRouter API Key (Optional LLM Brain):</label>
-      <input id="llmKeyInput" type="password" placeholder="gsk_... or sk-or-...">
-    </div>
-    <div class="modalBtns">
-      <button id="closeBtn" type="button">Cancel</button>
-      <button id="saveBtn" type="button">Save Settings</button>
+      <footer class="bottom-dock">
+        <div class="call-btn-wrapper" id="call-wrapper">
+          <div class="call-ring"></div>
+          <div class="call-ring"></div>
+          <div class="call-ring"></div>
+          <button class="call-action-btn" id="btn-call" aria-label="Start Voice Call">
+            <svg id="icon-call-start" viewBox="0 0 24 24">
+              <path d="M6.62 10.79a15.05 15.05 0 0 0 6.59 6.59l2.2-2.2a1 1 0 0 1 1.05-.24c1.12.37 2.33.57 3.54.57a1 1 0 0 1 1 1V20a1 1 0 0 1-1 1A17 17 0 0 1 3 4a1 1 0 0 1 1-1h3.5a1 1 0 0 1 1 1c0 1.25.2 2.45.57 3.57a1 1 0 0 1-.25 1.02l-2.2 2.2z"/>
+            </svg>
+            <svg id="icon-call-end" viewBox="0 0 24 24" style="display: none;">
+              <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.58.9-1.21.57-2.3 1.34-3.26 2.28-.27.27-.64.4-1.01.4s-.74-.13-1.01-.4L.43 14.89c-.58-.58-.58-1.52 0-2.1C3.55 9.69 7.57 8 12 8s8.45 1.69 11.57 4.79c.58.58.58 1.52 0 2.1l-1.11 1.11c-.27.27-.64.4-1.01.4s-.74-.13-1.01-.4c-.96-.94-2.05-1.71-3.26-2.28-.35-.16-.58-.51-.58-.9v-3.1C15.15 9.25 13.6 9 12 9z"/>
+            </svg>
+            <span id="call-text">Start Voice Call</span>
+          </button>
+        </div>
+
+        <div class="dock-tips">
+          <span>Hands-free phone call</span>
+          <span class="dot"></span>
+          <span>Voice driven 3D shapes</span>
+          <span class="dot"></span>
+          <span>Drag orb to rotate</span>
+        </div>
+      </footer>
     </div>
   </div>
-</div>
 
-<script>
-// ================= CONSTANTS & CONFIG =================
-const DEEPGRAM_TOKEN_DEFAULT = 'a02c970507d8f909f3bc0478573b3b6ac240bfc5';
-let DEEPGRAM_KEY = localStorage.getItem('deepgram_key') || DEEPGRAM_TOKEN_DEFAULT;
-let LLM_KEY = localStorage.getItem('llm_key') || '';
+  <!-- Three.js (ES Module from JSDelivr CDN) -->
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.module.js';
 
-const N = 90000;
-const cv = document.getElementById('c');
-const gl = cv.getContext('webgl', { antialias: false, alpha: false, preserveDrawingBuffer: false });
-const glowEl = document.getElementById('glow');
-const voiceBar = document.getElementById('voiceBar');
-const statusText = document.getElementById('statusText');
-const toastEl = document.getElementById('toast');
-const settingsBtn = document.getElementById('settingsBtn');
-const modal = document.getElementById('modal');
-const deepgramKeyInput = document.getElementById('deepgramKeyInput');
-const llmKeyInput = document.getElementById('llmKeyInput');
-const saveBtn = document.getElementById('saveBtn');
-const closeBtn = document.getElementById('closeBtn');
+    // ================= CREDENTIALS & CONSTANTS =================
+    const DEEPGRAM_KEY = 'a02c970507d8f909f3bc0478573b3b6ac240bfc5';
+    const TTS_ENDPOINT = 'https://api.deepgram.com/v2/speak?model=flux-prachi-hi&expressivity=1';
+    const STT_ENDPOINT = 'https://api.deepgram.com/v1/listen?model=nova-2&language=hi&smart_format=true';
 
-deepgramKeyInput.value = DEEPGRAM_KEY;
-llmKeyInput.value = LLM_KEY;
+    // 3D Simplex & Curl Noise GLSL
+    const simplexNoiseGLSL = `
+    vec4 permute(vec4 x) { return mod(((x * 34.0) + 1.0) * x, 289.0); }
+    vec4 taylorInvSqrt(vec4 r) { return 1.79284291400159 - 0.85373472095314 * r; }
 
-settingsBtn.onclick = () => modal.classList.add('open');
-closeBtn.onclick = () => modal.classList.remove('open');
-saveBtn.onclick = () => {
-  DEEPGRAM_KEY = deepgramKeyInput.value.trim() || DEEPGRAM_TOKEN_DEFAULT;
-  LLM_KEY = llmKeyInput.value.trim();
-  localStorage.setItem('deepgram_key', DEEPGRAM_KEY);
-  localStorage.setItem('llm_key', LLM_KEY);
-  modal.classList.remove('open');
-  showToast('Settings Saved!');
-};
+    float snoise(vec3 v) {
+      const vec2 C = vec2(1.0 / 6.0, 1.0 / 3.0);
+      const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
 
-function showToast(text, duration = 3000){
-  toastEl.textContent = text;
-  toastEl.classList.add('show');
-  clearTimeout(toastEl._timer);
-  toastEl._timer = setTimeout(() => toastEl.classList.remove('show'), duration);
-}
+      vec3 i  = floor(v + dot(v, C.yyy));
+      vec3 x0 = v - i + dot(i, C.xxx);
 
-// ================= VIEWPORT RESIZE =================
-const DPR = Math.min(window.devicePixelRatio || 1, 2);
-let W = 1, H = 1;
-function resize(){
-  W = cv.width = Math.floor(innerWidth * DPR);
-  H = cv.height = Math.floor(innerHeight * DPR);
-  gl.viewport(0, 0, W, H);
-}
-addEventListener('resize', resize);
+      vec3 g = step(x0.yzx, x0.xyz);
+      vec3 l = 1.0 - g;
+      vec3 i1 = min(g.xyz, l.zxy);
+      vec3 i2 = max(g.xyz, l.zxy);
 
-// ================= GL SHADERS =================
-const VS = `
-precision highp float;
-attribute vec3 aFrom;
-attribute vec3 aTo;
-attribute float aSeed;
-attribute vec4 aCol;
-uniform float uTime, uLevel, uBass, uMid, uHigh, uRotY, uRotX, uDPR, uMorph;
-uniform vec2 uScale;
-uniform vec3 uTouch;
-varying vec3 vColor;
-varying float vA;
+      vec3 x1 = x0 - i1 + 1.0 * C.xxx;
+      vec3 x2 = x0 - i2 + 2.0 * C.xxx;
+      vec3 x3 = x0 - 1.0 + 3.0 * C.xxx;
 
-void main(){
-  float m = clamp((uMorph - aSeed * 0.35) / 0.65, 0.0, 1.0);
-  m = m * m * (3.0 - 2.0 * m); // cubic smoothstep
-  vec3 pos = mix(aFrom, aTo, m);
+      i = mod(i, 289.0);
+      vec4 p = permute(permute(permute(
+                i.z + vec4(0.0, i1.z, i2.z, 1.0))
+              + i.y + vec4(0.0, i1.y, i2.y, 1.0))
+              + i.x + vec4(0.0, i1.x, i2.x, 1.0));
 
-  // Audio frequency dynamic displacement
-  float bassPulse = sin(uTime * 3.0 + aSeed * 12.0) * uBass * 0.12;
-  float midFlutter = cos(uTime * 5.0 + aSeed * 24.0) * uMid * 0.08;
-  pos += normalize(pos + vec3(0.001)) * (bassPulse + midFlutter);
+      float n_ = 0.142857142857;
+      vec3  ns = n_ * D.wyz - D.xzx;
 
-  // Interactive touch ripple
-  vec2 dv = pos.xy - uTouch.xy;
-  float dd = dot(dv, dv);
-  float ripple = exp(-dd * 20.0) * uTouch.z * 0.15;
-  pos.z += sin(dd * 40.0 - uTime * 6.0) * ripple;
+      vec4 j = p - 49.0 * floor(p * ns.z * ns.z);
 
-  // 3D Camera Rotation
-  float cy = cos(uRotY), sy = sin(uRotY);
-  float cx = cos(uRotX), sx = sin(uRotX);
-  vec3 r1 = vec3(pos.x * cy + pos.z * sy, pos.y, -pos.x * sy + pos.z * cy);
-  vec3 r2 = vec3(r1.x, r1.y * cx - r1.z * sx, r1.y * sx + r1.z * cx);
+      vec4 x_ = floor(j * ns.z);
+      vec4 y_ = floor(j - 7.0 * x_);
 
-  // Perspective Projection
-  float f = 1.0 / (2.5 - r2.z * 0.7);
-  gl_Position = vec4(r2.x * f * uScale.x * 2.5, r2.y * f * uScale.y * 2.5, 0.0, 1.0);
+      vec4 x = x_ * ns.x + ns.yyyy;
+      vec4 y = y_ * ns.x + ns.yyyy;
+      vec4 h = 1.0 - abs(x) - abs(y);
 
-  float depth = clamp((r2.z / 1.5) * 0.5 + 0.5, 0.0, 1.0);
-  gl_PointSize = (1.2 + depth * 2.4 + aSeed * 0.6) * uDPR * (1.0 + uLevel * 0.6);
+      vec4 b0 = vec4(x.xy, y.xy);
+      vec4 b1 = vec4(x.zw, y.zw);
 
-  // Hologram Chromatic Palettes
-  vec3 cCyan = vec3(0.05, 0.85, 1.00);
-  vec3 cPurple = vec3(0.65, 0.25, 1.00);
-  vec3 cMagenta = vec3(1.00, 0.20, 0.70);
-  vec3 cEmerald = vec3(0.10, 1.00, 0.60);
+      vec4 s0 = floor(b0) * 2.0 + 1.0;
+      vec4 s1 = floor(b1) * 2.0 + 1.0;
+      vec4 sh = -step(h, vec4(0.0));
 
-  float tint = sin(uTime * 0.8 + aSeed * 6.28) * 0.5 + 0.5;
-  vec3 baseCol = mix(cCyan, cPurple, depth);
-  baseCol = mix(baseCol, cMagenta, tint * 0.4);
-  baseCol = mix(baseCol, cEmerald, uHigh * 0.5);
+      vec4 a0 = b0.xzyw + s0.xzyw * sh.xxyy;
+      vec4 a1 = b1.xzyw + s1.xzyw * sh.zzww;
 
-  vColor = baseCol * (0.6 + depth * 0.5 + uLevel * 0.4);
-  vA = (0.35 + depth * 0.65) * (0.8 + uLevel * 0.4);
-}
-`;
+      vec3 p0 = vec3(a0.xy, h.x);
+      vec3 p1 = vec3(a0.zw, h.y);
+      vec3 p2 = vec3(a1.xy, h.z);
+      vec3 p3 = vec3(a1.zw, h.w);
 
-const FS = `
-precision mediump float;
-varying vec3 vColor;
-varying float vA;
+      vec4 norm = taylorInvSqrt(vec4(dot(p0, p0), dot(p1, p1), dot(p2, p2), dot(p3, p3)));
+      p0 *= norm.x;
+      p1 *= norm.y;
+      p2 *= norm.z;
+      p3 *= norm.w;
 
-void main(){
-  float d = length(gl_PointCoord - 0.5);
-  if (d > 0.5) discard;
-  float circ = 1.0 - smoothstep(0.05, 0.50, d);
-  float al = circ * vA;
-  gl_FragColor = vec4(vColor * al, al * 0.5);
-}
-`;
-
-function sh(type, src){
-  const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
-  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
-  return s;
-}
-
-const prog = gl.createProgram();
-gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS));
-gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS));
-gl.linkProgram(prog); gl.useProgram(prog);
-
-// ================= PROCEDURAL 3D SHAPE GENERATORS =================
-const R = Math.random;
-
-function normalizeShape(a){
-  const mn = [1e9, 1e9, 1e9], mx = [-1e9, -1e9, -1e9];
-  for (let i = 0; i < N; i++) for (let c = 0; c < 3; c++){
-    const v = a[i * 3 + c]; if (v < mn[c]) mn[c] = v; if (v > mx[c]) mx[c] = v;
-  }
-  const ct = [(mn[0] + mx[0]) / 2, (mn[1] + mx[1]) / 2, (mn[2] + mx[2]) / 2];
-  let m2 = 0;
-  for (let i = 0; i < N; i++){
-    const x = a[i * 3] -= ct[0], y = a[i * 3 + 1] -= ct[1], z = a[i * 3 + 2] -= ct[2];
-    const d = x * x + y * y + z * z; if (d > m2) m2 = d;
-  }
-  const s = 0.85 / Math.sqrt(m2 || 1);
-  for (let i = 0; i < N * 3; i++) a[i] *= s;
-  return a;
-}
-
-const SHAPES = {
-  // 1. Living AI Neural Orb
-  orb(){
-    const a = new Float32Array(N * 3), ga = Math.PI * (3 - Math.sqrt(5));
-    for (let i = 0; i < N; i++){
-      const y = 1 - (i / (N - 1)) * 2;
-      const rad = Math.sqrt(Math.max(0, 1 - y * y));
-      const phi = i * ga;
-      // Multi-layer plasma depth
-      const r = (i % 3 === 0) ? 0.45 + R() * 0.15 : (0.75 + R() * 0.1);
-      a[i * 3] = Math.cos(phi) * rad * r;
-      a[i * 3 + 1] = y * r;
-      a[i * 3 + 2] = Math.sin(phi) * rad * r;
+      vec4 m = max(0.6 - vec4(dot(x0, x0), dot(x1, x1), dot(x2, x2), dot(x3, x3)), 0.0);
+      m = m * m;
+      return 42.0 * dot(m * m, vec4(dot(p0, x0), dot(p1, x1), dot(p2, x2), dot(p3, x3)));
     }
-    return normalizeShape(a);
-  },
 
-  // 2. Cyber Sports Car
-  car(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      let x, y, z;
-      const part = R();
-      if (part < 0.35){ // Chassis / Body
-        x = R() * 2.2 - 1.1;
-        y = -0.22 + R() * 0.22;
-        z = (R() * 2 - 1) * 0.52 * (1.0 - Math.abs(x) * 0.25);
-      } else if (part < 0.65){ // Cabin / Windshield
-        x = R() * 1.1 - 0.45;
-        const profile = Math.sin((x + 0.45) / 1.1 * Math.PI);
-        y = 0.0 + profile * 0.42 * R();
-        z = (R() * 2 - 1) * 0.38 * (1.0 - y * 0.6);
-      } else if (part < 0.85){ // 4 Wheels
-        const sideX = (i % 2 === 0) ? 0.65 : -0.65;
-        const sideZ = (Math.floor(i / 2) % 2 === 0) ? 0.52 : -0.52;
-        const ang = R() * 6.28, r = 0.22 * Math.sqrt(R());
-        x = sideX + Math.cos(ang) * r;
-        y = -0.24 + Math.sin(ang) * r;
-        z = sideZ + (R() - 0.5) * 0.12;
-      } else { // Spoiler & Headlights
-        x = -0.98 + R() * 0.15;
-        y = 0.28 + R() * 0.08;
-        z = (R() * 2 - 1) * 0.48;
-      }
-      a[i * 3] = x; a[i * 3 + 1] = y; a[i * 3 + 2] = z;
+    vec3 curlNoise(vec3 p) {
+      const float e = 0.04;
+      vec3 dx = vec3(e, 0.0, 0.0);
+      vec3 dy = vec3(0.0, e, 0.0);
+      vec3 dz = vec3(0.0, 0.0, e);
+
+      vec3 o1 = vec3(12.34, 45.67, 78.91);
+      vec3 o2 = vec3(31.41, 62.83, 15.72);
+      vec3 o3 = vec3(98.76, 65.43, 32.19);
+
+      float dFz_dy = snoise(p + dy + o3) - snoise(p - dy + o3);
+      float dFy_dz = snoise(p + dz + o2) - snoise(p - dz + o2);
+      float dFx_dz = snoise(p + dz + o1) - snoise(p - dz + o1);
+      float dFz_dx = snoise(p + dx + o3) - snoise(p - dx + o3);
+      float dFy_dx = snoise(p + dx + o2) - snoise(p - dx + o2);
+      float dFx_dy = snoise(p + dy + o1) - snoise(p - dy + o1);
+
+      return vec3(dFz_dy - dFy_dz, dFx_dz - dFz_dx, dFy_dx - dFx_dy) / (2.0 * e);
     }
-    return normalizeShape(a);
-  },
+    `;
 
-  // 3. Supersonic Fighter Jet
-  plane(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      let x, y, z;
-      const part = R();
-      if (part < 0.45){ // Delta Wings
-        const t = R();
-        x = -0.6 + t * 1.2;
-        const span = (1.0 - t) * 1.25;
-        z = (R() * 2 - 1) * span;
-        y = (R() - 0.5) * 0.06;
-      } else if (part < 0.80){ // Sleek Fuselage
-        x = R() * 2.2 - 1.0;
-        const taper = Math.max(0.08, 1.0 - Math.abs(x) * 0.45);
-        const ang = R() * 6.28, r = 0.16 * taper * Math.sqrt(R());
-        y = Math.cos(ang) * r;
-        z = Math.sin(ang) * r * 0.7;
-      } else { // Twin Vertical Tail Fins
-        x = -0.7 - R() * 0.3;
-        y = R() * 0.45;
-        z = ((R() < 0.5 ? 0.28 : -0.28) + (R() - 0.5) * 0.06);
-      }
-      a[i * 3] = x; a[i * 3 + 1] = y; a[i * 3 + 2] = z;
+    // Particle Wave Sphere Vertex Shader (with Shape Morphing)
+    const particleWaveSphereVertexShader = `
+    ${simplexNoiseGLSL}
+
+    uniform float uTime;
+    uniform float uAudioIntensity;
+    uniform float uAudioBass;
+    uniform float uAudioTreble;
+    uniform float uDisplacementAmp;
+    uniform float uNoiseFreq;
+    uniform float uNoiseSpeed;
+    uniform float uPointSize;
+    uniform float uPixelRatio;
+
+    uniform vec3 uColorBase;
+    uniform vec3 uColorA;
+    uniform vec3 uColorB;
+    uniform vec3 uColorC;
+    uniform float uStatePulse;
+
+    uniform float uShockwaveProgress;
+    uniform float uShockwaveIntensity;
+    uniform vec3 uShockwaveOrigin;
+
+    // Dynamic Shape Morphing
+    uniform float uMorphProgress;
+    attribute vec3 aTargetPos;
+    attribute float aScale;
+    attribute float aRandom;
+
+    varying vec3 vColor;
+    varying vec3 vPrismColor;
+    varying float vDispersion;
+    varying float vAlpha;
+    varying float vRim;
+    varying float vDisp;
+
+    void main() {
+      // Morph between original sphere and target shape
+      vec3 rawP = mix(position, aTargetPos, uMorphProgress);
+      vec3 n = normalize(rawP + 0.0001);
+
+      float t = uTime * uNoiseSpeed;
+
+      // Standing waves & harmonic fluid resonances
+      float w1 = snoise(rawP * uNoiseFreq + vec3(t * 0.65, t * 0.45, t * 0.75));
+      float w2 = snoise(rawP * (uNoiseFreq * 2.24) - vec3(t * 0.85, -t * 0.65, t * 1.05)) * 0.48;
+      float w3 = snoise(rawP * (uNoiseFreq * 4.62) + vec3(t * 1.35)) * 0.24;
+
+      // Dynamic audio reactivity coupling
+      float audioDisp = (uAudioBass * 0.85 + uAudioIntensity * 0.65) * snoise(rawP * 2.8 + vec3(uTime * 2.8));
+      float audioRipples = sin(rawP.y * 16.0 + uTime * 7.0) * (uAudioTreble * 0.35);
+      float stateShockPulse = uStatePulse * 0.25 * sin(uTime * 5.0 + rawP.y * 6.0);
+
+      // Spherical shockwave ripple
+      vec3 shockOrigin = length(uShockwaveOrigin) > 0.01 ? normalize(uShockwaveOrigin) : vec3(0.0, 0.0, 1.0);
+      float distFromImpact = distance(n, shockOrigin);
+      float waveFront = abs(distFromImpact - uShockwaveProgress * 2.3);
+      float shockRipple = exp(-waveFront * waveFront * 28.0) * uShockwaveIntensity;
+
+      // Displacement decreases slightly when in distinct geometric shapes to retain shape clarity
+      float shapeDamp = mix(1.0, 0.45, uMorphProgress);
+      float disp = ((w1 + w2 + w3) * uDisplacementAmp + audioDisp * 0.5 + audioRipples + stateShockPulse + shockRipple * 0.5) * shapeDamp;
+
+      // Curl noise turbulence
+      vec3 curlCoord = rawP * (uNoiseFreq * 0.95) + vec3(t * 0.35, t * 0.25, t * 0.4);
+      vec3 curlVec = curlNoise(curlCoord);
+      vec3 curlTangent = curlVec - n * dot(n, curlVec);
+      float curlIntensity = (0.12 + uAudioIntensity * 0.22 + uAudioBass * 0.18) * uDisplacementAmp * shapeDamp;
+
+      vec3 displaced = rawP + n * disp + curlTangent * curlIntensity;
+
+      vec4 mvPosition = modelViewMatrix * vec4(displaced, 1.0);
+      gl_Position = projectionMatrix * mvPosition;
+
+      // View vector & rim falloff
+      vec3 viewDir = normalize(-mvPosition.xyz);
+      vec3 transformedNormal = normalize(normalMatrix * n);
+      float normalDotView = dot(transformedNormal, viewDir);
+
+      float rim = 1.0 - abs(normalDotView);
+      rim = pow(clamp(rim, 0.0, 1.0), 1.25);
+      float depthFalloff = smoothstep(-0.35, 0.45, normalDotView);
+
+      // Distance particle size attenuation
+      float viewDist = max(0.1, -mvPosition.z);
+      float size = (uPointSize * uPixelRatio * 300.0) / viewDist;
+      float crestBoost = smoothstep(0.0, 0.4, disp) * 0.6;
+      gl_PointSize = clamp(size * (aScale * 0.95 + rim * 0.75 + crestBoost * 0.5), 1.5, 32.0);
+
+      // Chromatic dispersion & prism colors
+      float dispNormalized = clamp((disp / max(0.01, uDisplacementAmp * 1.5)) * 0.5 + 0.5, 0.0, 1.0);
+      float crest = pow(dispNormalized, 2.2);
+
+      vec3 spectralViolet = vec3(0.68, 0.38, 1.0);
+      vec3 spectralCyan   = vec3(0.05, 0.92, 1.0);
+      vec3 spectralEmerald= vec3(0.12, 1.0, 0.78);
+      vec3 spectralRose   = vec3(1.0, 0.28, 0.62);
+
+      vec3 prismA = mix(spectralCyan, spectralViolet, smoothstep(0.2, 0.6, dispNormalized));
+      vec3 prismB = mix(spectralEmerald, spectralRose, smoothstep(0.5, 0.9, crest));
+      vec3 prismFinal = mix(prismA, prismB, rim * 0.6 + uAudioTreble * 0.4);
+
+      vec3 themeSheen = mix(uColorA, uColorB, dispNormalized);
+      themeSheen = mix(themeSheen, uColorC, rim * 0.75);
+
+      vec3 starlightBase = vec3(0.97, 0.985, 1.0);
+      float dispersionAmount = 0.22 + crest * 0.45 + rim * 0.35 + uAudioIntensity * 0.45;
+      vec3 finalColor = mix(starlightBase, mix(themeSheen, prismFinal, 0.5), clamp(dispersionAmount, 0.0, 0.95));
+
+      float alphaAtten = 0.45 + depthFalloff * 0.55;
+      vColor = finalColor;
+      vPrismColor = prismFinal;
+      vDispersion = crest + shockRipple * 0.6;
+      vRim = rim;
+      vDisp = disp;
+      vAlpha = clamp((0.65 + rim * 0.45 + crest * 0.35 + uAudioIntensity * 0.4) * alphaAtten, 0.25, 1.0);
     }
-    return normalizeShape(a);
-  },
+    `;
 
-  // 4. Space Exploration Rocket
-  rocket(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      let x, y, z;
-      const part = R();
-      if (part < 0.60){ // Rocket Body & Nosecone
-        y = R() * 2.0 - 0.8;
-        let r = 0.24;
-        if (y > 0.4) r *= Math.max(0, 1.0 - (y - 0.4) / 0.8); // Conical nose
-        const ang = R() * 6.28, rad = r * Math.sqrt(R());
-        x = Math.cos(ang) * rad;
-        z = Math.sin(ang) * rad;
-      } else if (part < 0.82){ // 4 Aerodynamic Fins
-        const finIdx = Math.floor(R() * 4);
-        const finAngle = finIdx * (Math.PI / 2);
-        const h = R() * 0.55;
-        y = -0.8 + h;
-        const d = 0.22 + (0.55 - h) * 0.45 * R();
-        x = Math.cos(finAngle) * d;
-        z = Math.sin(finAngle) * d;
-      } else { // Fiery Thruster Exhaust
-        y = -0.8 - R() * 0.7;
-        const spread = (Math.abs(y) - 0.8) * 0.45;
-        const ang = R() * 6.28, rad = spread * Math.sqrt(R());
-        x = Math.cos(ang) * rad;
-        z = Math.sin(ang) * rad;
-      }
-      a[i * 3] = x; a[i * 3 + 1] = y; a[i * 3 + 2] = z;
+    // Particle Wave Sphere Fragment Shader
+    const particleWaveSphereFragmentShader = `
+    varying vec3 vColor;
+    varying vec3 vPrismColor;
+    varying float vDispersion;
+    varying float vAlpha;
+    varying float vRim;
+    varying float vDisp;
+
+    void main() {
+      vec2 coord = gl_PointCoord - vec2(0.5);
+      float dist = length(coord);
+      if (dist > 0.5) discard;
+
+      float delta = fwidth(dist);
+      float circleAlpha = 1.0 - smoothstep(0.5 - max(0.015, delta * 1.5), 0.5, dist);
+
+      // Sharp Crystalline Diamond Core
+      float sharpCore = exp(-dist * 16.0) * 1.6;
+      float diamond = max(0.0, 1.0 - (abs(coord.x) + abs(coord.y)) * 2.8);
+      float crystallineCore = sharpCore + diamond * 0.5;
+
+      // Optical 4-point Micro Diffraction Spikes
+      float spikeX = exp(-abs(coord.x) * 38.0) * exp(-abs(coord.y) * 4.5);
+      float spikeY = exp(-abs(coord.y) * 38.0) * exp(-abs(coord.x) * 4.5);
+      float diffraction = (spikeX + spikeY) * (0.4 + vDispersion * 0.4);
+
+      // Radiant Halo
+      float innerGlow = smoothstep(0.42, 0.06, dist);
+      float outerHalo = exp(-dist * 4.2) * (1.0 - smoothstep(0.40, 0.50, dist));
+      float haloWeight = innerGlow * 0.75 + outerHalo * 0.55;
+      vec3 haloColor = mix(vColor, vPrismColor, smoothstep(0.15, 0.45, dist) * vDispersion * 0.85);
+
+      vec3 col = haloColor * haloWeight + vec3(1.0, 1.0, 1.0) * (crystallineCore + diffraction * 0.85);
+      float alpha = (crystallineCore * 0.95 + haloWeight * 0.65 + diffraction * 0.35) * vAlpha * circleAlpha;
+
+      gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
     }
-    return normalizeShape(a);
-  },
+    `;
 
-  // 5. 3D Cardioid Pulsating Heart
-  heart(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      const t = R() * Math.PI * 2;
-      const u = (R() - 0.5) * 2;
-      const r = Math.cbrt(R());
-      const x = 16 * Math.pow(Math.sin(t), 3) * r;
-      const y = (13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t)) * r;
-      const z = u * Math.sqrt(Math.max(0, 1 - (x*x + y*y)/256)) * 8 * r;
-      a[i * 3] = x * 0.055;
-      a[i * 3 + 1] = y * 0.055;
-      a[i * 3 + 2] = z * 0.055;
+    // Inner Point Core Shaders
+    const innerPointCoreVertexShader = `
+    ${simplexNoiseGLSL}
+
+    uniform float uTime;
+    uniform float uAudioBass;
+    uniform float uAudioIntensity;
+    uniform float uPointSize;
+    uniform float uPixelRatio;
+    uniform vec3 uCoreColor;
+    uniform float uMorphProgress;
+
+    attribute float aScale;
+    varying vec3 vColor;
+    varying float vAlpha;
+
+    void main() {
+      vec3 p = position;
+      vec3 n = normalize(position);
+
+      float t = uTime * 0.45;
+      float wave = snoise(p * 2.2 + vec3(t * 0.8, -t * 0.6, t));
+      float wave2 = snoise(p * 4.4 - vec3(t * 1.2)) * 0.35;
+      float bassPunch = uAudioBass * 0.55;
+
+      vec3 displaced = p + n * ((wave + wave2) * 0.16 + bassPunch);
+      float vortex = (wave * 0.08 + uAudioBass * 0.12);
+      displaced.x += -p.z * vortex;
+      displaced.z += p.x * vortex;
+
+      // Fade down core slightly when morphed into complex shapes
+      displaced *= mix(1.0, 0.3, uMorphProgress);
+
+      vec4 mvPosition = modelViewMatrix * vec4(displaced, 1.0);
+      gl_Position = projectionMatrix * mvPosition;
+
+      float viewDist = max(0.1, -mvPosition.z);
+      gl_PointSize = clamp((uPointSize * uPixelRatio * 220.0) / viewDist * aScale, 1.5, 20.0);
+
+      vec3 coreWhite = vec3(0.96, 0.98, 1.0);
+      vColor = mix(coreWhite, uCoreColor, 0.35 + uAudioBass * 0.45);
+      vAlpha = clamp((0.55 + 0.5 * abs(wave) + uAudioIntensity * 0.55) * (1.0 - uMorphProgress * 0.7), 0.1, 1.0);
     }
-    return normalizeShape(a);
-  },
+    `;
 
-  // 6. 3D Double Helix DNA
-  dna(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      const t = (i / N) * 24.0;
-      const y = (i / N) * 2.0 - 1.0;
-      let x, z;
-      if (i % 6 === 0){ // Base-pair rungs
-        const rungT = (R() * 2 - 1);
-        const ang = t;
-        x = Math.cos(ang) * 0.42 * rungT;
-        z = Math.sin(ang) * 0.42 * rungT;
-      } else { // Outer strands
-        const strand = (i % 2 === 0) ? 0 : Math.PI;
-        const ang = t + strand;
-        x = Math.cos(ang) * 0.44 + (R() - 0.5) * 0.08;
-        z = Math.sin(ang) * 0.44 + (R() - 0.5) * 0.08;
-      }
-      a[i * 3] = x; a[i * 3 + 1] = y; a[i * 3 + 2] = z;
+    const innerPointCoreFragmentShader = `
+    varying vec3 vColor;
+    varying float vAlpha;
+
+    void main() {
+      vec2 coord = gl_PointCoord - vec2(0.5);
+      float dist = length(coord);
+      if (dist > 0.5) discard;
+
+      float circleAlpha = 1.0 - smoothstep(0.44, 0.50, dist);
+      float core = exp(-dist * 14.0) * 1.5;
+      float glow = smoothstep(0.48, 0.05, dist);
+
+      vec3 col = vColor + vec3(core * 0.7);
+      float alpha = (core * 0.75 + glow * 0.45) * vAlpha * circleAlpha;
+
+      gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
     }
-    return normalizeShape(a);
-  },
+    `;
 
-  // 7. Cosmic Spiral Galaxy
-  galaxy(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      const arm = Math.floor(R() * 4);
-      const armAngle = arm * (Math.PI / 2);
-      const dist = Math.pow(R(), 0.7) * 1.2;
-      const theta = armAngle + dist * 3.2 + (R() - 0.5) * 0.35;
-      const x = Math.cos(theta) * dist;
-      const z = Math.sin(theta) * dist;
-      const y = (R() - 0.5) * (0.35 * Math.exp(-dist * 2.5) + 0.04);
-      a[i * 3] = x; a[i * 3 + 1] = y; a[i * 3 + 2] = z;
+    // Outer Dust Shaders
+    const outerDustVertexShader = `
+    uniform float uTime;
+    uniform float uAudioIntensity;
+    uniform float uPixelRatio;
+
+    attribute float aSize;
+    attribute float aSpeed;
+    attribute float aPhase;
+    attribute vec3 aColor;
+
+    varying vec3 vColor;
+    varying float vAlpha;
+
+    void main() {
+      vColor = aColor;
+
+      float angle = uTime * aSpeed * 0.3 + aPhase;
+      float r = length(position.xz);
+
+      vec3 transformed = position;
+      transformed.x = cos(angle) * r;
+      transformed.z = sin(angle) * r;
+      transformed.y += sin(uTime * 0.6 + aPhase) * 0.24;
+      transformed += normalize(transformed) * (uAudioIntensity * 0.4);
+
+      vec4 mvPosition = modelViewMatrix * vec4(transformed, 1.0);
+      gl_PointSize = aSize * (300.0 / -mvPosition.z) * uPixelRatio;
+      gl_Position = projectionMatrix * mvPosition;
+
+      vAlpha = clamp(0.45 + 0.6 * sin(uTime * 1.8 + aPhase), 0.2, 0.95);
     }
-    return normalizeShape(a);
-  },
+    `;
 
-  // 8. 3D Stellated Star
-  star(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      const theta = R() * Math.PI * 2;
-      const phi = (R() - 0.5) * Math.PI;
-      // 5-point harmonic modulation
-      const mod = 0.4 + 0.6 * Math.pow(Math.abs(Math.sin(theta * 2.5) * Math.cos(phi * 2.5)), 3.0);
-      const r = mod * Math.cbrt(R()) * 1.1;
-      a[i * 3] = r * Math.cos(phi) * Math.cos(theta);
-      a[i * 3 + 1] = r * Math.sin(phi);
-      a[i * 3 + 2] = r * Math.cos(phi) * Math.sin(theta);
+    const outerDustFragmentShader = `
+    varying vec3 vColor;
+    varying float vAlpha;
+
+    void main() {
+      vec2 coord = gl_PointCoord - vec2(0.5);
+      float dist = length(coord);
+      if (dist > 0.5) discard;
+
+      float circleAlpha = 1.0 - smoothstep(0.44, 0.50, dist);
+      float core = exp(-dist * 12.0) * 1.3;
+      float glow = smoothstep(0.5, 0.0, dist);
+
+      vec3 col = vColor + vec3(core * 0.6);
+      float alpha = (core * 0.65 + glow * 0.5) * vAlpha * circleAlpha;
+
+      gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
     }
-    return normalizeShape(a);
-  },
+    `;
 
-  // 9. Torus / Donut
-  donut(){
-    const a = new Float32Array(N * 3);
-    const R_maj = 0.65, r_min = 0.28;
-    for (let i = 0; i < N; i++){
-      const u = R() * Math.PI * 2, v = R() * Math.PI * 2;
-      const rad = r_min * Math.sqrt(R());
-      a[i * 3] = (R_maj + rad * Math.cos(v)) * Math.cos(u);
-      a[i * 3 + 1] = rad * Math.sin(v);
-      a[i * 3 + 2] = (R_maj + rad * Math.cos(v)) * Math.sin(u);
-    }
-    return normalizeShape(a);
-  },
-
-  // 10. Hypercube / Tesseract
-  cube(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      const edge = Math.floor(R() * 12);
-      const t = R() * 2 - 1;
-      const s = 0.7;
-      let x = 0, y = 0, z = 0;
-      const v = [[-s,-s],[-s,s],[s,-s],[s,s]];
-      if (edge < 4){ x = t * s; y = v[edge][0]; z = v[edge][1]; }
-      else if (edge < 8){ y = t * s; x = v[edge-4][0]; z = v[edge-4][1]; }
-      else { z = t * s; x = v[edge-8][0]; y = v[edge-8][1]; }
-      if (i % 4 === 0) { x *= 0.5; y *= 0.5; z *= 0.5; } // Inner core
-      a[i * 3] = x + (R() - 0.5) * 0.05;
-      a[i * 3 + 1] = y + (R() - 0.5) * 0.05;
-      a[i * 3 + 2] = z + (R() - 0.5) * 0.05;
-    }
-    return normalizeShape(a);
-  },
-
-  // 11. Stargate Quantum Portal
-  portal(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      const isRing = R() < 0.65;
-      const ang = R() * Math.PI * 2;
-      let r, z;
-      if (isRing){
-        r = 0.78 + (R() - 0.5) * 0.12;
-        z = (R() - 0.5) * 0.18;
-      } else { // Inward event horizon vortex
-        r = Math.pow(R(), 0.5) * 0.76;
-        z = (R() - 0.5) * 0.45 * (1.0 - r / 0.76);
-      }
-      a[i * 3] = Math.cos(ang) * r;
-      a[i * 3 + 1] = Math.sin(ang) * r;
-      a[i * 3 + 2] = z;
-    }
-    return normalizeShape(a);
-  },
-
-  // 12. Sacred Lotus Flower
-  flower(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      const theta = R() * Math.PI * 2;
-      const petal = Math.abs(Math.sin(theta * 3.5));
-      const rad = (0.2 + petal * 0.65) * Math.sqrt(R());
-      const x = Math.cos(theta) * rad;
-      const z = Math.sin(theta) * rad;
-      const y = Math.pow(rad, 1.4) * 0.5 - 0.25;
-      a[i * 3] = x; a[i * 3 + 1] = y; a[i * 3 + 2] = z;
-    }
-    return normalizeShape(a);
-  },
-
-  // 13. Sacred Tree of Life
-  tree(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      let x, y, z;
-      if (R() < 0.35){ // Trunk & Roots
-        y = R() * 0.9 - 0.8;
-        const r = 0.14 * (1.0 - y * 0.5) * Math.sqrt(R());
-        const ang = R() * 6.28;
-        x = Math.cos(ang) * r;
-        z = Math.sin(ang) * r;
-      } else { // Foliage Canopy Cloud
-        const u = R() * 6.28, v = (R() - 0.5) * 3.14;
-        const rad = 0.55 * Math.cbrt(R());
-        x = Math.cos(v) * Math.cos(u) * rad * 1.2;
-        y = 0.25 + Math.sin(v) * rad * 0.8;
-        z = Math.cos(v) * Math.sin(u) * rad * 1.2;
-      }
-      a[i * 3] = x; a[i * 3 + 1] = y; a[i * 3 + 2] = z;
-    }
-    return normalizeShape(a);
-  },
-
-  // 14. Pyramid
-  pyramid(){
-    const a = new Float32Array(N * 3);
-    for (let i = 0; i < N; i++){
-      const h = R(); // 0 (base) to 1 (apex)
-      const y = h * 1.4 - 0.7;
-      const w = (1.0 - h) * 0.8;
-      const side = Math.floor(R() * 4);
-      let x, z;
-      const t = (R() * 2 - 1) * w;
-      if (side === 0){ x = t; z = w; }
-      else if (side === 1){ x = t; z = -w; }
-      else if (side === 2){ x = w; z = t; }
-      else { x = -w; z = t; }
-      a[i * 3] = x + (R() - 0.5) * 0.04;
-      a[i * 3 + 1] = y;
-      a[i * 3 + 2] = z + (R() - 0.5) * 0.04;
-    }
-    return normalizeShape(a);
-  }
-};
-
-// ================= DYNAMIC 3D TEXT / EMOJI RASTERIZER =================
-function genText(str){
-  const c = document.createElement('canvas');
-  c.width = 512; c.height = 256;
-  const ctx = c.getContext('2d');
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 512, 256);
-  ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  const fontSize = str.length <= 4 ? 120 : (str.length <= 8 ? 84 : 54);
-  ctx.font = `bold ${fontSize}px system-ui, sans-serif`;
-  ctx.fillText(str, 256, 128);
-  const data = ctx.getImageData(0, 0, 512, 256).data;
-  const valid = [];
-  for (let y = 0; y < 256; y += 2){
-    for (let x = 0; x < 512; x += 2){
-      const idx = (y * 512 + x) * 4;
-      if (data[idx] > 40) valid.push((x / 512 - 0.5) * 2.2, -(y / 256 - 0.5) * 1.1);
-    }
-  }
-  const a = new Float32Array(N * 3);
-  const nVal = valid.length / 2;
-  for (let i = 0; i < N; i++){
-    if (nVal > 0){
-      const vi = (i % nVal) * 2;
-      a[i * 3] = valid[vi] + (R() - 0.5) * 0.02;
-      a[i * 3 + 1] = valid[vi + 1] + (R() - 0.5) * 0.02;
-      a[i * 3 + 2] = (R() - 0.5) * 0.18;
-    } else {
-      a[i * 3] = (R() - 0.5) * 1.5;
-      a[i * 3 + 1] = (R() - 0.5) * 1.5;
-      a[i * 3 + 2] = (R() - 0.5) * 1.5;
-    }
-  }
-  return normalizeShape(a);
-}
-
-// ================= GL BUFFERS & STATE =================
-const seeds = new Float32Array(N);
-for (let i = 0; i < N; i++) seeds[i] = R();
-
-const curFrom = new Float32Array(N * 3);
-const curTo = new Float32Array(N * 3);
-curFrom.set(SHAPES.orb());
-curTo.set(curFrom);
-
-function mkBuf(name, size, data){
-  const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b);
-  gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
-  const loc = gl.getAttribLocation(prog, name);
-  gl.enableVertexAttribArray(loc);
-  gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
-  return b;
-}
-
-const bFrom = mkBuf('aFrom', 3, curFrom);
-const bTo = mkBuf('aTo', 3, curTo);
-mkBuf('aSeed', 1, seeds);
-
-const U = {};
-['uTime','uLevel','uBass','uMid','uHigh','uRotY','uRotX','uDPR','uMorph','uScale','uTouch'].forEach(n => U[n] = gl.getUniformLocation(prog, n));
-gl.uniform1f(U.uDPR, DPR);
-
-gl.enable(gl.BLEND);
-gl.blendFunc(gl.ONE, gl.ONE);
-gl.clearColor(0.008, 0.012, 0.03, 1.0);
-resize();
-
-let morph = 1.0;
-let currentShape = 'orb';
-
-function morphTo(shapeKey, textQuery = ''){
-  let targetArr;
-  if (shapeKey && SHAPES[shapeKey]){
-    targetArr = SHAPES[shapeKey]();
-    currentShape = shapeKey;
-  } else if (textQuery) {
-    targetArr = genText(textQuery);
-    currentShape = 'text';
-  } else {
-    targetArr = SHAPES.orb();
-    currentShape = 'orb';
-  }
-  for (let i = 0; i < N * 3; i++){
-    curFrom[i] = curFrom[i] * (1 - morph) + curTo[i] * morph;
-  }
-  curTo.set(targetArr);
-  morph = 0.0;
-  gl.bindBuffer(gl.ARRAY_BUFFER, bFrom); gl.bufferData(gl.ARRAY_BUFFER, curFrom, gl.DYNAMIC_DRAW);
-  gl.bindBuffer(gl.ARRAY_BUFFER, bTo);   gl.bufferData(gl.ARRAY_BUFFER, curTo, gl.DYNAMIC_DRAW);
-}
-
-// ================= AUDIO CONTEXT & DEEPGRAM TTS =================
-let audioCtx = null;
-let analyser = null;
-let audioDataArr = null;
-let currentAudio = null;
-
-function initAudio(){
-  if (!audioCtx){
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.82;
-    audioDataArr = new Uint8Array(analyser.frequencyBinCount);
-  }
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-}
-
-async function speakDeepgram(text){
-  if (!text) return;
-  initAudio();
-  voiceBar.className = 'speaking';
-  statusText.textContent = 'Speaking...';
-  showToast(text);
-
-  try {
-    const res = await fetch('https://api.deepgram.com/v2/speak?model=flux-prachi-hi&expressivity=1', {
-      method: 'POST',
-      headers: {
-        'Authorization': 'Token ' + DEEPGRAM_KEY,
-        'Content-Type': 'application/json'
+    // State Color Profiles
+    const STATE_PROFILES = {
+      idle: {
+        colorBase: new THREE.Color('#ffffff'),
+        colorA: new THREE.Color('#00f0ff'),
+        colorB: new THREE.Color('#8b5cf6'),
+        colorC: new THREE.Color('#38bdf8'),
+        colorCore: new THREE.Color('#e0f2fe'),
+        displacementAmp: 0.24,
+        noiseFreq: 0.85,
+        noiseSpeed: 0.40,
+        pointSize: 2.1,
+        rotationSpeed: 0.22
       },
-      body: JSON.stringify({ text })
-    });
-    if (!res.ok) throw new Error('Deepgram HTTP ' + res.status);
-    const blob = await res.blob();
-    const url = URL.createObjectURL(blob);
-    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-    currentAudio = new Audio(url);
-    const srcNode = audioCtx.createMediaElementSource(currentAudio);
-    srcNode.connect(analyser);
-    analyser.connect(audioCtx.destination);
-
-    currentAudio.onended = () => {
-      voiceBar.className = '';
-      statusText.textContent = 'Tap to Talk';
+      listening: {
+        colorBase: new THREE.Color('#ffffff'),
+        colorA: new THREE.Color('#00f5d4'),
+        colorB: new THREE.Color('#00bbf9'),
+        colorC: new THREE.Color('#38bdf8'),
+        colorCore: new THREE.Color('#22d3ee'),
+        displacementAmp: 0.38,
+        noiseFreq: 1.45,
+        noiseSpeed: 0.95,
+        pointSize: 2.5,
+        rotationSpeed: 0.55
+      },
+      thinking: {
+        colorBase: new THREE.Color('#ffffff'),
+        colorA: new THREE.Color('#a855f7'),
+        colorB: new THREE.Color('#ec4899'),
+        colorC: new THREE.Color('#f59e0b'),
+        colorCore: new THREE.Color('#d946ef'),
+        displacementAmp: 0.45,
+        noiseFreq: 2.1,
+        noiseSpeed: 1.45,
+        pointSize: 2.6,
+        rotationSpeed: 1.05
+      },
+      speaking: {
+        colorBase: new THREE.Color('#ffffff'),
+        colorA: new THREE.Color('#06b6d4'),
+        colorB: new THREE.Color('#ec4899'),
+        colorC: new THREE.Color('#fbbf24'),
+        colorCore: new THREE.Color('#fde047'),
+        displacementAmp: 0.46,
+        noiseFreq: 1.35,
+        noiseSpeed: 0.85,
+        pointSize: 2.7,
+        rotationSpeed: 0.45
+      }
     };
-    await currentAudio.play();
-  } catch(err) {
-    console.warn('Deepgram TTS Error, falling back to browser synthesis:', err);
-    fallbackBrowserSpeech(text);
-  }
-}
 
-function fallbackBrowserSpeech(text){
-  if (!('speechSynthesis' in window)) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'hi-IN';
-  u.rate = 1.05;
-  u.onstart = () => { voiceBar.className = 'speaking'; statusText.textContent = 'Speaking...'; };
-  u.onend = () => { voiceBar.className = ''; statusText.textContent = 'Tap to Talk'; };
-  window.speechSynthesis.speak(u);
-}
+    // ================= 3D SHAPE GENERATORS =================
+    function generateShapePositions(shapeName, totalPoints) {
+      const arr = new Float32Array(totalPoints * 3);
+      const name = (shapeName || 'orb').toLowerCase();
 
-// ================= AI INTENT & SHAPE EXTRACTOR =================
-const SHAPE_KEYWORDS = {
-  car: ['car', 'gaadi', 'gadi', 'speed', 'ferrari', 'lamborghini', 'sports car', 'drive'],
-  plane: ['plane', 'airplane', 'aeroplane', 'jahaz', 'jet', 'fighter', 'fly', 'flight'],
-  rocket: ['rocket', 'space', 'missile', 'nasa', 'launch', 'chandrayaan', 'apollo', 'mars'],
-  heart: ['heart', 'dil', 'love', 'pyar', 'pyaar', 'mohabbat', 'romantic', 'valentine'],
-  dna: ['dna', 'helix', 'gene', 'biology', 'life', 'science', 'genetic'],
-  galaxy: ['galaxy', 'space', 'stars', 'universe', 'milky way', 'brahmand', 'cosmic', 'nebula'],
-  star: ['star', 'sitara', 'taara', 'tara', 'supernova', 'twinkle'],
-  donut: ['donut', 'torus', 'ring', 'doughnut'],
-  cube: ['cube', 'box', 'tesseract', 'square'],
-  portal: ['portal', 'stargate', 'wormhole', 'gate'],
-  flower: ['flower', 'phool', 'lotus', 'petal', 'gulab', 'rose'],
-  tree: ['tree', 'ped', 'tree of life', 'nature', 'wood'],
-  pyramid: ['pyramid', 'egypt', 'pharaoh', 'triangle'],
-  orb: ['orb', 'sphere', 'core', 'ai', 'normal', 'default', 'reset']
-};
+      for (let i = 0; i < totalPoints; i++) {
+        const u = i / totalPoints;
+        const idx = i * 3;
+        let x = 0, y = 0, z = 0;
 
-function extractShapeAndIntent(prompt){
-  const lower = prompt.toLowerCase();
-  for (const [shape, words] of Object.entries(SHAPE_KEYWORDS)){
-    for (const w of words){
-      if (lower.includes(w)) return shape;
+        if (name === 'car') {
+          // 3D Car with wheels, body cabin, hood, spoiler
+          if (u < 0.25) {
+            const wheelIdx = Math.floor(u * 16) % 4;
+            const wx = (wheelIdx % 2 === 0 ? -1.3 : 1.3);
+            const wz = (wheelIdx < 2 ? -0.85 : 0.85);
+            const a = Math.random() * Math.PI * 2;
+            const r = 0.36 + Math.random() * 0.08;
+            x = wx + (Math.random() - 0.5) * 0.15;
+            y = -0.55 + Math.sin(a) * r;
+            z = wz + Math.cos(a) * r;
+          } else if (u < 0.65) {
+            x = (Math.random() - 0.5) * 3.6;
+            y = -0.45 + (Math.random() - 0.5) * 0.35;
+            z = (Math.random() - 0.5) * 1.6;
+          } else if (u < 0.88) {
+            x = (Math.random() - 0.5) * 1.8 - 0.15;
+            y = 0.05 + Math.random() * 0.55;
+            z = (Math.random() - 0.5) * 1.3 * (1.0 - (y - 0.05) * 0.8);
+          } else {
+            x = 1.65 + (Math.random() - 0.5) * 0.25;
+            y = 0.25 + (Math.random() - 0.5) * 0.3;
+            z = (Math.random() - 0.5) * 1.5;
+          }
+        } else if (name === 'plane' || name === 'aeroplane') {
+          // Jet aircraft: fuselage, delta wings, vertical stabilizer
+          if (u < 0.45) {
+            const fx = (u / 0.45 - 0.5) * 4.2;
+            const fr = (1.0 - Math.abs(fx / 2.1)) * 0.32;
+            const fa = Math.random() * Math.PI * 2;
+            x = fx;
+            y = Math.sin(fa) * fr;
+            z = Math.cos(fa) * fr;
+          } else if (u < 0.80) {
+            const span = (Math.random() - 0.5) * 4.4;
+            x = -Math.abs(span) * 0.55 + (Math.random() - 0.5) * 0.4;
+            y = (Math.random() - 0.5) * 0.08;
+            z = span;
+          } else {
+            x = -1.7 + Math.random() * 0.4;
+            y = Math.random() * 0.95;
+            z = (Math.random() - 0.5) * (0.8 - y * 0.6);
+          }
+        } else if (name === 'heart') {
+          // Romantic 3D heart
+          const t = Math.PI * (2 * Math.random() - 1);
+          const hx = 16 * Math.pow(Math.sin(t), 3);
+          const hy = 13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t);
+          const scale = 0.12;
+          const thick = (Math.random() - 0.5) * 0.9 * (1.0 - Math.abs(t) / Math.PI);
+          x = hx * scale;
+          y = hy * scale + 0.2;
+          z = thick;
+        } else if (name === 'rocket') {
+          // Space rocket & thruster blast
+          if (u < 0.60) {
+            const h = (u / 0.60 - 0.5) * 3.8;
+            const cone = h > 0.8 ? Math.max(0, 1.0 - (h - 0.8) / 1.1) : 1.0;
+            const r = 0.42 * cone;
+            const a = Math.random() * Math.PI * 2;
+            x = Math.cos(a) * r;
+            y = h;
+            z = Math.sin(a) * r;
+          } else if (u < 0.78) {
+            const finIdx = Math.floor(Math.random() * 3);
+            const a = finIdx * (Math.PI * 2 / 3);
+            const span = 0.4 + Math.random() * 0.55;
+            x = Math.cos(a) * span;
+            y = -1.4 + Math.random() * 0.7;
+            z = Math.sin(a) * span;
+          } else {
+            const spread = Math.random() * 0.55;
+            const h = -1.9 - Math.random() * 1.5;
+            const a = Math.random() * Math.PI * 2;
+            x = Math.cos(a) * spread * (h / -1.9);
+            y = h;
+            z = Math.sin(a) * spread * (h / -1.9);
+          }
+        } else if (name === 'star') {
+          // 3D 5-pointed celestial star
+          const angle = Math.random() * Math.PI * 2;
+          const k = 5;
+          const rBase = 1.0 + 0.9 * Math.cos(k * angle);
+          const r = rBase * (0.45 + Math.random() * 0.55);
+          const zThick = (Math.random() - 0.5) * 0.55 * (1.0 - r / 2.0);
+          x = r * Math.cos(angle);
+          y = r * Math.sin(angle);
+          z = zThick;
+        } else if (name === 'galaxy') {
+          // Logarithmic spiral galaxy
+          const arms = 4;
+          const arm = Math.floor(Math.random() * arms);
+          const dist = Math.pow(Math.random(), 0.75) * 2.6;
+          const theta = dist * 2.4 + arm * (Math.PI * 2 / arms) + (Math.random() - 0.5) * 0.35;
+          x = dist * Math.cos(theta);
+          z = dist * Math.sin(theta);
+          y = (Math.random() - 0.5) * 0.45 * Math.exp(-dist * 0.6);
+        } else if (name === 'cube') {
+          // Hollow 3D crystalline cube
+          const face = Math.floor(Math.random() * 6);
+          const uCoord = (Math.random() - 0.5) * 2.2;
+          const vCoord = (Math.random() - 0.5) * 2.2;
+          const side = 1.1;
+          if (face === 0) { x = side; y = uCoord; z = vCoord; }
+          else if (face === 1) { x = -side; y = uCoord; z = vCoord; }
+          else if (face === 2) { y = side; x = uCoord; z = vCoord; }
+          else if (face === 3) { y = -side; x = uCoord; z = vCoord; }
+          else if (face === 4) { z = side; x = uCoord; y = vCoord; }
+          else { z = -side; x = uCoord; y = vCoord; }
+        } else if (name === 'donut' || name === 'torus') {
+          // 3D Torus
+          const R = 1.45;
+          const r = 0.58;
+          const theta = Math.random() * Math.PI * 2;
+          const phi = Math.random() * Math.PI * 2;
+          x = (R + r * Math.cos(phi)) * Math.cos(theta);
+          z = (R + r * Math.cos(phi)) * Math.sin(theta);
+          y = r * Math.sin(phi);
+        } else if (name === 'tree') {
+          // Tree with trunk and foliage canopy
+          if (u < 0.28) {
+            const h = -1.8 + (u / 0.28) * 1.3;
+            const r = (0.24 - (h + 1.8) * 0.08) * (0.8 + Math.random() * 0.4);
+            const a = Math.random() * Math.PI * 2;
+            x = Math.cos(a) * r;
+            y = h;
+            z = Math.sin(a) * r;
+          } else {
+            const phi = Math.acos(2 * Math.random() - 1);
+            const theta = Math.random() * Math.PI * 2;
+            const r = Math.pow(Math.random(), 0.5) * 1.5;
+            x = r * Math.sin(phi) * Math.cos(theta);
+            y = 0.4 + r * Math.cos(phi);
+            z = r * Math.sin(phi) * Math.sin(theta);
+          }
+        } else if (name === 'flower') {
+          // 6-petal blooming flower
+          const petals = 6;
+          const theta = Math.random() * Math.PI * 2;
+          const r = (0.35 + 1.25 * Math.abs(Math.sin(petals * 0.5 * theta))) * (0.5 + Math.random() * 0.5);
+          x = r * Math.cos(theta);
+          y = r * Math.sin(theta);
+          z = (Math.random() - 0.5) * 0.45 * (1.0 - r / 1.6);
+        } else if (name === 'portal') {
+          // Stargate portal
+          const rRing = 1.75;
+          const theta = Math.random() * Math.PI * 2;
+          if (u < 0.65) {
+            const rTube = 0.22 + Math.random() * 0.12;
+            const phi = Math.random() * Math.PI * 2;
+            x = (rRing + rTube * Math.cos(phi)) * Math.cos(theta);
+            y = (rRing + rTube * Math.cos(phi)) * Math.sin(theta);
+            z = rTube * Math.sin(phi);
+          } else {
+            const rInner = Math.random() * rRing;
+            x = rInner * Math.cos(theta);
+            y = rInner * Math.sin(theta);
+            z = (Math.random() - 0.5) * 0.15;
+          }
+        } else {
+          // Default / Orb: Pure Concentric Sphere
+          const phi = Math.acos(2 * Math.random() - 1);
+          const theta = Math.random() * Math.PI * 2;
+          const r = 2.15 * (0.97 + Math.random() * 0.06);
+          x = r * Math.sin(phi) * Math.cos(theta);
+          y = r * Math.cos(phi);
+          z = r * Math.sin(phi) * Math.sin(theta);
+        }
+
+        arr[idx] = x;
+        arr[idx + 1] = y;
+        arr[idx + 2] = z;
+      }
+
+      return arr;
     }
-  }
-  return null;
-}
 
-async function processUserPrompt(prompt){
-  if (!prompt || !prompt.trim()) return;
-  const p = prompt.trim();
-  voiceBar.className = 'thinking';
-  statusText.textContent = 'Thinking...';
-  showToast(`"${p}"`);
+    // ================= 3D AI ORB STAGE =================
+    class AIHoloOrb {
+      constructor(container) {
+        this.container = container;
+        this.currentState = 'idle';
+        this.targetProfile = { ...STATE_PROFILES.idle };
 
-  // Detect shape intent
-  const detectedShape = extractShapeAndIntent(p);
-  if (detectedShape){
-    morphTo(detectedShape);
-  }
+        this.activeValues = {
+          colorBase: STATE_PROFILES.idle.colorBase.clone(),
+          colorA: STATE_PROFILES.idle.colorA.clone(),
+          colorB: STATE_PROFILES.idle.colorB.clone(),
+          colorC: STATE_PROFILES.idle.colorC.clone(),
+          colorCore: STATE_PROFILES.idle.colorCore.clone(),
+          displacementAmp: STATE_PROFILES.idle.displacementAmp,
+          noiseFreq: STATE_PROFILES.idle.noiseFreq,
+          noiseSpeed: STATE_PROFILES.idle.noiseSpeed,
+          pointSize: STATE_PROFILES.idle.pointSize,
+          rotationSpeed: STATE_PROFILES.idle.rotationSpeed
+        };
 
-  // If user configured an LLM Key (Groq or OpenRouter)
-  if (LLM_KEY){
-    try {
-      const isGroq = LLM_KEY.startsWith('gsk_');
-      const ep = isGroq ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://openrouter.ai/api/v1/chat/completions';
-      const model = isGroq ? 'llama-3.1-8b-instant' : 'meta-llama/llama-3.1-8b-instruct:free';
-      const res = await fetch(ep, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${LLM_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model,
-          messages: [
-            {
-              role: 'system',
-              content: 'You are NEXUS, an intelligent living 3D Hologram AI. Answer in expressive, friendly Hindi/Hinglish in 1-2 concise sentences. If the user asks to form a shape, acknowledge it.'
-            },
-            { role: 'user', content: p }
-          ],
-          max_tokens: 150
-        })
-      });
-      if (res.ok){
-        const json = await res.json();
-        const reply = json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content;
-        if (reply){
-          speakDeepgram(reply);
-          return;
+        this.audioIntensity = 0.0;
+        this.audioBass = 0.0;
+        this.audioTreble = 0.0;
+
+        // Morphing State
+        this.currentShape = 'orb';
+        this.morphProgress = 0.0;
+        this.targetMorph = 0.0;
+
+        this.mouse = { x: 0, y: 0 };
+        this.isDragging = false;
+        this.previousPointerPos = { x: 0, y: 0 };
+        this.pointerVelocity = { x: 0, y: 0 };
+        this.inertiaVelocity = { x: 0, y: 0 };
+
+        this.targetCameraDistance = 7.0;
+        this.minCameraDist = 4.0;
+        this.maxCameraDist = 10.5;
+
+        this.clock = new THREE.Clock();
+
+        this.initScene();
+        this.initParticleWaveSphere();
+        this.initInnerPointCore();
+        this.initOuterDust();
+        this.initEventListeners();
+        this.animate();
+      }
+
+      initScene() {
+        this.scene = new THREE.Scene();
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        this.camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
+        this.camera.position.set(0, 0, this.targetCameraDistance);
+
+        this.renderer = new THREE.WebGLRenderer({
+          antialias: true,
+          alpha: true,
+          powerPreference: 'high-performance'
+        });
+        this.renderer.setSize(width, height);
+        this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.0));
+        this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        this.renderer.toneMappingExposure = 1.45;
+
+        this.container.appendChild(this.renderer.domElement);
+
+        this.orbGroup = new THREE.Group();
+        this.scene.add(this.orbGroup);
+      }
+
+      initParticleWaveSphere() {
+        const radius = 2.15;
+        const rings = 190;
+        const maxPointsPerRing = 270;
+
+        const positions = [];
+        const scales = [];
+        const randoms = [];
+
+        for (let r = 0; r <= rings; r++) {
+          const v = r / rings;
+          const phi = v * Math.PI;
+          const ringRadius = Math.sin(phi);
+          const pointsInRing = Math.max(1, Math.round(ringRadius * maxPointsPerRing));
+
+          for (let p = 0; p < pointsInRing; p++) {
+            const u = p / pointsInRing;
+            const thetaJitter = (Math.random() - 0.5) * 0.015;
+            const theta = u * Math.PI * 2 + thetaJitter;
+
+            const radialJitter = (Math.random() - 0.5) * 0.035;
+            const curRadius = radius * (1.0 + radialJitter);
+
+            const x = Math.sin(phi) * Math.cos(theta) * curRadius;
+            const y = Math.cos(phi) * curRadius;
+            const z = Math.sin(phi) * Math.sin(theta) * curRadius;
+
+            positions.push(x, y, z);
+
+            const isBrightStar = Math.random() < 0.12;
+            const scale = isBrightStar ? (1.5 + Math.random() * 0.8) : (0.85 + Math.random() * 0.5);
+            scales.push(scale);
+            randoms.push(Math.random());
+          }
+        }
+
+        this.totalPoints = Math.floor(positions.length / 3);
+        this.origPositions = new Float32Array(positions);
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        geometry.setAttribute('aScale', new THREE.Float32BufferAttribute(scales, 1));
+        geometry.setAttribute('aRandom', new THREE.Float32BufferAttribute(randoms, 1));
+
+        // Target shape positions for morphing
+        this.targetPositions = new Float32Array(this.origPositions);
+        this.targetPosAttribute = new THREE.Float32BufferAttribute(this.targetPositions, 3);
+        geometry.setAttribute('aTargetPos', this.targetPosAttribute);
+
+        this.waveUniforms = {
+          uTime: { value: 0.0 },
+          uAudioIntensity: { value: 0.0 },
+          uAudioBass: { value: 0.0 },
+          uAudioTreble: { value: 0.0 },
+          uDisplacementAmp: { value: this.activeValues.displacementAmp },
+          uNoiseFreq: { value: this.activeValues.noiseFreq },
+          uNoiseSpeed: { value: this.activeValues.noiseSpeed },
+          uPointSize: { value: this.activeValues.pointSize },
+          uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2.0) },
+          uColorBase: { value: this.activeValues.colorBase },
+          uColorA: { value: this.activeValues.colorA },
+          uColorB: { value: this.activeValues.colorB },
+          uColorC: { value: this.activeValues.colorC },
+          uStatePulse: { value: 0.0 },
+          uShockwaveProgress: { value: 0.0 },
+          uShockwaveIntensity: { value: 0.0 },
+          uShockwaveOrigin: { value: new THREE.Vector3(0, 0, 1) },
+          uMorphProgress: { value: 0.0 }
+        };
+
+        this.waveMaterial = new THREE.ShaderMaterial({
+          vertexShader: particleWaveSphereVertexShader,
+          fragmentShader: particleWaveSphereFragmentShader,
+          uniforms: this.waveUniforms,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        });
+
+        this.waveMesh = new THREE.Points(geometry, this.waveMaterial);
+        this.orbGroup.add(this.waveMesh);
+      }
+
+      initInnerPointCore() {
+        const count = 6000;
+        const positions = new Float32Array(count * 3);
+        const scales = new Float32Array(count);
+
+        for (let i = 0; i < count; i++) {
+          const u = Math.random();
+          const v = Math.random();
+          const theta = u * 2.0 * Math.PI;
+          const phi = Math.acos(2.0 * v - 1.0);
+          const r = 1.1 + Math.random() * 0.28;
+
+          const i3 = i * 3;
+          positions[i3] = r * Math.sin(phi) * Math.cos(theta);
+          positions[i3 + 1] = r * Math.cos(phi);
+          positions[i3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+          scales[i] = 0.7 + Math.random() * 0.7;
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('aScale', new THREE.BufferAttribute(scales, 1));
+
+        this.coreUniforms = {
+          uTime: { value: 0.0 },
+          uAudioBass: { value: 0.0 },
+          uAudioIntensity: { value: 0.0 },
+          uPointSize: { value: 1.6 },
+          uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2.0) },
+          uCoreColor: { value: this.activeValues.colorCore },
+          uMorphProgress: { value: 0.0 }
+        };
+
+        const material = new THREE.ShaderMaterial({
+          vertexShader: innerPointCoreVertexShader,
+          fragmentShader: innerPointCoreFragmentShader,
+          uniforms: this.coreUniforms,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        });
+
+        this.coreMesh = new THREE.Points(geometry, material);
+        this.orbGroup.add(this.coreMesh);
+      }
+
+      initOuterDust() {
+        const count = 1800;
+        const positions = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        const sizes = new Float32Array(count);
+        const speeds = new Float32Array(count);
+        const phases = new Float32Array(count);
+
+        const dustColors = [
+          new THREE.Color('#00f0ff'),
+          new THREE.Color('#c084fc'),
+          new THREE.Color('#38bdf8'),
+          new THREE.Color('#f472b6')
+        ];
+
+        for (let i = 0; i < count; i++) {
+          const radius = 2.4 + Math.random() * 3.4;
+          const theta = Math.random() * Math.PI * 2;
+          const phi = Math.acos(2 * Math.random() - 1);
+
+          const i3 = i * 3;
+          positions[i3] = radius * Math.sin(phi) * Math.cos(theta);
+          positions[i3 + 1] = radius * Math.cos(phi);
+          positions[i3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
+
+          const col = dustColors[Math.floor(Math.random() * dustColors.length)];
+          colors[i3] = col.r;
+          colors[i3 + 1] = col.g;
+          colors[i3 + 2] = col.b;
+
+          sizes[i] = 1.2 + Math.random() * 1.8;
+          speeds[i] = 0.2 + Math.random() * 0.8;
+          phases[i] = Math.random() * Math.PI * 2;
+        }
+
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        geometry.setAttribute('aColor', new THREE.BufferAttribute(colors, 3));
+        geometry.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+        geometry.setAttribute('aSpeed', new THREE.BufferAttribute(speeds, 1));
+        geometry.setAttribute('aPhase', new THREE.BufferAttribute(phases, 1));
+
+        this.dustUniforms = {
+          uTime: { value: 0.0 },
+          uAudioIntensity: { value: 0.0 },
+          uPixelRatio: { value: Math.min(window.devicePixelRatio || 1, 2.0) }
+        };
+
+        const material = new THREE.ShaderMaterial({
+          vertexShader: outerDustVertexShader,
+          fragmentShader: outerDustFragmentShader,
+          uniforms: this.dustUniforms,
+          transparent: true,
+          blending: THREE.AdditiveBlending,
+          depthWrite: false
+        });
+
+        this.dustMesh = new THREE.Points(geometry, material);
+        this.orbGroup.add(this.dustMesh);
+      }
+
+      // Morph to shape
+      setShape(shapeName) {
+        const cleanName = (shapeName || 'orb').toLowerCase().trim();
+        this.currentShape = cleanName;
+
+        const targetArr = generateShapePositions(cleanName, this.totalPoints);
+        this.waveMesh.geometry.attributes.aTargetPos.copyArray(targetArr);
+        this.waveMesh.geometry.attributes.aTargetPos.needsUpdate = true;
+
+        if (cleanName === 'orb') {
+          this.targetMorph = 0.0;
+        } else {
+          this.targetMorph = 1.0;
         }
       }
-    } catch(e) {
-      console.warn('Cloud LLM failed, using built-in conversational AI:', e);
+
+      setState(stateName) {
+        if (!STATE_PROFILES[stateName]) return;
+        this.currentState = stateName;
+        this.targetProfile = { ...STATE_PROFILES[stateName] };
+      }
+
+      setAudioData({ intensity = 0, bass = 0, treble = 0 }) {
+        this.audioIntensity = intensity;
+        this.audioBass = bass;
+        this.audioTreble = treble;
+      }
+
+      initEventListeners() {
+        window.addEventListener('resize', () => {
+          const width = window.innerWidth;
+          const height = window.innerHeight;
+          this.camera.aspect = width / height;
+          this.camera.updateProjectionMatrix();
+          this.renderer.setSize(width, height);
+          const pr = Math.min(window.devicePixelRatio || 1, 2.0);
+          this.renderer.setPixelRatio(pr);
+          if (this.waveUniforms) this.waveUniforms.uPixelRatio.value = pr;
+          if (this.coreUniforms) this.coreUniforms.uPixelRatio.value = pr;
+          if (this.dustUniforms) this.dustUniforms.uPixelRatio.value = pr;
+        });
+
+        // Touch & Mouse Drag
+        const onDown = (e) => {
+          const isTouch = e.touches && e.touches.length > 0;
+          const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+          const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+          this.isDragging = true;
+          this.previousPointerPos = { x: clientX, y: clientY };
+          this.pointerVelocity = { x: 0, y: 0 };
+        };
+
+        const onMove = (e) => {
+          if (!this.isDragging) return;
+          const isTouch = e.touches && e.touches.length > 0;
+          const clientX = isTouch ? e.touches[0].clientX : e.clientX;
+          const clientY = isTouch ? e.touches[0].clientY : e.clientY;
+
+          const deltaX = clientX - this.previousPointerPos.x;
+          const deltaY = clientY - this.previousPointerPos.y;
+
+          this.waveMesh.rotation.y += deltaX * 0.005;
+          this.waveMesh.rotation.x += deltaY * 0.005;
+
+          this.pointerVelocity.x = deltaX * 0.004;
+          this.pointerVelocity.y = deltaY * 0.004;
+
+          this.previousPointerPos = { x: clientX, y: clientY };
+        };
+
+        const onUp = () => {
+          if (this.isDragging) {
+            this.isDragging = false;
+            this.inertiaVelocity = { ...this.pointerVelocity };
+          }
+        };
+
+        window.addEventListener('mousedown', onDown);
+        window.addEventListener('mousemove', onMove, { passive: true });
+        window.addEventListener('mouseup', onUp);
+        window.addEventListener('touchstart', onDown, { passive: true });
+        window.addEventListener('touchmove', onMove, { passive: true });
+        window.addEventListener('touchend', onUp);
+      }
+
+      animate = () => {
+        requestAnimationFrame(this.animate);
+        const elapsedTime = this.clock.getElapsedTime();
+
+        // Smooth profile lerping
+        const lerpSpeed = 0.065;
+        this.activeValues.colorBase.lerp(this.targetProfile.colorBase, lerpSpeed);
+        this.activeValues.colorA.lerp(this.targetProfile.colorA, lerpSpeed);
+        this.activeValues.colorB.lerp(this.targetProfile.colorB, lerpSpeed);
+        this.activeValues.colorC.lerp(this.targetProfile.colorC, lerpSpeed);
+        this.activeValues.colorCore.lerp(this.targetProfile.colorCore, lerpSpeed);
+
+        this.activeValues.displacementAmp = THREE.MathUtils.lerp(this.activeValues.displacementAmp, this.targetProfile.displacementAmp, lerpSpeed);
+        this.activeValues.noiseFreq = THREE.MathUtils.lerp(this.activeValues.noiseFreq, this.targetProfile.noiseFreq, lerpSpeed);
+        this.activeValues.noiseSpeed = THREE.MathUtils.lerp(this.activeValues.noiseSpeed, this.targetProfile.noiseSpeed, lerpSpeed);
+        this.activeValues.pointSize = THREE.MathUtils.lerp(this.activeValues.pointSize, this.targetProfile.pointSize, lerpSpeed);
+
+        // Smooth shape morph progress
+        this.morphProgress = THREE.MathUtils.lerp(this.morphProgress, this.targetMorph, 0.05);
+
+        // Inertia rotation
+        if (!this.isDragging) {
+          this.waveMesh.rotation.y += this.inertiaVelocity.x + this.targetProfile.rotationSpeed * 0.01;
+          this.waveMesh.rotation.x += this.inertiaVelocity.y;
+          this.inertiaVelocity.x *= 0.94;
+          this.inertiaVelocity.y *= 0.94;
+        }
+
+        // Inner core rotation
+        if (this.coreMesh) {
+          this.coreMesh.rotation.y -= 0.006;
+          this.coreMesh.rotation.x += 0.003;
+        }
+
+        // Update Uniforms
+        if (this.waveUniforms) {
+          this.waveUniforms.uTime.value = elapsedTime;
+          this.waveUniforms.uAudioIntensity.value = this.audioIntensity;
+          this.waveUniforms.uAudioBass.value = this.audioBass;
+          this.waveUniforms.uAudioTreble.value = this.audioTreble;
+          this.waveUniforms.uDisplacementAmp.value = this.activeValues.displacementAmp;
+          this.waveUniforms.uNoiseFreq.value = this.activeValues.noiseFreq;
+          this.waveUniforms.uNoiseSpeed.value = this.activeValues.noiseSpeed;
+          this.waveUniforms.uPointSize.value = this.activeValues.pointSize;
+          this.waveUniforms.uMorphProgress.value = this.morphProgress;
+        }
+
+        if (this.coreUniforms) {
+          this.coreUniforms.uTime.value = elapsedTime;
+          this.coreUniforms.uAudioBass.value = this.audioBass;
+          this.coreUniforms.uAudioIntensity.value = this.audioIntensity;
+          this.coreUniforms.uMorphProgress.value = this.morphProgress;
+        }
+
+        if (this.dustUniforms) {
+          this.dustUniforms.uTime.value = elapsedTime;
+          this.dustUniforms.uAudioIntensity.value = this.audioIntensity;
+        }
+
+        this.renderer.render(this.scene, this.camera);
+      };
     }
-  }
 
-  // Fast Built-in Conversational AI Brain (Zero latency, warm conversational Hindi)
-  const lower = p.toLowerCase();
-  let reply = '';
+    // ================= REAL-TIME PHONE CALL ENGINE =================
+    // Pure Phone Microphone (getUserMedia) + Deepgram STT/TTS Duplex Call
+    class VoiceCallEngine {
+      constructor({ orb, onStateChange, onCaption, onShapeChange, btnCall }) {
+        this.orb = orb;
+        this.onStateChange = onStateChange;
+        this.onCaption = onCaption;
+        this.onShapeChange = onShapeChange;
+        this.btnCall = btnCall;
 
-  if (detectedShape === 'car'){
-    reply = 'ये देखिए, आपके लिए एक सुपर-फास्ट स्पोर्ट्स कार का थ्री-डी होलोग्राम!';
-  } else if (detectedShape === 'plane'){
-    reply = 'सुपरसोनिक फाइटर जेट तैयार है, हवा से बातें करने के लिए!';
-  } else if (detectedShape === 'rocket'){
-    reply = 'रॉकेट लॉन्च के लिए तैयार है, अंतरिक्ष की यात्रा पर!';
-  } else if (detectedShape === 'heart'){
-    reply = 'आपके लिए यह धड़कता हुआ थ्री-डी दिल हाज़िर है!';
-  } else if (detectedShape === 'dna'){
-    reply = 'यह है जीवन का रहस्य, घूमता हुआ डीएनए डबल हेलिक्स!';
-  } else if (detectedShape === 'galaxy'){
-    reply = 'ब्रह्मांड की एक खूबसूरत स्पाइरल गैलेक्सी आपके सामने है!';
-  } else if (detectedShape === 'star'){
-    reply = 'चमकता हुआ तारा, आपके आसमान का सितारा!';
-  } else if (detectedShape === 'flower'){
-    reply = 'खूबसूरत खिलता हुआ कमल का फूल आपके लिए!';
-  } else if (detectedShape === 'portal'){
-    reply = 'क्वांटम पोर्टल एक्टिवेट हो चुका है!';
-  } else if (detectedShape === 'tree'){
-    reply = 'प्रकृति का पवित्र ट्री ऑफ लाइफ आपके सामने है।';
-  } else if (detectedShape === 'pyramid'){
-    reply = 'गीज़ा का रहस्यमयी थ्री-डी पिरामिड तैयार है।';
-  } else if (lower.includes('kaise ho') || lower.includes('kaisa hai') || lower.includes('how are you')){
-    reply = 'मैं बहुत बढ़िया हूँ! आप बताइए, आज मैं आपके लिए कौन सा रूप या होलोग्राम बनाऊँ?';
-  } else if (lower.includes('naam') || lower.includes('who are you') || lower.includes('kaun ho')){
-    reply = 'मेरा नाम नेक्सस है, मैं आपकी थ्री-डी लिविंग होलोग्राम एआई हूँ।';
-  } else if (lower.includes('namaste') || lower.includes('hello') || lower.includes('hi') || lower.includes('hey')){
-    reply = 'नमस्ते! कहिए, आज आप होलोग्राम में क्या देखना चाहते हैं?';
-  } else {
-    // Morph into 3D text of the keyword or orb
-    morphTo(null, p);
-    reply = `मैंने आपकी बात समझ ली है। यह देखिए!`;
-  }
+        this.inCall = false;
+        this.audioContext = null;
+        this.micStream = null;
+        this.analyser = null;
+        this.mediaRecorder = null;
+        this.audioChunks = [];
+        this.isSpeakingTTS = false;
+        this.isProcessingSTT = false;
 
-  speakDeepgram(reply);
-}
+        // VAD (Voice Activity Detection) Parameters
+        this.isUserSpeaking = false;
+        this.silenceTimer = null;
+        this.vadThreshold = 0.035; // Mic volume sensitivity
+        this.silenceDelayMs = 850;  // Pause duration to trigger STT
+        this.speechStartTimestamp = 0;
+      }
 
-// ================= SPEECH RECOGNITION (LISTENING) =================
-let recognition = null;
-let isListening = false;
+      async startCall() {
+        if (this.inCall) return;
 
-if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window){
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  recognition = new SpeechRec();
-  recognition.lang = 'hi-IN';
-  recognition.interimResults = false;
-  recognition.continuous = false;
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.audioContext = new AudioCtx();
+          if (this.audioContext.state === 'suspended') {
+            await this.audioContext.resume();
+          }
 
-  recognition.onstart = () => {
-    isListening = true;
-    voiceBar.className = 'listening';
-    statusText.textContent = 'Listening...';
-    showToast('🎙️ Boliyee, main sun rahi hoon...');
-  };
+          // Request native phone microphone (no Google popup!)
+          this.micStream = await navigator.mediaDevices.getUserMedia({
+            audio: {
+              echoCancellation: true,
+              noiseSuppression: true,
+              autoGainControl: true
+            }
+          });
 
-  recognition.onresult = (e) => {
-    const text = e.results[0][0].transcript;
-    processUserPrompt(text);
-  };
+          // Connect mic to Web Audio Analyser
+          this.analyser = this.audioContext.createAnalyser();
+          this.analyser.fftSize = 256;
+          this.analyser.smoothingTimeConstant = 0.8;
 
-  recognition.onerror = (e) => {
-    console.warn('Speech Rec error:', e);
-    isListening = false;
-    voiceBar.className = '';
-    statusText.textContent = 'Tap to Talk';
-    showToast('Mic permission allow karein');
-  };
+          const micSource = this.audioContext.createMediaStreamSource(this.micStream);
+          micSource.connect(this.analyser);
 
-  recognition.onend = () => {
-    isListening = false;
-    if (voiceBar.className === 'listening'){
-      voiceBar.className = '';
-      statusText.textContent = 'Tap to Talk';
+          this.inCall = true;
+          this.onStateChange('listening');
+          this.orb.setState('listening');
+          this.onCaption('Prachi', 'कॉल कनेक्ट हो गया है। आप जो चाहे बोल सकते हैं!');
+
+          // Start visualizer and VAD analysis loop
+          this.startAudioLoop();
+          this.prepareMediaRecorder();
+
+          // Speak initial warm greeting
+          this.speakText('नमस्ते! कॉल कनेक्ट हो गया है। मैं आपकी क्या मदद कर सकती हूँ? आप कोई भी सवाल पूछ सकते हैं या कोई 3D आकार बनाने को कह सकते हैं!');
+        } catch (err) {
+          console.error('Mic access error:', err);
+          alert('माइक्रोफ़ोन एक्सेस की अनुमति चाहिए: ' + err.message);
+          this.endCall();
+        }
+      }
+
+      endCall() {
+        this.inCall = false;
+        if (this.silenceTimer) clearTimeout(this.silenceTimer);
+
+        if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+          try { this.mediaRecorder.stop(); } catch (e) {}
+        }
+
+        if (this.micStream) {
+          this.micStream.getTracks().forEach(track => track.stop());
+          this.micStream = null;
+        }
+
+        if (this.currentTTSSource) {
+          try { this.currentTTSSource.stop(); } catch (e) {}
+          this.currentTTSSource = null;
+        }
+
+        if (this.btnCall) {
+          this.btnCall.style.transform = '';
+        }
+
+        this.onStateChange('idle');
+        this.orb.setState('idle');
+        this.onCaption('Prachi', 'कॉल समाप्त हो गया। फिर से बात करने के लिए टैप करें।');
+      }
+
+      prepareMediaRecorder() {
+        if (!this.micStream) return;
+
+        let mimeType = 'audio/webm;codecs=opus';
+        if (!MediaRecorder.isTypeSupported(mimeType)) {
+          if (MediaRecorder.isTypeSupported('audio/webm')) mimeType = 'audio/webm';
+          else if (MediaRecorder.isTypeSupported('audio/mp4')) mimeType = 'audio/mp4';
+          else mimeType = '';
+        }
+
+        this.mediaRecorder = mimeType ? new MediaRecorder(this.micStream, { mimeType }) : new MediaRecorder(this.micStream);
+
+        this.mediaRecorder.ondataavailable = (e) => {
+          if (e.data && e.data.size > 0) {
+            this.audioChunks.push(e.data);
+          }
+        };
+
+        this.mediaRecorder.onstop = async () => {
+          if (this.audioChunks.length === 0) return;
+          const blob = new Blob(this.audioChunks, { type: this.mediaRecorder.mimeType || 'audio/webm' });
+          this.audioChunks = [];
+
+          const duration = performance.now() - this.speechStartTimestamp;
+          // Filter out accidental micro-clicks (< 350ms)
+          if (duration > 350 && !this.isSpeakingTTS && this.inCall) {
+            await this.sendToDeepgramSTT(blob);
+          }
+        };
+      }
+
+      startAudioLoop() {
+        const freqData = new Uint8Array(this.analyser.frequencyBinCount);
+
+        const tick = () => {
+          if (!this.inCall) return;
+
+          this.analyser.getByteFrequencyData(freqData);
+          const binCount = freqData.length;
+
+          let sum = 0, bassSum = 0, trebleSum = 0;
+          const bassBins = Math.floor(binCount * 0.25);
+          const trebleStart = Math.floor(binCount * 0.5);
+
+          for (let i = 0; i < binCount; i++) {
+            const val = freqData[i] / 255.0;
+            sum += val;
+            if (i < bassBins) bassSum += val;
+            if (i >= trebleStart) trebleSum += val;
+          }
+
+          const intensity = Math.min((sum / binCount) * 2.4, 1.0);
+          const bass = Math.min((bassSum / bassBins) * 2.2, 1.0);
+          const treble = Math.min((trebleSum / (binCount - trebleStart)) * 2.5, 1.0);
+
+          // Update 3D Hologram audio reactivity metrics
+          this.orb.setAudioData({ intensity, bass, treble });
+
+          // Dynamically pulse Call Button with mic / voice intensity
+          if (this.btnCall) {
+            this.btnCall.style.transform = `scale(${1.0 + intensity * 0.10})`;
+          }
+
+          // Voice Activity Detection (only active when AI is NOT speaking)
+          if (!this.isSpeakingTTS && !this.isProcessingSTT && this.mediaRecorder) {
+            if (intensity > this.vadThreshold) {
+              // User is speaking!
+              if (!this.isUserSpeaking) {
+                this.isUserSpeaking = true;
+                this.speechStartTimestamp = performance.now();
+                this.audioChunks = [];
+                if (this.mediaRecorder.state === 'inactive') {
+                  this.mediaRecorder.start(100);
+                }
+                this.orb.setState('listening');
+                this.onStateChange('listening');
+              }
+
+              // Reset silence countdown timer
+              if (this.silenceTimer) clearTimeout(this.silenceTimer);
+              this.silenceTimer = setTimeout(() => {
+                // User has paused speaking!
+                if (this.isUserSpeaking) {
+                  this.isUserSpeaking = false;
+                  if (this.mediaRecorder && this.mediaRecorder.state === 'recording') {
+                    this.mediaRecorder.stop();
+                  }
+                }
+              }, this.silenceDelayMs);
+            }
+          }
+
+          requestAnimationFrame(tick);
+        };
+
+        tick();
+      }
+
+      // Transcribe via Deepgram Nova-2 STT (Instant ~200ms)
+      async sendToDeepgramSTT(blob) {
+        this.isProcessingSTT = true;
+        this.orb.setState('thinking');
+        this.onStateChange('thinking');
+
+        try {
+          const resp = await fetch(STT_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Token ${DEEPGRAM_KEY}`,
+              'Content-Type': blob.type || 'audio/webm'
+            },
+            body: blob
+          });
+
+          if (!resp.ok) throw new Error(`Deepgram STT error: ${resp.status}`);
+          const res = await resp.json();
+          const transcript = res.results?.channels?.[0]?.alternatives?.[0]?.transcript?.trim();
+
+          if (transcript && transcript.length > 0) {
+            this.onCaption('You', transcript);
+            await this.processUserSpeech(transcript);
+          } else {
+            // Nothing intelligible heard, resume listening
+            this.orb.setState('listening');
+            this.onStateChange('listening');
+          }
+        } catch (err) {
+          console.warn('STT failure:', err);
+          this.orb.setState('listening');
+          this.onStateChange('listening');
+        } finally {
+          this.isProcessingSTT = false;
+        }
+      }
+
+      // Interpret speech, extract 3D shape transformations, and generate response
+      async processUserSpeech(text) {
+        const lower = text.toLowerCase();
+        let targetShape = null;
+        let aiReply = '';
+
+        // Shape Detection Rules
+        if (lower.includes('car') || lower.includes('गाड़ी') || lower.includes('कार')) {
+          targetShape = 'car';
+          aiReply = 'बिल्कुल! मैंने आपके लिए 3D कार का आकार तैयार कर दिया है। देखिए कैसी लग रही है?';
+        } else if (lower.includes('plane') || lower.includes('aeroplane') || lower.includes('हवाई जहाज') || lower.includes('विमान') || lower.includes('jahaj')) {
+          targetShape = 'plane';
+          aiReply = 'लीजिए, 3D हवाई जहाज तैयार है! इसके विंग्स और जेट प्रोपल्शन को देखिए।';
+        } else if (lower.includes('heart') || lower.includes('dil') || lower.includes('दिल') || lower.includes('प्यार')) {
+          targetShape = 'heart';
+          aiReply = 'यह रहा आपके लिए एक खूबसूरत 3D दिल का आकार। क्या आपको यह पसंद आया?';
+        } else if (lower.includes('rocket') || lower.includes('रॉकेट')) {
+          targetShape = 'rocket';
+          aiReply = 'अंतरिक्ष की उड़ान के लिए 3D रॉकेट तैयार है!';
+        } else if (lower.includes('star') || lower.includes('tara') || lower.includes('तारा') || lower.includes('सितारा')) {
+          targetShape = 'star';
+          aiReply = 'आसमान का एक चमकता हुआ 3D सितारा आपके सामने है!';
+        } else if (lower.includes('galaxy') || lower.includes('आकाशगंगा')) {
+          targetShape = 'galaxy';
+          aiReply = 'यह है 4 स्पाइरल आर्म्स वाली 3D आकाशगंगा, जिसमें लाखों चमकते तारे हैं।';
+        } else if (lower.includes('tree') || lower.includes('ped') || lower.includes('पेड़')) {
+          targetShape = 'tree';
+          aiReply = 'मैंने एक सुंदर 3D वृक्ष का रूप दे दिया है।';
+        } else if (lower.includes('flower') || lower.includes('phool') || lower.includes('फूल')) {
+          targetShape = 'flower';
+          aiReply = 'यह रहा 6 पंखुड़ियों वाला खिला हुआ 3D फूल।';
+        } else if (lower.includes('cube') || lower.includes('घन') || lower.includes('box')) {
+          targetShape = 'cube';
+          aiReply = 'लीजिए, यह 3D क्रिस्टलाइन क्यूब है।';
+        } else if (lower.includes('donut') || lower.includes('torus')) {
+          targetShape = 'donut';
+          aiReply = 'यह रहा 3D डोनट टोरस आकार!';
+        } else if (lower.includes('portal') || lower.includes('गेट') || lower.includes('gateway')) {
+          targetShape = 'portal';
+          aiReply = 'स्टारगेट पोर्टल सक्रिय हो गया है!';
+        } else if (lower.includes('orb') || lower.includes('pahele jaisa') || lower.includes('पहले जैसा') || lower.includes('gola') || lower.includes('sphere') || lower.includes('normal')) {
+          targetShape = 'orb';
+          aiReply = 'ज़रूर! मैंने इसे वापस आपके पसंदीदा ओरिजिनल 3D स्टॉरलाइट ऑर्ब में बदल दिया है।';
+        } else {
+          // General Conversational Response
+          if (lower.includes('kaise ho') || lower.includes('कैसी हो') || lower.includes('how are you')) {
+            aiReply = 'मैं बिल्कुल ठीक और ऊर्जा से भरपूर हूँ! आप बताइए, आपका दिन कैसा बीत रहा है?';
+          } else if (lower.includes('naam') || lower.includes('name') || lower.includes('कौन हो')) {
+            aiReply = 'मेरा नाम प्राची है! मैं आपकी 3D एआई साथी हूँ। आप मुझसे बात कर सकते हैं या कोई भी 3D आकार बनवा सकते हैं!';
+          } else if (lower.includes('kya kar sakti ho') || lower.includes('features')) {
+            aiReply = 'मैं आपसे सीधे लाइव वॉइस कॉल पर बात कर सकती हूँ और आपके कहने पर कार, हवाई जहाज, दिल, रॉकेट, तारा, या गैलेक्सी का 3D आकार ले सकती हूँ!';
+          } else {
+            aiReply = `मैंने आपकी बात सुन ली: "${text}"। आप मुझसे कुछ भी पूछ सकते हैं या कोई भी 3D शेप बनाने को कह सकते हैं!`;
+          }
+        }
+
+        // Apply Shape Morphing
+        if (targetShape) {
+          this.orb.setShape(targetShape);
+          this.onShapeChange(targetShape);
+        }
+
+        // Speak back via Deepgram TTS
+        await this.speakText(aiReply);
+      }
+
+      // Synthesize via Deepgram Flux Prachi TTS & stream to phone speaker
+      async speakText(text) {
+        if (!this.inCall) return;
+
+        this.isSpeakingTTS = true;
+        this.orb.setState('speaking');
+        this.onStateChange('speaking');
+        this.onCaption('Prachi', text);
+
+        try {
+          const resp = await fetch(TTS_ENDPOINT, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Token ${DEEPGRAM_KEY}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ text })
+          });
+
+          if (!resp.ok) throw new Error(`TTS status: ${resp.status}`);
+          const arrayBuffer = await resp.arrayBuffer();
+
+          if (!this.inCall) return;
+
+          const audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+          const source = this.audioContext.createBufferSource();
+          source.buffer = audioBuffer;
+
+          // Connect source to Analyser (for 3D Hologram dancing) and Speaker (for phone sound)
+          source.connect(this.analyser);
+          source.connect(this.audioContext.destination);
+
+          this.currentTTSSource = source;
+
+          source.onended = () => {
+            this.isSpeakingTTS = false;
+            this.currentTTSSource = null;
+
+            // Continuous Call Loop: Return to listening automatically!
+            if (this.inCall) {
+              this.orb.setState('listening');
+              this.onStateChange('listening');
+            }
+          };
+
+          source.start(0);
+        } catch (err) {
+          console.warn('TTS playback error:', err);
+          this.isSpeakingTTS = false;
+          if (this.inCall) {
+            this.orb.setState('listening');
+            this.onStateChange('listening');
+          }
+        }
+      }
     }
-  };
-}
 
-voiceBar.onclick = () => {
-  initAudio();
-  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
+    // ================= APP INITIALIZATION =================
+    window.addEventListener('DOMContentLoaded', () => {
+      const canvasContainer = document.getElementById('canvas-container');
+      const statusBadge = document.getElementById('status-badge');
+      const statusText = document.getElementById('status-text');
+      const shapePill = document.getElementById('shape-pill');
+      const shapeIcon = document.getElementById('shape-icon');
+      const shapeName = document.getElementById('shape-name');
+      const captionPill = document.getElementById('caption-pill');
+      const captionSpeaker = document.getElementById('caption-speaker');
+      const captionText = document.getElementById('caption-text');
+      const callWrapper = document.getElementById('call-wrapper');
+      const btnCall = document.getElementById('btn-call');
+      const callText = document.getElementById('call-text');
+      const iconCallStart = document.getElementById('icon-call-start');
+      const iconCallEnd = document.getElementById('icon-call-end');
 
-  if (recognition){
-    try {
-      if (isListening) recognition.stop();
-      else recognition.start();
-    } catch(e) {
-      recognition.stop();
-      setTimeout(() => recognition.start(), 200);
-    }
-  } else {
-    const promptText = prompt('Apna command ya sawal likhein:');
-    if (promptText) processUserPrompt(promptText);
-  }
-};
+      // Initialize 3D Hologram Orb
+      const holoOrb = new AIHoloOrb(canvasContainer);
+      window.holoOrb = holoOrb;
 
-// ================= 3D TOUCH & DRAG INTERACTION =================
-let rotX = 0.2, rotY = 0.0;
-let targetRotX = 0.2, targetRotY = 0.0;
-let isDragging = false;
-let lastMouseX = 0, lastMouseY = 0;
-let touchPos = [0, 0, 0];
-let userZoom = 1.0;
+      const shapeList = ['orb', 'car', 'plane', 'heart', 'rocket', 'star', 'galaxy', 'cube', 'donut', 'portal', 'tree', 'flower'];
+      const shapeDetails = {
+        orb: { name: 'Hologram Orb', icon: '✨' },
+        car: { name: '3D Car', icon: '🚗' },
+        plane: { name: '3D Jet Plane', icon: '✈️' },
+        heart: { name: '3D Heart', icon: '❤️' },
+        rocket: { name: '3D Rocket', icon: '🚀' },
+        star: { name: '3D Star', icon: '⭐' },
+        galaxy: { name: '3D Galaxy', icon: '🌌' },
+        cube: { name: '3D Cube', icon: '🧊' },
+        donut: { name: '3D Torus', icon: '🍩' },
+        portal: { name: 'Stargate Portal', icon: '🌀' },
+        tree: { name: '3D Tree', icon: '🌳' },
+        flower: { name: '3D Flower', icon: '🌸' }
+      };
 
-window.addEventListener('pointerdown', e => {
-  if (e.target.closest('#voiceBar') || e.target.closest('#settingsBtn') || e.target.closest('#modal')) return;
-  isDragging = true;
-  lastMouseX = e.clientX;
-  lastMouseY = e.clientY;
-  const nx = (e.clientX / innerWidth) * 2 - 1;
-  const ny = -(e.clientY / innerHeight) * 2 + 1;
-  touchPos = [nx, ny, 1.0];
-});
+      let currentShapeIndex = 0;
+      function setShapeUI(shape) {
+        const item = shapeDetails[shape] || { name: shape, icon: '✨' };
+        shapeName.textContent = item.name;
+        shapeIcon.textContent = item.icon;
+      }
 
-window.addEventListener('pointermove', e => {
-  const nx = (e.clientX / innerWidth) * 2 - 1;
-  const ny = -(e.clientY / innerHeight) * 2 + 1;
-  if (isDragging){
-    const dx = e.clientX - lastMouseX;
-    const dy = e.clientY - lastMouseY;
-    targetRotY += dx * 0.006;
-    targetRotX += dy * 0.006;
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-    touchPos = [nx, ny, 1.0];
-  } else {
-    touchPos[0] = nx;
-    touchPos[1] = ny;
-    touchPos[2] = Math.max(0.0, touchPos[2] - 0.03);
-  }
-});
+      // Tap to cycle shapes
+      shapePill.addEventListener('click', () => {
+        currentShapeIndex = (currentShapeIndex + 1) % shapeList.length;
+        const nextShape = shapeList[currentShapeIndex];
+        holoOrb.setShape(nextShape);
+        setShapeUI(nextShape);
+      });
 
-window.addEventListener('pointerup', () => { isDragging = false; });
-window.addEventListener('pointercancel', () => { isDragging = false; });
+      // State label mappings
+      const stateLabels = {
+        idle: 'Standby',
+        listening: 'Listening...',
+        thinking: 'Thinking...',
+        speaking: 'Speaking...'
+      };
 
-// Multi-touch pinch zoom
-let initialPinch = null, initialZoom = 1.0;
-window.addEventListener('touchstart', e => {
-  if (e.touches && e.touches.length === 2){
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-    initialPinch = Math.hypot(dx, dy);
-    initialZoom = userZoom;
-  }
-}, { passive: true });
+      let captionHideTimer = null;
+      function showCaption(speaker, text) {
+        captionSpeaker.textContent = speaker;
+        captionText.textContent = text;
+        if (speaker.toLowerCase() === 'you') {
+          captionPill.classList.add('user');
+        } else {
+          captionPill.classList.remove('user');
+        }
+        captionPill.classList.add('visible');
 
-window.addEventListener('touchmove', e => {
-  if (e.touches && e.touches.length === 2 && initialPinch){
-    const dx = e.touches[0].clientX - e.touches[1].clientX;
-    const dy = e.touches[0].clientY - e.touches[1].clientY;
-    const dist = Math.hypot(dx, dy);
-    userZoom = Math.min(2.5, Math.max(0.4, initialZoom * (dist / initialPinch)));
-  }
-}, { passive: true });
+        if (captionHideTimer) clearTimeout(captionHideTimer);
+        captionHideTimer = setTimeout(() => {
+          captionPill.classList.remove('visible');
+        }, 8000);
+      }
 
-window.addEventListener('wheel', e => {
-  e.preventDefault();
-  userZoom = Math.min(2.5, Math.max(0.4, userZoom + (e.deltaY < 0 ? 0.08 : -0.08)));
-}, { passive: false });
+      // Show initial warm greeting caption
+      setTimeout(() => {
+        captionPill.classList.add('visible');
+      }, 500);
 
-// ================= RENDER LOOP =================
-let lastT = performance.now();
-let audioLevel = 0, bassLevel = 0, midLevel = 0, highLevel = 0;
+      // Initialize Call Engine
+      const callEngine = new VoiceCallEngine({
+        orb: holoOrb,
+        btnCall: btnCall,
+        onStateChange: (state) => {
+          statusBadge.setAttribute('data-state', state);
+          statusText.textContent = stateLabels[state] || state;
+        },
+        onCaption: (speaker, text) => {
+          showCaption(speaker, text);
+        },
+        onShapeChange: (shape) => {
+          setShapeUI(shape);
+        }
+      });
+      window.callEngine = callEngine;
 
-function render(now){
-  requestAnimationFrame(render);
-  const dt = Math.min((now - lastT) * 0.001, 0.1);
-  lastT = now;
-  const t = now * 0.001;
-
-  rotX += (targetRotX - rotX) * 0.08;
-  rotY += (targetRotY - rotY) * 0.08;
-  if (!isDragging) targetRotY += 0.003; // Gentle celestial rotation
-
-  if (morph < 1.0) morph = Math.min(1.0, morph + dt * 0.85);
-
-  // Audio frequency sampling
-  if (analyser && audioDataArr){
-    analyser.getByteFrequencyData(audioDataArr);
-    let bSum = 0, mSum = 0, hSum = 0, tot = 0;
-    const n = audioDataArr.length;
-    for (let i = 0; i < n; i++){
-      const v = audioDataArr[i] / 255.0;
-      tot += v;
-      if (i < n * 0.15) bSum += v;
-      else if (i < n * 0.55) mSum += v;
-      else hSum += v;
-    }
-    const bAvg = bSum / (n * 0.15);
-    const mAvg = mSum / (n * 0.40);
-    const hAvg = hSum / (n * 0.45);
-    const avg = tot / n;
-
-    audioLevel += (avg - audioLevel) * 0.25;
-    bassLevel += (bAvg - bassLevel) * 0.25;
-    midLevel += (mAvg - midLevel) * 0.25;
-    highLevel += (hAvg - highLevel) * 0.25;
-  } else {
-    audioLevel *= 0.95;
-    bassLevel *= 0.95;
-    midLevel *= 0.95;
-    highLevel *= 0.95;
-  }
-
-  // Glow reactivity
-  const glowScale = 1.0 + bassLevel * 0.35;
-  const glowOpacity = 0.45 + audioLevel * 0.55;
-  glowEl.style.transform = `scale(${glowScale})`;
-  glowEl.style.opacity = glowOpacity;
-
-  // Viewport aspect scale
-  const aspect = W / H;
-  let scX = 1.0, scY = 1.0;
-  if (aspect < 1.0){
-    scX = 0.85;
-    scY = 0.85 * aspect;
-  } else {
-    scX = 0.85 / aspect;
-    scY = 0.85;
-  }
-  scX *= userZoom;
-  scY *= userZoom;
-
-  gl.uniform1f(U.uTime, t);
-  gl.uniform1f(U.uLevel, audioLevel);
-  gl.uniform1f(U.uBass, bassLevel);
-  gl.uniform1f(U.uMid, midLevel);
-  gl.uniform1f(U.uHigh, highLevel);
-  gl.uniform1f(U.uRotX, rotX);
-  gl.uniform1f(U.uRotY, rotY);
-  gl.uniform1f(U.uMorph, morph);
-  gl.uniform2f(U.uScale, scX, scY);
-  gl.uniform3f(U.uTouch, touchPos[0], touchPos[1], touchPos[2]);
-
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  gl.drawArrays(gl.POINTS, 0, N);
-}
-
-requestAnimationFrame(render);
-
-// Initial greeting
-setTimeout(() => {
-  speakDeepgram('नमस्ते! मैं आपकी थ्री-डी होलोग्राम एआई हूँ। आप जो भी बोलेंगे, मैं वह रूप ले लूँगी!');
-}, 800);
-</script>
+      // Call Button Click
+      btnCall.addEventListener('click', () => {
+        if (!callEngine.inCall) {
+          callEngine.startCall();
+          btnCall.classList.add('active');
+          callWrapper.classList.add('in-call');
+          callText.textContent = 'End Voice Call';
+          iconCallStart.style.display = 'none';
+          iconCallEnd.style.display = 'block';
+        } else {
+          callEngine.endCall();
+          btnCall.classList.remove('active');
+          callWrapper.classList.remove('in-call');
+          callText.textContent = 'Start Voice Call';
+          iconCallStart.style.display = 'block';
+          iconCallEnd.style.display = 'none';
+        }
+      });
+    });
+  </script>
 </body>
 </html>
