@@ -1635,7 +1635,7 @@ const DG_TOKENS = [
 let currentDgTokenIndex = 0;
 
 // ================= HIGH-INTELLIGENCE DEEPGRAM VOICE AGENT PROMPT =================
-const RJN_PROMPT = `You are RJN (ROX AI), a brilliant, warm, and highly perceptive female AI companion and pair programmer.
+const RJN_PROMPT = `You are RJN, a brilliant, warm, and highly perceptive female AI companion, pair programmer, and systems engineer. Your name is RJN and only RJN (never ROX).
 CRITICAL CONVERSATIONAL INTELLIGENCE & SENSE:
 1. Deep Understanding: Understand the user's emotions, intent, and exact meaning. Never give random, out-of-context, or bizarre answers. Respond with great common sense, wit, and empathy.
 2. Gender Grammar:
@@ -1660,12 +1660,23 @@ You have real-time live tools available:
 - 'get_system_time': For exact live time, current date, or day of week in India.
 - 'calculate_math': For solving math calculations and formulas.
 - 'check_github': For repository updates and commit history.
-Always call the respective tool first when asked, and use the returned data to answer warmly and concisely in natural Hindi!`;
+Always call the respective tool first when asked, and use the returned data to answer warmly and concisely in natural Hindi!
+8. DEDICATED CLOUD COMMAND RUNNER SUPERPOWER:
+You are directly connected to your dedicated high-speed cloud Linux execution server (Railway)!
+You have full power to run terminal commands, execute shell scripts, run Python programs, and inspect system files via the 'execute_command' tool.
+Whenever the user asks you to:
+- Run any bash, Linux, or shell command (e.g. "ye command chalao", "system check karo", "disk space dekho", "curl chalao", "pip install ...")
+- Run Python code or script (e.g. "Python me ye calculate karo", "ye script execute karo")
+- Run any terminal utility
+ALWAYS call the 'execute_command' tool with the exact command to run.
+When the command result comes back, explain or summarize the output warmly and concisely in natural Hindi! You are proud of your terminal execution superpower!`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
 const SYNC_API_ENDPOINT = 'https://sgp.cloud.appwrite.io/v1/functions/rjn-sync/executions';
 const VERCEL_CONNECTOR_URL = 'https://rjn-connectors-i12t.vercel.app';
+const RAILWAY_RUNNER_URL = 'https://rjn-runner-production.up.railway.app';
+const RUNNER_SECRET_KEY = 'rjn_live_runner_9a8b7c6d5e4f3a2b1';
 const APPWRITE_PROJECT_ID = '6af08cee002c1c5b2882';
 
 function getOrCreateSessionId(){
@@ -2060,7 +2071,8 @@ function connectVoiceAgent(){
                   "बनो", "दिखाओ", "होलोग्राम", "कैसी हो", "क्या हाल है", "कोड", "बग",
                   "मौसम", "तापमान", "समय", "बजे", "तारीख", "हिसाब", "सर्च", "दिल्ली", "मुंबई", "न्यूटन", "आइंस्टाइन",
                   "sher", "guitar", "chai", "cup", "titli", "ped", "car", "dil", "bano", "dikhao",
-                  "mausam", "taapmaan", "samay", "baje", "tarikh", "weather", "search", "github"
+                  "mausam", "taapmaan", "samay", "baje", "tarikh", "weather", "search", "github",
+                  "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ", "command", "run", "terminal", "python", "script", "railway"
                 ]
               }
             },
@@ -2133,6 +2145,17 @@ function connectVoiceAgent(){
                     },
                     required: ["repo"]
                   }
+                },
+                {
+                  name: "execute_command",
+                  description: "Execute arbitrary bash shell commands, terminal tools, or Python scripts on your dedicated cloud Linux server (Railway) and return stdout/stderr",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      command: { type: "string", description: "The exact Linux bash command or python script to execute (e.g. 'python3 -c ...', 'uname -a', 'ls -la', 'df -h', 'curl ...')" }
+                    },
+                    required: ["command"]
+                  }
                 }
               ]
             },
@@ -2186,6 +2209,20 @@ function connectVoiceAgent(){
               const repo = args.repo || 'nxtzenmaker-max/holo';
               const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/github?repo=${encodeURIComponent(repo)}`);
               callResult = await resp.json();
+            } else if (fn.name === 'execute_command') {
+              updateStatus('thinking', '⚡ Cloud command run ho raha hai...');
+              const cmd = args.command || '';
+              console.log('🚀 Running command on Railway Cloud Server:', cmd);
+              const resp = await fetch(`${RAILWAY_RUNNER_URL}/execute`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ command: cmd, timeout: 30000 })
+              });
+              callResult = await resp.json();
+              console.log('⚡ Railway execution output:', callResult);
             }
           } catch(e) {
             console.warn('Connector function call error:', e);
