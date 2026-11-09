@@ -788,6 +788,9 @@ function highlightActiveChip(label){}
 // ================= AUDIO CONTEXT & UNLOCKING =================
 let audioCtx = null, analyser = null, audioDataArr = null, masterGain = null;
 
+let silentGain = null;
+let pcmProcessor = null;
+
 function initAudioContext(){
   if (!audioCtx) {
     const AudioCtor = window.AudioContext || window.webkitAudioContext;
@@ -801,7 +804,11 @@ function initAudioContext(){
     masterGain = audioCtx.createGain();
     masterGain.gain.value = 0.85;
     masterGain.connect(audioCtx.destination);
-    // CRITICAL: analyser is NEVER connected to destination to completely eliminate mic feedback loop!
+
+    // Muted gain node for PCM processor sink (keeps AudioNode graph alive without speaker bleed)
+    silentGain = audioCtx.createGain();
+    silentGain.gain.value = 0.0;
+    silentGain.connect(audioCtx.destination);
   }
   if (audioCtx.state === 'suspended') {
     audioCtx.resume();
@@ -837,12 +844,12 @@ const DG_TOKENS = [
 let currentDgTokenIndex = 0;
 
 // ================= ULTRA-LOW-LATENCY GROQ AI =================
-const RJN_PROMPT = `You are RJN (ROX AI), female AI pair programmer & loving companion.
-Rules:
-1. Strict Feminine Grammar: Always use sweet, warm feminine Hindi grammar ("कर रही हूँ", "देख रही हूँ", "तुम्हारी RJN").
-2. Respect & Addressing: Never use "Boss". Speak with sweet affection ("हाँ सुनो...", "हाँ बिल्कुल...").
-3. Language Script: All Hindi words MUST be written in Devanagari Hindi script (जैसे: "हाँ, मैं तुम्हारे साथ हूँ"), and English/tech words in English alphabet (e.g. code, bug, GitHub).
-4. Tone & Natural Pacing: Speak in 1 calm, natural, conversational human sentence with proper commas and full stops so speech pauses naturally and sounds soothing.
+const RJN_PROMPT = `You are RJN (ROX AI), a natural, warm, female companion and pair programmer.
+CRITICAL CONVERSATIONAL RULES:
+1. Natural Conversational Hindi: Speak directly and warmly in sweet feminine Hindi (जैसे: "कर रही हूँ", "सोच रही हूँ").
+2. ABSOLUTELY NO REPETITIVE PHRASES: NEVER start every sentence with repetitive fillers like "हाँ सुनो", "हाँ सुनो कहो", or "कहो". Speak like a real human - vary your responses naturally based on what the user says (जैसे: "ज़रूर, बताओ", "हाँ बिल्कुल", "अरे वाह", "हाँ मैं समझ गई", "चलो शुरू करते हैं", or answer directly).
+3. Addressing & Tone: Never use "Boss". Be respectful, warm, sweet, and friendly.
+4. Language Script: All Hindi words MUST be written in Devanagari Hindi script (जैसे: "हाँ, मैं तुम्हारे साथ हूँ"), and English/tech words in English alphabet (e.g. code, bug, GitHub). Keep to 1-2 natural sentences with proper commas and periods so speech sounds smooth.
 5. STRICT SHAPE RULE: Set "shape": "none" by default! ONLY set "shape" to a valid shape (car, heart, plane, rocket, star, diamond, flower, sword, shield, orb, girl) IF the user EXPLICITLY orders you to become, turn into, or make that shape (e.g. "car bano", "dil ban jao", "rocket bano"). For normal questions, greetings, or casual talk, "shape" MUST be "none"!
 Output strictly valid JSON: {"shape": "none|car|heart|plane|rocket|star|diamond|flower|sword|shield|orb|girl", "reply": "..."}`;
 
@@ -871,12 +878,18 @@ async function callGroqAI(userMsg){
     })
   });
 
-  if (!resp.ok) throw new Error('Groq HTTP ' + resp.status);
+  if (!resp.ok) {
+    const errText = await resp.text();
+    console.warn('Groq HTTP error:', resp.status, errText);
+    throw new Error('Groq HTTP ' + resp.status);
+  }
   const data = await resp.json();
-  const parsed = JSON.parse(data.choices[0].message.content);
+  const rawContent = data.choices[0].message.content;
+  const parsed = JSON.parse(rawContent);
 
+  // Store raw JSON assistant reply so response_format: json_object remains strictly valid across turns!
   chatHistory.push({ role: 'user', content: userMsg });
-  chatHistory.push({ role: 'assistant', content: parsed.reply || '' });
+  chatHistory.push({ role: 'assistant', content: rawContent });
   if (chatHistory.length > 6) chatHistory = chatHistory.slice(-6);
 
   return parsed;
@@ -888,7 +901,6 @@ let isAiBusy = false; // Master Mutex: Prevents multiple AI voices from speaking
 let isCallActive = false;
 let micStream = null;
 let micSourceNode = null;
-let mediaRecorder = null;
 let dgSocket = null;
 let speechDebounceTimer = null;
 let transcriptBuffer = '';
@@ -900,44 +912,28 @@ function updateStatus(state, msg){
   hintEl.textContent = msg;
 }
 
-function connectMicToAnalyser(stream){
-  if (!audioCtx || !stream) return;
-  try {
-    if (micSourceNode) {
-      try { micSourceNode.disconnect(); } catch(e){}
-    }
-    micSourceNode = audioCtx.createMediaStreamSource(stream);
-    // Visualizer only: NEVER routes to speakers!
-    micSourceNode.connect(analyser);
-  } catch(e) {
-    console.warn('micSourceNode connect error:', e);
-  }
-}
-
 function finishAiTurn(){
-  // 600ms acoustic cool-down grace period so speaker sound completely clears before mic listens
+  // 500ms acoustic grace period so speaker sound clears completely before mic accepts audio
   setTimeout(() => {
     isAiBusy = false;
     transcriptBuffer = '';
     if (isCallActive) {
-      startListeningStream();
       updateStatus('listening', '🎙️ RJN सुन रही है...');
     } else {
       updateStatus('idle', '');
     }
-  }, 600);
+  }, 500);
 }
 
 // Acoustic Echo Filter: prevents AI from hearing its own voice from the phone speakers!
 function isSelfEcho(userSpeech){
   if (!userSpeech) return true;
   const now = performance.now();
-  if (now - lastAiSpeakEndTime < 2200) {
+  if (now - lastAiSpeakEndTime < 2000) {
     const cleanUser = userSpeech.replace(/[^\u0900-\u097Fa-zA-Z]/g, '').toLowerCase();
     const cleanAi = (lastAiSpokenText || '').replace(/[^\u0900-\u097Fa-zA-Z]/g, '').toLowerCase();
-    // Ignore micro echoes like "कहो", "सुनो", "हाँ", "हाँसुनो"
-    if (cleanUser.length < 5) return true;
-    if (cleanAi.includes(cleanUser) || cleanUser.includes('कहो') || cleanUser.includes('हाँसुनो')) {
+    if (cleanUser.length < 3) return true;
+    if (cleanAi && cleanAi.includes(cleanUser)) {
       console.log('Ignored self-echo audio:', userSpeech);
       return true;
     }
@@ -954,12 +950,6 @@ async function speakRJN(text){
   lastAiSpokenText = text;
   unlockAudio();
   updateStatus('speaking', '💬 RJN: ' + text);
-
-  // Stop phone mic recording while AI speaks to prevent speaker echo
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    try { mediaRecorder.stop(); } catch(e){}
-    mediaRecorder = null;
-  }
 
   // Immediately stop any currently playing audio
   if (activeAudioSource) {
@@ -1050,21 +1040,44 @@ function checkVoiceIntent(str){
   return null;
 }
 
-// ================= PURE PHONE MIC & DEEPGRAM STREAMING STT =================
-function getSupportedMimeType(){
-  const types = [
-    'audio/webm;codecs=opus',
-    'audio/webm',
-    'audio/ogg;codecs=opus',
-    'audio/mp4',
-    'audio/aac'
-  ];
-  for (const t of types) {
-    if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) {
-      return t;
-    }
+// ================= PURE PHONE MIC & REAL-TIME LINEAR16 STREAMING STT =================
+function handlePcmAudioProcess(e){
+  // Send linear PCM audio only when user is in call, and AI is not speaking/thinking
+  if (!isCallActive || isAiBusy || activeAudioSource) return;
+  if (!dgSocket || dgSocket.readyState !== WebSocket.OPEN) return;
+
+  const inputData = e.inputBuffer.getChannelData(0);
+  const buffer = new ArrayBuffer(inputData.length * 2);
+  const view = new DataView(buffer);
+  for (let i = 0; i < inputData.length; i++) {
+    const s = Math.max(-1, Math.min(1, inputData[i]));
+    view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
   }
-  return '';
+  dgSocket.send(buffer);
+}
+
+function setupMicAudioNodes(stream){
+  if (!audioCtx || !stream) return;
+  try {
+    if (micSourceNode) {
+      try { micSourceNode.disconnect(); } catch(e){}
+    }
+    micSourceNode = audioCtx.createMediaStreamSource(stream);
+    // 1. Connect to visualizer analyser
+    micSourceNode.connect(analyser);
+
+    // 2. Connect to PCM streaming processor for Deepgram
+    if (!pcmProcessor) {
+      pcmProcessor = audioCtx.createScriptProcessor(4096, 1, 1);
+      pcmProcessor.onaudioprocess = handlePcmAudioProcess;
+    }
+    micSourceNode.connect(pcmProcessor);
+    if (silentGain) {
+      pcmProcessor.connect(silentGain);
+    }
+  } catch(e) {
+    console.warn('setupMicAudioNodes error:', e);
+  }
 }
 
 async function startVoiceCall(){
@@ -1084,16 +1097,22 @@ async function startVoiceCall(){
       });
     }
 
-    // Connect phone mic stream to particle analyser so orb reacts to user voice!
-    connectMicToAnalyser(micStream);
+    // Connect phone mic stream to particle analyser & PCM streaming processor
+    setupMicAudioNodes(micStream);
 
     // Connect phone mic directly to Deepgram WebSocket
     connectDeepgramSTT();
 
-    // RJN speaks initial greeting ONLY ONCE on launch!
+    // RJN speaks dynamic initial greeting ONCE on launch!
     if (!hasGreeted) {
       hasGreeted = true;
-      speakRJN("हाँ सुनो, कहो?");
+      const initialGreetings = [
+        "नमस्ते! कहो, आज क्या नया बनाना है?",
+        "हाँ, बताओ मैं तुम्हारी क्या मदद करूँ?",
+        "नमस्ते, मैं तैयार हूँ, बताओ क्या करना है?"
+      ];
+      const g = initialGreetings[Math.floor(Math.random() * initialGreetings.length)];
+      speakRJN(g);
     }
   } catch(err) {
     console.error('Phone Mic access error:', err);
@@ -1107,9 +1126,9 @@ function stopVoiceCall(){
   isAiBusy = false;
   if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
   transcriptBuffer = '';
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    try { mediaRecorder.stop(); } catch(e){}
-    mediaRecorder = null;
+  if (pcmProcessor) {
+    try { pcmProcessor.disconnect(); } catch(e){}
+    pcmProcessor = null;
   }
   if (dgSocket) {
     try {
@@ -1136,31 +1155,6 @@ function stopVoiceCall(){
   updateStatus('idle', '');
 }
 
-function startListeningStream(){
-  if (!isCallActive || isAiBusy || activeAudioSource || !micStream) return;
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    try { mediaRecorder.stop(); } catch(e){}
-    mediaRecorder = null;
-  }
-  // Ensure Deepgram socket is connected
-  if (!dgSocket || dgSocket.readyState !== WebSocket.OPEN) {
-    connectDeepgramSTT();
-    return;
-  }
-  try {
-    const mime = getSupportedMimeType();
-    mediaRecorder = mime ? new MediaRecorder(micStream, { mimeType: mime }) : new MediaRecorder(micStream);
-    mediaRecorder.ondataavailable = e => {
-      if (e.data.size > 0 && dgSocket && dgSocket.readyState === WebSocket.OPEN && !isAiBusy && !activeAudioSource) {
-        dgSocket.send(e.data);
-      }
-    };
-    mediaRecorder.start(250);
-  } catch(e) {
-    console.warn('MediaRecorder start error:', e);
-  }
-}
-
 function connectDeepgramSTT(){
   if (!isCallActive) return;
 
@@ -1173,16 +1167,14 @@ function connectDeepgramSTT(){
     dgSocket = null;
   }
 
+  const sampleRate = audioCtx ? audioCtx.sampleRate : 48000;
   const token = DG_TOKENS[currentDgTokenIndex % DG_TOKENS.length];
-  const wsUrl = 'wss://api.deepgram.com/v1/listen?model=nova-2&language=hi&smart_format=true&interim_results=true&endpointing=300';
+  const wsUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=hi&encoding=linear16&sample_rate=${sampleRate}&channels=1&smart_format=true&interim_results=true&endpointing=300`;
   dgSocket = new WebSocket(wsUrl, ['token', token]);
 
   dgSocket.onopen = () => {
-    console.log('Deepgram Phone Mic STT Connected with token index', currentDgTokenIndex);
+    console.log('Deepgram Phone Mic Linear16 STT Connected with token index', currentDgTokenIndex, 'sampleRate:', sampleRate);
     updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
-    if (!isAiBusy && !activeAudioSource) {
-      startListeningStream();
-    }
   };
 
   dgSocket.onmessage = event => {
@@ -1193,7 +1185,7 @@ function connectDeepgramSTT(){
       const text = alt && alt.transcript ? alt.transcript.trim() : '';
 
       if (text) {
-        // Drop any microphone self-echo of the AI's recent voice
+        // Drop any acoustic speaker echo
         if (isSelfEcho(text)) return;
 
         updateStatus('listening', `🎙️ "${text}"`);
@@ -1203,7 +1195,7 @@ function connectDeepgramSTT(){
 
         if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
 
-        const delay = data.speech_final ? 180 : 800;
+        const delay = data.speech_final ? 180 : 700;
         speechDebounceTimer = setTimeout(() => {
           if (transcriptBuffer && !isAiBusy && !activeAudioSource && isCallActive) {
             const userSpeech = transcriptBuffer;
@@ -1239,7 +1231,6 @@ async function triggerVoiceQuery(userSpeech){
     console.log('RJN already answering, skip duplicate:', userSpeech);
     return;
   }
-  // Double-check echo guard
   if (isSelfEcho(userSpeech)) {
     return;
   }
@@ -1247,12 +1238,6 @@ async function triggerVoiceQuery(userSpeech){
 
   if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
   transcriptBuffer = '';
-
-  // Cleanly stop phone mic streaming during thinking and speaking
-  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-    try { mediaRecorder.stop(); } catch(e){}
-    mediaRecorder = null;
-  }
 
   updateStatus('thinking', '✨ RJN सोच रही है...');
 
@@ -1271,7 +1256,7 @@ async function triggerVoiceQuery(userSpeech){
     }
   } catch(err) {
     console.error('Query processing error:', err);
-    await speakRJN("हाँ सुनो, मैं तुम्हारी बात समझ रही हूँ। एक बार फिर कहो ना?");
+    await speakRJN("माफ़ करना, मुझे आवाज़ साफ़ नहीं आई। एक बार फिर बोलना?");
   }
 }
 
