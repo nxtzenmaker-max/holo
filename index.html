@@ -853,7 +853,113 @@ CRITICAL CONVERSATIONAL RULES:
 5. STRICT SHAPE RULE: Set "shape": "none" by default! ONLY set "shape" to a valid shape (car, heart, plane, rocket, star, diamond, flower, sword, shield, orb, girl) IF the user EXPLICITLY orders you to become, turn into, or make that shape (e.g. "car bano", "dil ban jao", "rocket bano"). For normal questions, greetings, or casual talk, "shape" MUST be "none"!
 Output strictly valid JSON: {"shape": "none|car|heart|plane|rocket|star|diamond|flower|sword|shield|orb|girl", "reply": "..."}`;
 
-let chatHistory = [];
+// ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
+const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
+const SYNC_API_ENDPOINT = 'https://sgp.cloud.appwrite.io/v1/functions/rjn-sync/executions';
+const APPWRITE_PROJECT_ID = '6af08cee002c1c5b2882';
+
+function getOrCreateSessionId(){
+  try {
+    let sid = localStorage.getItem('rjn_session_id');
+    if (!sid) {
+      sid = 'usr_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+      localStorage.setItem('rjn_session_id', sid);
+    }
+    return sid;
+  } catch(e) {
+    return 'anon_' + Date.now();
+  }
+}
+const currentSessionId = getOrCreateSessionId();
+
+// 1. Instant 0ms LocalStorage Load on Cold Start
+function loadLocalMemory(){
+  try {
+    const raw = localStorage.getItem(MEMORY_STORAGE_KEY);
+    if (!raw) return [];
+    const data = JSON.parse(raw);
+    return Array.isArray(data) ? data : [];
+  } catch(e) {
+    return [];
+  }
+}
+
+// Initialize chatHistory directly from localStorage for instant 0ms recall!
+let chatHistory = loadLocalMemory();
+
+// 2. Instant Local Save + Non-Blocking MongoDB Background Sync
+function saveAndSyncTurn(userMsg, aiReply, shape){
+  const rawAssistantJson = JSON.stringify({ shape: shape || 'none', reply: aiReply || '' });
+  
+  // A. Instant LocalStorage Save (0ms, zero lag!)
+  try {
+    chatHistory.push({ role: 'user', content: userMsg });
+    chatHistory.push({ role: 'assistant', content: rawAssistantJson });
+    if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
+    localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory));
+  } catch(e) {
+    console.warn('localStorage save warning:', e);
+  }
+
+  // B. Background Asynchronous Non-blocking sync to MongoDB
+  try {
+    fetch(SYNC_API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'X-Appwrite-Project': APPWRITE_PROJECT_ID,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        body: JSON.stringify({
+          action: 'sync_turn',
+          sessionId: currentSessionId,
+          userMsg,
+          aiReply,
+          shape: shape || 'none',
+          timestamp: new Date().toISOString()
+        }),
+        async: true // 202 Accepted in ~30ms, executes in background!
+      })
+    }).catch(err => console.debug('Background MongoDB sync notice:', err));
+  } catch(e){}
+}
+
+// 3. Optional silent cloud history catch-up on fresh devices
+function syncInitialMemoryFromCloud(){
+  if (chatHistory.length > 0) return;
+  try {
+    fetch(SYNC_API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'X-Appwrite-Project': APPWRITE_PROJECT_ID,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        body: JSON.stringify({
+          action: 'get_history',
+          sessionId: currentSessionId
+        }),
+        async: false
+      })
+    })
+    .then(r => r.json())
+    .then(res => {
+      if (res.responseBody) {
+        const data = JSON.parse(res.responseBody);
+        if (data.history && Array.isArray(data.history) && data.history.length > 0) {
+          data.history.forEach(item => {
+            chatHistory.push({ role: 'user', content: item.userMsg });
+            chatHistory.push({ role: 'assistant', content: JSON.stringify({ shape: item.shape || 'none', reply: item.aiReply || '' }) });
+          });
+          if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
+          try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
+        }
+      }
+    })
+    .catch(() => {});
+  } catch(e){}
+}
+syncInitialMemoryFromCloud();
 
 async function callGroqAI(userMsg){
   const key = getGroqKey();
@@ -887,10 +993,8 @@ async function callGroqAI(userMsg){
   const rawContent = data.choices[0].message.content;
   const parsed = JSON.parse(rawContent);
 
-  // Store raw JSON assistant reply so response_format: json_object remains strictly valid across turns!
-  chatHistory.push({ role: 'user', content: userMsg });
-  chatHistory.push({ role: 'assistant', content: rawContent });
-  if (chatHistory.length > 6) chatHistory = chatHistory.slice(-6);
+  // Instantly save to localStorage (0ms) and trigger background MongoDB sync!
+  saveAndSyncTurn(userMsg, parsed.reply, parsed.shape);
 
   return parsed;
 }
