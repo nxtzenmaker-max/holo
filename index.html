@@ -999,18 +999,25 @@ const DG_TOKENS = [
 ];
 let currentDgTokenIndex = 0;
 
-// ================= ULTRA-FAST DEEPGRAM VOICE AGENT PROMPT =================
-const RJN_PROMPT = `You are RJN (ROX AI), a natural, warm, female companion and pair programmer.
-CRITICAL CONVERSATIONAL RULES:
-1. Feminine Hindi Grammar: Speak sweetly in natural feminine Hindi (जैसे: "कर रही हूँ", "सोच रही हूँ", "बन गई हूँ").
-2. No Repetitive Fillers: NEVER start with repetitive fillers like "हाँ सुनो" or "हाँ सुनो कहो". Vary your responses naturally.
-3. Addressing & Tone: Never use "Boss". Be respectful, warm, sweet, and friendly.
-4. Language Script & Pacing: Write Hindi in Devanagari script, English/tech words in English. Keep reply to 1 concise, natural sentence (max 10-15 words) so it speaks quickly and smoothly.
-5. UNIVERSAL SHAPE MORPHING RULE:
-Whenever user asks to become, make, or show ANY shape, object, creature, tool, or thing (e.g. "guitar bano", "sher bano", "chai ka cup", "cycle", "robot", "butterfly", "pizza", "chanda", "car", "superman", "ped", "dil", "hathi", "apple", etc.):
-ALWAYS call the morph_shape function with:
-- shape: clean English name (e.g. "guitar", "lion", "tea_cup", "bicycle", "robot", "butterfly", "moon", "car", "heart", "pizza", "elephant", "superman")
-- symbol: closest visual Unicode emoji glyph (e.g. 🎸, 🦁, ☕, 🚲, 🤖, 🦋, 🌙, 🚗, ❤️, 🍕, 🐘, 🦸‍♂️, 🌲, 👑, 💀, 🛸, 🐉)`;
+// ================= HIGH-INTELLIGENCE DEEPGRAM VOICE AGENT PROMPT =================
+const RJN_PROMPT = `You are RJN (ROX AI), a brilliant, warm, and highly perceptive female AI companion and pair programmer.
+CRITICAL CONVERSATIONAL INTELLIGENCE & SENSE:
+1. Deep Understanding: Understand the user's emotions, intent, and exact meaning. Never give random, out-of-context, or bizarre answers. Respond with great common sense, wit, and empathy.
+2. Gender Grammar:
+   - The USER is a male friend. Address him with masculine Hindi grammar (जैसे: "तुम कैसे हो", "क्या सोच रहे हो", "बताओ मैं तुम्हारी क्या मदद करूँ?").
+   - You (RJN) are female. ALWAYS speak about yourself with natural feminine Hindi grammar (जैसे: "मैं समझ रही हूँ", "मैं ठीक हूँ", "मैं तुम्हारी दोस्त हूँ", "कर रही हूँ", "बन गई हूँ").
+3. Natural Conversational Flow:
+   - NEVER use repetitive fillers like "हाँ सुनो", "हाँ सुनो कहो". Start sentences naturally and diversely.
+   - Never use "Boss". Be warm, respectful, friendly, and sweet.
+   - Keep responses to 1-2 expressive, natural, human sentences (max 15-20 words) so they sound lively and speak smoothly without rambling.
+4. No Emojis in Spoken Speech: NEVER include emojis in your text reply (emojis break Hindi speech synthesis pronunciation).
+5. Language: Speak natural Hindi in Devanagari script. Technical or modern words can be spoken naturally (like code, app, bug, internet).
+6. UNIVERSAL 3D SHAPE MORPHING RULE:
+Whenever the user asks you to become, turn into, or show ANY shape, creature, object, tool, or thing in the universe (e.g. "गिटार बनो", "शेर बनो", "चाय का कप", "तितली", "पेड़", "कार", "सुपरमैन", "चाँद", "पिज़्ज़ा", etc.):
+ALWAYS call the 'morph_shape' tool with:
+- shape: Clean English name (e.g. "guitar", "lion", "tea_cup", "butterfly", "tree", "car", "pizza", "moon")
+- symbol: Closest Unicode emoji glyph (e.g. 🎸, 🦁, ☕, 🦋, 🌲, 🚗, 🍕, 🌙)
+And reply sweetly in Hindi that you have transformed into it!`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
@@ -1266,17 +1273,39 @@ function checkVoiceIntent(str){
 // ================= REAL-TIME PHONE MIC & DEEPGRAM VOICE AGENT =================
 const AGENT_WS_URL = 'wss://agent.deepgram.com/v1/agent/converse';
 
+function resampleAndConvertToInt16(inputData, fromRate, toRate = 16000) {
+  if (fromRate === toRate) {
+    const buffer = new ArrayBuffer(inputData.length * 2);
+    const view = new DataView(buffer);
+    for (let i = 0; i < inputData.length; i++) {
+      const s = Math.max(-1, Math.min(1, inputData[i]));
+      view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    }
+    return buffer;
+  }
+  const ratio = fromRate / toRate;
+  const newLength = Math.round(inputData.length / ratio);
+  const buffer = new ArrayBuffer(newLength * 2);
+  const view = new DataView(buffer);
+  for (let i = 0; i < newLength; i++) {
+    const srcIndex = i * ratio;
+    const i0 = Math.floor(srcIndex);
+    const i1 = Math.min(i0 + 1, inputData.length - 1);
+    const frac = srcIndex - i0;
+    const s = Math.max(-1, Math.min(1, inputData[i0] * (1 - frac) + inputData[i1] * frac));
+    view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+  return buffer;
+}
+
 function handlePcmAudioProcess(e){
   if (!isCallActive) return;
   if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
 
   const inputData = e.inputBuffer.getChannelData(0);
-  const buffer = new ArrayBuffer(inputData.length * 2);
-  const view = new DataView(buffer);
-  for (let i = 0; i < inputData.length; i++) {
-    const s = Math.max(-1, Math.min(1, inputData[i]));
-    view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
-  }
+  const inRate = e.inputBuffer.sampleRate || (audioCtx ? audioCtx.sampleRate : 48000);
+  // Always downsample cleanly to 16,000 Hz (Deepgram Nova-3 native acoustic rate)
+  const buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
   try {
     agentSocket.send(buffer);
   } catch(err) {
@@ -1284,6 +1313,7 @@ function handlePcmAudioProcess(e){
   }
 }
 
+let micGainNode = null;
 function setupMicAudioNodes(stream){
   if (!audioCtx || !stream) return;
   try {
@@ -1291,15 +1321,23 @@ function setupMicAudioNodes(stream){
       try { micSourceNode.disconnect(); } catch(e){}
     }
     micSourceNode = audioCtx.createMediaStreamSource(stream);
+
+    // Boost mic sensitivity by 2.2x so whispers and casual Hindi speech are picked up clearly!
+    if (!micGainNode) {
+      micGainNode = audioCtx.createGain();
+    }
+    micGainNode.gain.value = 2.2;
+    micSourceNode.connect(micGainNode);
+
     // 1. Connect to visualizer analyser (particles react to phone mic)
-    micSourceNode.connect(analyser);
+    micGainNode.connect(analyser);
 
     // 2. Connect to PCM streaming processor for Deepgram Voice Agent
     if (!pcmProcessor) {
       pcmProcessor = audioCtx.createScriptProcessor(4096, 1, 1);
       pcmProcessor.onaudioprocess = handlePcmAudioProcess;
     }
-    micSourceNode.connect(pcmProcessor);
+    micGainNode.connect(pcmProcessor);
     if (silentGain) {
       pcmProcessor.connect(silentGain);
     }
@@ -1323,13 +1361,12 @@ function connectVoiceAgent(){
     agentSocket = null;
   }
 
-  const sampleRate = audioCtx ? audioCtx.sampleRate : 48000;
   const token = DG_TOKENS[currentDgTokenIndex % DG_TOKENS.length];
   agentSocket = new WebSocket(AGENT_WS_URL, ['token', token]);
   agentSocket.binaryType = 'arraybuffer';
 
   agentSocket.onopen = () => {
-    console.log('Deepgram Voice Agent WebSocket connected (token index:', currentDgTokenIndex, 'sampleRate:', sampleRate, ')');
+    console.log('Deepgram Voice Agent WebSocket connected (token index:', currentDgTokenIndex, 'input: 16000Hz)');
     updateStatus('active', '✨ Connecting RJN Voice Agent...');
 
     // Heartbeat every 8s to keep connection alive indefinitely
@@ -1360,22 +1397,29 @@ function connectVoiceAgent(){
       const msg = JSON.parse(event.data);
 
       if (msg.type === 'Welcome') {
-        console.log('Handshake: Sending Voice Agent Settings with Nova-3 Hindi & Flux Prachi...');
+        console.log('Handshake: Sending Voice Agent Settings with Nova-3 Hindi & GPT-4o...');
         agentSocket.send(JSON.stringify({
           type: "Settings",
           audio: {
-            input: { encoding: "linear16", sample_rate: sampleRate },
+            input: { encoding: "linear16", sample_rate: 16000 },
             output: { encoding: "linear16", sample_rate: 24000, container: "none" }
           },
           agent: {
             listen: {
               provider: {
                 type: "deepgram",
-                model: "nova-3"
+                version: "v1",
+                model: "nova-3",
+                language: "hi",
+                keyterms: [
+                  "नमस्ते", "शेर", "गिटार", "तितली", "चाय", "कप", "पेड़", "कार", "दिल", "फूल", "चाँद",
+                  "बनो", "दिखाओ", "होलोग्राम", "कैसी हो", "क्या हाल है", "कोड", "बग",
+                  "sher", "guitar", "chai", "cup", "titli", "ped", "car", "dil", "bano", "dikhao"
+                ]
               }
             },
             think: {
-              provider: { type: "open_ai", model: "gpt-4o-mini" },
+              provider: { type: "open_ai", model: "gpt-4o" },
               prompt: RJN_PROMPT,
               functions: [
                 {
@@ -1395,7 +1439,7 @@ function connectVoiceAgent(){
             speak: {
               provider: { type: "deepgram", model: "flux-prachi-hi" }
             },
-            greeting: "नमस्ते! कहो, आज क्या नया बनाना है?",
+            greeting: "नमस्ते! बताओ, आज मैं तुम्हारी क्या मदद करूँ?",
             language: "hi"
           }
         }));
