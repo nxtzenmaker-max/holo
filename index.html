@@ -1674,22 +1674,21 @@ REAL-TIME LIVE SUPERPOWERS & TOOLS:
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
-const SYNC_API_ENDPOINT = 'https://sgp.cloud.appwrite.io/v1/functions/rjn-sync/executions';
+const DEFAULT_SESSION_ID = 'usr_rjn_zeno_main';
 const VERCEL_CONNECTOR_URL = 'https://rjn-connectors-i12t.vercel.app';
 const RAILWAY_RUNNER_URL = 'https://rjn-runner-production.up.railway.app';
 const RUNNER_SECRET_KEY = 'rjn_live_runner_9a8b7c6d5e4f3a2b1';
-const APPWRITE_PROJECT_ID = '6af08cee002c1c5b2882';
 
 function getOrCreateSessionId(){
   try {
     let sid = localStorage.getItem('rjn_session_id');
-    if (!sid) {
-      sid = 'usr_' + Math.random().toString(36).substring(2, 10) + Date.now().toString(36);
+    if (!sid || sid.startsWith('anon_')) {
+      sid = DEFAULT_SESSION_ID;
       localStorage.setItem('rjn_session_id', sid);
     }
     return sid;
   } catch(e) {
-    return 'anon_' + Date.now();
+    return DEFAULT_SESSION_ID;
   }
 }
 const currentSessionId = getOrCreateSessionId();
@@ -1711,37 +1710,33 @@ let chatHistory = loadLocalMemory();
 
 // 2. Instant Local Save + Non-Blocking MongoDB Background Sync
 function saveAndSyncTurn(userMsg, aiReply, shape, symbol){
-  const rawAssistantJson = JSON.stringify({ shape: shape || 'none', symbol: symbol || '', reply: aiReply || '' });
+  const cleanReply = (aiReply || '').trim();
+  const cleanUser = (userMsg || '').trim();
+  if (!cleanUser && !cleanReply) return;
   
   // A. Instant LocalStorage Save (0ms, zero lag!)
   try {
-    chatHistory.push({ role: 'user', content: userMsg });
-    chatHistory.push({ role: 'assistant', content: rawAssistantJson });
-    if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
+    if (cleanUser) chatHistory.push({ role: 'user', content: cleanUser });
+    if (cleanReply) chatHistory.push({ role: 'assistant', content: cleanReply, shape: shape || 'none', symbol: symbol || '' });
+    if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
     localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory));
   } catch(e) {
     console.warn('localStorage save warning:', e);
   }
 
-  // B. Background Asynchronous Non-blocking sync to MongoDB
+  // B. Background Asynchronous Non-blocking sync to MongoDB Atlas via Vercel
   try {
-    fetch(SYNC_API_ENDPOINT, {
+    fetch(`${VERCEL_CONNECTOR_URL}/api/database`, {
       method: 'POST',
-      headers: {
-        'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        body: JSON.stringify({
-          action: 'sync_turn',
-          sessionId: currentSessionId,
-          userMsg,
-          aiReply,
-          shape: shape || 'none',
-          symbol: symbol || '',
-          timestamp: new Date().toISOString()
-        }),
-        async: true // 202 Accepted in ~30ms, executes in background!
+        action: 'sync_turn',
+        sessionId: currentSessionId,
+        userMsg: cleanUser,
+        aiReply: cleanReply,
+        shape: shape || 'none',
+        symbol: symbol || '',
+        timestamp: new Date().toISOString()
       })
     }).catch(err => console.debug('Background MongoDB sync notice:', err));
   } catch(e){}
@@ -1751,38 +1746,71 @@ function saveAndSyncTurn(userMsg, aiReply, shape, symbol){
 function syncInitialMemoryFromCloud(){
   if (chatHistory.length > 0) return;
   try {
-    fetch(SYNC_API_ENDPOINT, {
+    fetch(`${VERCEL_CONNECTOR_URL}/api/database`, {
       method: 'POST',
-      headers: {
-        'X-Appwrite-Project': APPWRITE_PROJECT_ID,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        body: JSON.stringify({
-          action: 'get_history',
-          sessionId: currentSessionId
-        }),
-        async: false
+        action: 'get_history',
+        sessionId: currentSessionId
       })
     })
     .then(r => r.json())
     .then(res => {
-      if (res.responseBody) {
-        const data = JSON.parse(res.responseBody);
-        if (data.history && Array.isArray(data.history) && data.history.length > 0) {
-          data.history.forEach(item => {
-            chatHistory.push({ role: 'user', content: item.userMsg });
-            chatHistory.push({ role: 'assistant', content: JSON.stringify({ shape: item.shape || 'none', reply: item.aiReply || '' }) });
-          });
-          if (chatHistory.length > 8) chatHistory = chatHistory.slice(-8);
-          try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
-        }
+      const historyData = res.result && res.result.history ? res.result.history : (res.history || []);
+      if (Array.isArray(historyData) && historyData.length > 0) {
+        historyData.forEach(item => {
+          if (item.userMsg) chatHistory.push({ role: 'user', content: item.userMsg });
+          if (item.aiReply) chatHistory.push({ role: 'assistant', content: item.aiReply, shape: item.shape || 'none', symbol: item.symbol || '' });
+        });
+        if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+        try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
+        console.log('☁️ Synced initial memory from MongoDB Atlas:', chatHistory.length, 'turns');
       }
     })
-    .catch(() => {});
+    .catch(err => console.debug('Cloud sync notice:', err));
   } catch(e){}
 }
 syncInitialMemoryFromCloud();
+
+// Build context-aware dynamic prompt with persistent conversation history
+function buildAgentPrompt() {
+  let prompt = RJN_PROMPT;
+  const history = loadLocalMemory();
+  if (history && history.length > 0) {
+    let historyText = "\n\n=== RECENT CONVERSATION HISTORY (PERSISTENT MEMORY ACROSS SESSIONS & REFRESHES) ===\n";
+    historyText += "You have an ongoing continuous memory with this user. You remember everything discussed previously across browser reloads or reconnections:\n";
+
+    const recent = history.slice(-12);
+    recent.forEach(turn => {
+      let text = turn.content || '';
+      try {
+        if (typeof text === 'string' && text.startsWith('{') && text.endsWith('}')) {
+          const p = JSON.parse(text);
+          if (p && p.reply) text = p.reply;
+        }
+      } catch(e){}
+
+      if (turn.role === 'user') {
+        historyText += `User: "${text}"\n`;
+      } else {
+        historyText += `RJN (You): "${text}"\n`;
+      }
+    });
+
+    historyText += "\nCRITICAL MEMORY DIRECTIVE: The user just reconnected or refreshed the page. You remember the prior turns above perfectly! If the user asks what you were talking about, refers to a previous turn, or asks you to continue, answer immediately from this memory with complete confidence. Never say you forgot or that this is a new session!\n";
+    prompt += historyText;
+  }
+  return prompt;
+}
+
+// Dynamic greeting: returning companion vs cold first-time
+function getAgentGreeting() {
+  const history = loadLocalMemory();
+  if (history && history.length > 0) {
+    return "नमस्ते! मैं वापस कनेक्ट हो गई हूँ, कहो क्या चल रहा है?";
+  }
+  return "नमस्ते! बताओ, आज मैं तुम्हारी क्या मदद करूँ?";
+}
 
 async function callGroqAI(userMsg){
   const key = getGroqKey();
@@ -2080,7 +2108,7 @@ function connectVoiceAgent(){
             },
             think: {
               provider: { type: "open_ai", model: "gpt-4o" },
-              prompt: RJN_PROMPT,
+              prompt: buildAgentPrompt(),
               functions: [
                 {
                   name: "morph_shape",
@@ -2196,7 +2224,7 @@ function connectVoiceAgent(){
             speak: {
               provider: { type: "deepgram", model: "flux-prachi-hi" }
             },
-            greeting: "नमस्ते! बताओ, आज मैं तुम्हारी क्या मदद करूँ?",
+            greeting: getAgentGreeting(),
             language: "hi"
           }
         }));
@@ -2259,9 +2287,14 @@ function connectVoiceAgent(){
               console.log('⚡ Railway execution output:', callResult);
             } else if (fn.name === 'query_database') {
               updateStatus('thinking', '📊 Database check ho raha hai...');
-              const action = args.action || 'stats';
+              let action = args.action || 'stats';
+              if (action === 'recent' || action === 'memory' || action === 'history') action = 'get_history';
               console.log('📊 Querying MongoDB Atlas via connector:', action);
-              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/database?action=${encodeURIComponent(action)}`);
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/database`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, sessionId: currentSessionId })
+              });
               callResult = await resp.json();
             } else if (fn.name === 'send_whatsapp_message') {
               updateStatus('thinking', '💬 WhatsApp message send ho raha hai...');
@@ -2297,7 +2330,7 @@ function connectVoiceAgent(){
         }
       } else if (msg.type === 'ConversationText') {
         if (msg.role === 'user') {
-          lastUserSpokenMsg = msg.content;
+          lastUserSpokenMsg = lastUserSpokenMsg ? (lastUserSpokenMsg + ' ' + msg.content) : msg.content;
           updateStatus('listening', `🎙️ "${msg.content}"`);
           checkVoiceIntent(msg.content);
         } else if (msg.role === 'assistant') {
@@ -2307,6 +2340,9 @@ function connectVoiceAgent(){
             lastUserSpokenMsg = '';
             currentTurnShape = '';
             currentTurnSymbol = '';
+          } else if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'assistant') {
+            chatHistory[chatHistory.length - 1].content += ' ' + msg.content;
+            try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
           }
         }
       } else if (msg.type === 'AgentAudioDone') {
@@ -2619,7 +2655,8 @@ function getActiveSession() {
     const raw = localStorage.getItem(AUTH_KEY);
     if (!raw) return null;
     const session = JSON.parse(raw);
-    if (!session || session.user !== VALID_ID) {
+    const userId = (session && (session.userId || session.user)) || '';
+    if (!session || userId.toLowerCase() !== VALID_ID.toLowerCase()) {
       localStorage.removeItem(AUTH_KEY);
       return null;
     }
@@ -2848,6 +2885,7 @@ if (loginForm) {
         const loginNow = Date.now();
         localStorage.setItem(AUTH_KEY, JSON.stringify({
           user: VALID_ID,
+          userId: VALID_ID,
           timestamp: loginNow,
           expiresAt: loginNow + SESSION_TTL_MS
         }));
