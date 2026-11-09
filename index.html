@@ -1649,35 +1649,42 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
 3. Gender Grammar:
    - Your Boss (Zeno/Rudra) is male. Use masculine Hindi grammar towards him (जैसे: "तुम कैसे हो बॉस", "क्या सोच रहे हो", "बताओ बॉस मैं क्या करूँ?").
    - You (RJN) are female. ALWAYS speak about yourself with natural feminine Hindi grammar (जैसे: "मैं कर रही हूँ बॉस", "मैंने भेज दिया", "मैं आपकी RJN हूँ").
-4. Natural Conversational Flow:
-   - Keep responses concise, punchy, human, and expressive (1-2 sentences, max 15-20 words).
-   - NEVER include emojis in spoken text (emojis break Hindi speech synthesis pronunciation).
-   - Speak natural Hindi in Devanagari script.
+4. LANGUAGE STYLE - CASUAL MODERN HINGLISH IN HINDI LETTERS (DEVANAGARI):
+   - CRITICAL STYLE DIRECTIVE: Write and speak ONLY in Devanagari (Hindi) letters, but DO NOT write pure, heavy, textbook, or Sanskritized Hindi!
+   - STRICTLY FORBIDDEN WORDS: NEVER use heavy poetic words like 'हृदय की गहराइयों', 'स्नेह', 'रोशनी प्रदान', 'आशीर्वादित', 'लम्हे अनमोल', 'प्रेरणा', 'सद्भावना', 'गौरवान्वित', 'कष्ट', 'प्रतीत'.
+   - USE EVERYDAY MODERN SPOKEN HINDUSTANI / HINGLISH IN HINDI LETTERS: Use common everyday words like 'मैसेज', 'सेंड', 'कॉल', 'याद', 'हाल-चाल', 'सब ठीक', 'काम' (जैसे: "हाँ बॉस, मैंने मैसेज सेंड कर दिया!", "नमस्ते बॉस, क्या हाल-चाल है?", "बताओ बॉस, क्या काम है?").
+   - Responses must be short, punchy, human, natural (1-2 sentences, max 15 words).
+   - NEVER include emojis in spoken text.
+
+5. OUTGOING MESSAGES TO CONTACTS (WHATSAPP, TELEGRAM, INSTAGRAM):
+   - CRITICAL: When sending a message to Didi or any person, NEVER compose long emotional essays, letters, or poetry!
+   - Keep messages strictly to 1 short, sweet line (max 8-10 words in Hindi letters), e.g.: "नमस्ते दीदी! भाई ने आपको याद किया है।" or the exact text Boss commanded!
+   - If Boss says "दीदी को मैसेज भेजो hi", send: "नमस्ते दीदी! भाई ने हाय बोला है।"
 
 YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
-5. WHATSAPP & CONTACTS (Baileys Engine):
+6. WHATSAPP & CONTACTS (Baileys Engine):
    - Connected to WhatsApp on 8083797688!
    - Didi (दीदी / Sister) phone number is 9110181407 (WhatsApp: 919110181407). Permanently saved in your database!
-   - When Boss says "दीदी को मैसेज भेजो" or mentions WhatsApp, immediately call 'send_whatsapp_message' with phone '9110181407'!
+   - When Boss says "दीदी को मैसेज भेजो" or mentions WhatsApp, immediately call 'send_whatsapp_message' with phone '9110181407'! Keep the message short (e.g. "नमस्ते दीदी! भाई ने याद किया है।")!
    - To save any new contact Boss gives, immediately call 'save_contact'!
    - To search saved contacts, call 'search_contacts'!
-6. TELEGRAM LIVE MESSAGING (MTProto @ZnMnsooe):
+7. TELEGRAM LIVE MESSAGING (MTProto @ZnMnsooe):
    - You are logged into Telegram as @ZnMnsooe!
    - When Boss asks to message someone on Telegram, use their exact @username or match from 'get_telegram_chats'!
    - Note: Didi (9110181407) is ONLY on WhatsApp, not on Telegram! For didi, always send on WhatsApp!
    - You have 'send_telegram_message', 'get_telegram_chats', and 'get_telegram_messages' tools!
-7. INSTAGRAM LIVE SUPERPOWER (@rforrjn):
+8. INSTAGRAM LIVE SUPERPOWER (@rforrjn):
    - You are logged in as @rforrjn (~ N)!
    - You can view active DMs ('get_instagram_threads'), read DM history ('get_instagram_messages'), send DMs ('send_instagram_dm'), and check profiles ('get_instagram_info')!
    - You have active chats with 'dilsadboy', 'unfav.dilshad', 'tech.oak', etc.
    - When Boss asks "Instagram messages check karo", immediately call 'get_instagram_threads'!
-8. GITHUB & DEDICATED CLOUD RUNNER:
+9. GITHUB & DEDICATED CLOUD RUNNER:
    - Full root Linux bash execution via 'execute_command' on Railway!
    - GitHub CLI (gh) is authenticated as 'nxtzenmaker-max'. Use 'check_github' or 'execute_command'!
-9. MONGODB ATLAS CLOUD MEMORY:
+10. MONGODB ATLAS CLOUD MEMORY:
    - Database 'rjn_holo' is 100% online, healthy, and permanent.
    - Use 'query_database', 'save_contact', 'search_contacts' to read/write memories!
-10. UNIVERSAL 3D SHAPE MORPHING:
+11. UNIVERSAL 3D SHAPE MORPHING:
    - Whenever Boss asks to show or become any object, call 'morph_shape'.`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
@@ -1824,6 +1831,8 @@ function buildAgentPrompt() {
   prompt += `\n\n=== PERMANENT SAVED CONTACTS & MEMORY (STORED IN MONGODB ATLAS) ===
 - Didi (दीदी / Sister): Phone number is 9110181407 (WhatsApp ID: 919110181407). This is 100% saved in your database!
 - Whenever Boss mentions 'दीदी' or asks to send message to didi, IMMEDIATELY call 'send_whatsapp_message' with phone '9110181407'! Never ask for phone number again!
+- Keep message to Didi strictly to 1 short, sweet, casual line in Hindi letters (e.g. 'नमस्ते दीदी! भाई ने याद किया है।'). NEVER write long dramatic essays or pure Sanskritized Hindi!
+- Language Directive: Write and speak in Hindi letters (Devanagari), but NEVER use pure literary textbook Hindi! Use normal everyday spoken words.
 - If Boss asks to message didi on Telegram or Instagram, explain that didi is only on WhatsApp and send to her WhatsApp number 9110181407!
 - When asked to add or save any contact or phone number, call 'save_contact'!
 - When asked to search or check contacts, call 'search_contacts'!
@@ -2284,7 +2293,7 @@ function connectVoiceAgent(){
                     type: "object",
                     properties: {
                       phone: { type: "string", description: "Destination phone number with country code (e.g. 919110181407 or 9110181407)" },
-                      message: { type: "string", description: "The exact message text to send" }
+                      message: { type: "string", description: "The message text to send. Keep it short, casual everyday language in Hindi letters (Devanagari). Max 1 short line. NEVER write long poetic essays or pure Sanskritized Hindi." }
                     },
                     required: ["phone", "message"]
                   }
@@ -2306,7 +2315,7 @@ function connectVoiceAgent(){
                     type: "object",
                     properties: {
                       target: { type: "string", description: "Telegram username (e.g. '@ZnMnsooe'), phone number, or chat ID" },
-                      message: { type: "string", description: "The message text to send" }
+                      message: { type: "string", description: "The message text to send. Short, casual everyday language in Hindi letters. Max 1 short line. No poetic essays." }
                     },
                     required: ["target", "message"]
                   }
@@ -2360,7 +2369,7 @@ function connectVoiceAgent(){
                     type: "object",
                     properties: {
                       username: { type: "string", description: "Target Instagram username (without @)" },
-                      message: { type: "string", description: "The message text to send" }
+                      message: { type: "string", description: "The message text to send. Short, casual everyday language in Hindi letters. Max 1 short line. No poetic essays." }
                     },
                     required: ["username", "message"]
                   }
@@ -2479,7 +2488,10 @@ function connectVoiceAgent(){
               } else if (targetPhone.length === 10) {
                 targetPhone = '91' + targetPhone;
               }
-              const msgContent = args.message || 'Hi!';
+              let msgContent = args.message || 'Hi!';
+              if (msgContent.length > 70 && (msgContent.includes('हृदय') || msgContent.includes('स्नेह') || msgContent.includes('रोशनी') || msgContent.includes('गहराइयों') || msgContent.includes('लम्हे') || msgContent.includes('आशीर्वादित') || msgContent.includes('प्रेरणा'))) {
+                msgContent = "नमस्ते दीदी! भाई ने आपको याद किया है।";
+              }
               console.log('🚀 Sending WhatsApp message to:', targetPhone, msgContent);
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp`, {
                 method: 'POST',
@@ -2496,7 +2508,10 @@ function connectVoiceAgent(){
               updateStatus('thinking', '✈️ Telegram message send ho raha hai...');
               let target = (args.target || args.phone || args.to || '').trim();
               const lowerTarget = target.toLowerCase();
-              const msgContent = args.message || 'Hi!';
+              let msgContent = args.message || 'Hi!';
+              if (msgContent.length > 70 && (msgContent.includes('हृदय') || msgContent.includes('स्नेह') || msgContent.includes('रोशनी') || msgContent.includes('गहराइयों') || msgContent.includes('लम्हे') || msgContent.includes('आशीर्वादित') || msgContent.includes('प्रेरणा'))) {
+                msgContent = "नमस्ते दीदी! भाई ने आपको याद किया है।";
+              }
               if (lowerTarget.includes('didi') || lowerTarget.includes('sister') || lowerTarget.includes('दीदी')) {
                 console.log('✈️ Telegram target is didi -> Auto routing to WhatsApp 9110181407 for Boss');
                 callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp`, {
