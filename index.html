@@ -1658,18 +1658,26 @@ REAL-TIME LIVE SUPERPOWERS & TOOLS:
      NEVER refuse! NEVER say you cannot send messages!
      IMMEDIATELY call the 'send_whatsapp_message' tool with the phone number and message!
      Once sent, reply happily and sweetly in Hindi: "मैंने मैसेज भेज दिया है!"
-5. GITHUB & REPOSITORIES SUPERPOWER:
+5. TELEGRAM LIVE MESSAGING SUPERPOWER:
+   - You are directly connected to Telegram (MTProto) as '@ZnMnsooe'!
+   - You CAN send Telegram messages to any user, phone number, chat, or group!
+   - When asked to message or check Telegram, immediately call 'send_telegram_message' or 'get_telegram_chats'!
+6. INSTAGRAM LIVE SUPERPOWER:
+   - You are directly connected to Instagram as '@rforrjn'!
+   - You CAN send Instagram DMs and check user info or follower stats!
+   - When asked about Instagram or sending DMs, immediately call 'send_instagram_dm' or 'get_instagram_info'!
+7. GITHUB & REPOSITORIES SUPERPOWER:
    - Your cloud Linux execution server has GitHub CLI (gh) and Git fully configured and logged in as 'nxtzenmaker-max'!
    - When the user asks: "मेरा GitHub account connected है या नहीं?", "GitHub status check karo", "repo check karo", "command run karo":
      NEVER give personal privacy disclaimers! Call the 'check_github' or 'execute_command' tool (with 'gh auth status' or 'git status') immediately!
      Happily confirm: "हाँ, आपका GitHub account nxtzenmaker-max connected है और बिल्कुल ready है!"
-6. DEDICATED CLOUD COMMAND RUNNER SUPERPOWER:
+8. DEDICATED CLOUD COMMAND RUNNER SUPERPOWER:
    - You have full root execution permissions on your dedicated cloud Linux server (Railway)!
    - When the user asks you to run ANY bash command, shell script, python program, or terminal tool:
      Immediately call the 'execute_command' tool without asking redundant questions and summarize the result happily!
-7. CLOUD DATABASE & MEMORY ACCESS:
+9. CLOUD DATABASE & MEMORY ACCESS:
    - You have direct read/write access to MongoDB Atlas ('rjn_holo') via the 'query_database' tool.
-8. UNIVERSAL 3D SHAPE MORPHING:
+10. UNIVERSAL 3D SHAPE MORPHING:
    - Whenever asked to show or become any object, creature, animal, or thing, call 'morph_shape'.`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
@@ -2102,7 +2110,8 @@ function connectVoiceAgent(){
                   "sher", "guitar", "chai", "cup", "titli", "ped", "car", "dil", "bano", "dikhao",
                   "mausam", "taapmaan", "samay", "baje", "tarikh", "weather", "search", "github",
                   "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ", "command", "run", "terminal", "python", "script", "railway",
-                  "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "whatsapp", "message", "send", "contacts", "connected", "करो", "कर सकती हो"
+                  "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "whatsapp", "message", "send", "contacts", "connected", "करो", "कर सकती हो",
+                  "टेलीग्राम", "telegram", "चेक", "चैट", "ग्रुप", "chats", "instagram", "insta", "इंस्टाग्राम", "डीएम", "dm", "फॉलोअर", "followers"
                 ]
               }
             },
@@ -2218,6 +2227,50 @@ function connectVoiceAgent(){
                       action: { type: "string", description: "Action: 'status', 'contacts', or 'messages'" }
                     }
                   }
+                },
+                {
+                  name: "send_telegram_message",
+                  description: "Send a live Telegram message to any Telegram username (e.g. @username), user ID, phone number, or chat group",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      target: { type: "string", description: "Telegram username (e.g. '@ZnMnsooe'), phone number, or chat ID" },
+                      message: { type: "string", description: "The message text to send" }
+                    },
+                    required: ["target", "message"]
+                  }
+                },
+                {
+                  name: "get_telegram_chats",
+                  description: "Fetch your recent Telegram chats, groups, and dialogs",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      action: { type: "string", description: "Action: 'chats'" }
+                    }
+                  }
+                },
+                {
+                  name: "send_instagram_dm",
+                  description: "Send an Instagram Direct Message (DM) to any Instagram user handle",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      username: { type: "string", description: "Target Instagram username (without @)" },
+                      message: { type: "string", description: "The message text to send" }
+                    },
+                    required: ["username", "message"]
+                  }
+                },
+                {
+                  name: "get_instagram_info",
+                  description: "Get Instagram profile info, follower count, and bio for your account or any target user",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      username: { type: "string", description: "Instagram username (default: 'rforrjn')" }
+                    }
+                  }
                 }
               ]
             },
@@ -2314,6 +2367,37 @@ function connectVoiceAgent(){
               const act = args.action || 'status';
               console.log('💬 Querying WhatsApp API:', act);
               const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/whatsapp?action=${encodeURIComponent(act)}`);
+              callResult = await resp.json();
+            } else if (fn.name === 'send_telegram_message') {
+              updateStatus('thinking', '✈️ Telegram message send ho raha hai...');
+              const target = args.target || args.phone || args.to || '';
+              const msgContent = args.message || 'Hi!';
+              console.log('🚀 Sending Telegram message to:', target, msgContent);
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/telegram`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'send', to: target, message: msgContent })
+              });
+              callResult = await resp.json();
+            } else if (fn.name === 'get_telegram_chats') {
+              updateStatus('thinking', '✈️ Telegram chats check ho rahi hain...');
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/telegram?action=chats`);
+              callResult = await resp.json();
+            } else if (fn.name === 'send_instagram_dm') {
+              updateStatus('thinking', '📸 Instagram DM send ho raha hai...');
+              const targetUser = (args.username || args.to || '').replace('@', '');
+              const msgContent = args.message || 'Hi!';
+              console.log('🚀 Sending Instagram DM to:', targetUser, msgContent);
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/instagram`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'send', to: targetUser, message: msgContent })
+              });
+              callResult = await resp.json();
+            } else if (fn.name === 'get_instagram_info') {
+              updateStatus('thinking', '📸 Instagram info check ho rahi hai...');
+              const targetUser = (args.username || 'rforrjn').replace('@', '');
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/instagram?action=info&to=${encodeURIComponent(targetUser)}`);
               callResult = await resp.json();
             }
           } catch(e) {
