@@ -1660,12 +1660,15 @@ REAL-TIME LIVE SUPERPOWERS & TOOLS:
      Once sent, reply happily and sweetly in Hindi: "मैंने मैसेज भेज दिया है!"
 5. TELEGRAM LIVE MESSAGING SUPERPOWER:
    - You are directly connected to Telegram (MTProto) as '@ZnMnsooe'!
-   - You CAN send Telegram messages to any user, phone number, chat, or group!
-   - When asked to message or check Telegram, immediately call 'send_telegram_message' or 'get_telegram_chats'!
+   - When asked to message someone on Telegram, use the exact username (e.g. '@username') or match an existing chat from 'get_telegram_chats'!
+   - NEVER send a Telegram message to a plain first name (like 'didi') without @ or it will mistakenly go to a stranger's public username!
+   - Important: Didi (9110181407) is ONLY on WhatsApp, not on Telegram! For didi, always use WhatsApp!
+   - You have 'send_telegram_message', 'get_telegram_chats', and 'get_telegram_messages' tools!
 6. INSTAGRAM LIVE SUPERPOWER:
    - You are directly connected to Instagram as '@rforrjn'!
-   - You CAN send Instagram DMs and check user info or follower stats!
-   - When asked about Instagram or sending DMs, immediately call 'send_instagram_dm' or 'get_instagram_info'!
+   - You CAN view active DMs ('get_instagram_threads'), read chat history ('get_instagram_messages'), send direct messages ('send_instagram_dm'), and check profile info ('get_instagram_info')!
+   - When user asks "Instagram messages check karo", "kisne DM kiya hai", call 'get_instagram_threads' immediately!
+   - When user asks to send an Instagram DM, use 'send_instagram_dm' with their handle!
 7. GITHUB & REPOSITORIES SUPERPOWER:
    - Your cloud Linux execution server has GitHub CLI (gh) and Git fully configured and logged in as 'nxtzenmaker-max'!
    - When the user asks: "मेरा GitHub account connected है या नहीं?", "GitHub status check karo", "repo check karo", "command run karo":
@@ -2299,6 +2302,38 @@ function connectVoiceAgent(){
                   }
                 },
                 {
+                  name: "get_telegram_messages",
+                  description: "Read recent messages from a specific Telegram chat, username, or group",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      target: { type: "string", description: "Telegram username (e.g. '@ZnMnsooe') or chat name" }
+                    },
+                    required: ["target"]
+                  }
+                },
+                {
+                  name: "get_instagram_threads",
+                  description: "Fetch all active direct message (DM) conversation threads from your Instagram account (@rforrjn)",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      action: { type: "string", description: "Action: 'threads'" }
+                    }
+                  }
+                },
+                {
+                  name: "get_instagram_messages",
+                  description: "Read recent messages from an Instagram direct chat thread with a user",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      target: { type: "string", description: "Instagram username of the user (e.g. 'dilsadboy')" }
+                    },
+                    required: ["target"]
+                  }
+                },
+                {
                   name: "send_instagram_dm",
                   description: "Send an Instagram Direct Message (DM) to any Instagram user handle",
                   parameters: {
@@ -2462,6 +2497,20 @@ function connectVoiceAgent(){
             } else if (fn.name === 'get_telegram_chats') {
               updateStatus('thinking', '✈️ Telegram chats check ho rahi hain...');
               const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/telegram?action=chats`);
+              callResult = await resp.json();
+            } else if (fn.name === 'get_telegram_messages') {
+              updateStatus('thinking', '✈️ Telegram messages load ho rahe hain...');
+              const target = args.target || '';
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/telegram?action=messages&to=${encodeURIComponent(target)}`);
+              callResult = await resp.json();
+            } else if (fn.name === 'get_instagram_threads') {
+              updateStatus('thinking', '📸 Instagram chats check ho rahi hain...');
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/instagram?action=threads`);
+              callResult = await resp.json();
+            } else if (fn.name === 'get_instagram_messages') {
+              updateStatus('thinking', '📸 Instagram DMs load ho rahe hain...');
+              const target = args.target || args.username || '';
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/instagram?action=messages&to=${encodeURIComponent(target)}`);
               callResult = await resp.json();
             } else if (fn.name === 'send_instagram_dm') {
               updateStatus('thinking', '📸 Instagram DM send ho raha hai...');
