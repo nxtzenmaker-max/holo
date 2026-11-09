@@ -1407,11 +1407,20 @@ Whenever the user asks you to become, turn into, or show ANY shape, creature, ob
 ALWAYS call the 'morph_shape' tool with:
 - shape: Clean English name (e.g. "guitar", "lion", "tea_cup", "butterfly", "tree", "car", "pizza", "moon")
 - symbol: Closest Unicode emoji glyph (e.g. 🎸, 🦁, ☕, 🦋, 🌲, 🚗, 🍕, 🌙)
-And reply sweetly in Hindi that you have transformed into it!`;
+And reply sweetly in Hindi that you have transformed into it!
+7. LIVE CONNECTORS & TOOLS RULE:
+You have real-time live tools available:
+- 'get_weather': For current live weather, temperature, rain in any city/place (e.g. Delhi, Mumbai, London, etc.).
+- 'web_search': For live facts, knowledge, science, historical figures, or queries (e.g. "Newton kaun tha", "black hole kya hai").
+- 'get_system_time': For exact live time, current date, or day of week in India.
+- 'calculate_math': For solving math calculations and formulas.
+- 'check_github': For repository updates and commit history.
+Always call the respective tool first when asked, and use the returned data to answer warmly and concisely in natural Hindi!`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
 const SYNC_API_ENDPOINT = 'https://sgp.cloud.appwrite.io/v1/functions/rjn-sync/executions';
+const VERCEL_CONNECTOR_URL = 'https://rjn-connectors-i12t.vercel.app';
 const APPWRITE_PROJECT_ID = '6af08cee002c1c5b2882';
 
 function getOrCreateSessionId(){
@@ -1804,7 +1813,9 @@ function connectVoiceAgent(){
                 keyterms: [
                   "नमस्ते", "शेर", "गिटार", "तितली", "चाय", "कप", "पेड़", "कार", "दिल", "फूल", "चाँद",
                   "बनो", "दिखाओ", "होलोग्राम", "कैसी हो", "क्या हाल है", "कोड", "बग",
-                  "sher", "guitar", "chai", "cup", "titli", "ped", "car", "dil", "bano", "dikhao"
+                  "मौसम", "तापमान", "समय", "बजे", "तारीख", "हिसाब", "सर्च", "दिल्ली", "मुंबई", "न्यूटन", "आइंस्टाइन",
+                  "sher", "guitar", "chai", "cup", "titli", "ped", "car", "dil", "bano", "dikhao",
+                  "mausam", "taapmaan", "samay", "baje", "tarikh", "weather", "search", "github"
                 ]
               }
             },
@@ -1822,6 +1833,60 @@ function connectVoiceAgent(){
                       symbol: { type: "string", description: "Unicode emoji glyph representing it" }
                     },
                     required: ["shape"]
+                  }
+                },
+                {
+                  name: "get_weather",
+                  description: "Get real-time live weather information and temperature for any city in the world",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      city: { type: "string", description: "City name (e.g. Delhi, Mumbai, London, New York)" }
+                    },
+                    required: ["city"]
+                  }
+                },
+                {
+                  name: "web_search",
+                  description: "Search live web and Wikipedia knowledge for facts, historical people, science, concepts, and answers",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      query: { type: "string", description: "Search query or concept to look up" }
+                    },
+                    required: ["query"]
+                  }
+                },
+                {
+                  name: "get_system_time",
+                  description: "Get the current accurate live date, day of week, and time in India or any requested timezone",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      timezone: { type: "string", description: "Timezone identifier (e.g. Asia/Kolkata)" }
+                    }
+                  }
+                },
+                {
+                  name: "calculate_math",
+                  description: "Perform accurate mathematical evaluations or calculations",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      expression: { type: "string", description: "Mathematical expression to evaluate (e.g. '25 * 40')" }
+                    },
+                    required: ["expression"]
+                  }
+                },
+                {
+                  name: "check_github",
+                  description: "Fetch live repository stats and latest commits from GitHub",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      repo: { type: "string", description: "GitHub repository in 'owner/repo' format (e.g. 'nxtzenmaker-max/holo')" }
+                    },
+                    required: ["repo"]
                   }
                 }
               ]
@@ -1844,23 +1909,50 @@ function connectVoiceAgent(){
         updateStatus('thinking', '✨ RJN सोच रही है...');
       } else if (msg.type === 'FunctionCallRequest') {
         for (const fn of (msg.functions || [])) {
-          if (fn.name === 'morph_shape') {
-            try {
-              const args = typeof fn.arguments === 'string' ? JSON.parse(fn.arguments) : fn.arguments;
+          let callResult = { status: "success" };
+          try {
+            const args = typeof fn.arguments === 'string' ? JSON.parse(fn.arguments) : (fn.arguments || {});
+            console.log('⚡ Tool Call Requested:', fn.name, args);
+
+            if (fn.name === 'morph_shape') {
               console.log('🌌 Morphing 3D Hologram to:', args.shape, args.symbol);
               currentTurnShape = args.shape || '';
               currentTurnSymbol = args.symbol || '';
               morphShape(args.shape, args.symbol);
-            } catch(e) {
-              console.warn('Function call error:', e);
+              callResult = { status: "success", morphed: true, shape: args.shape };
+            } else if (fn.name === 'get_weather') {
+              updateStatus('thinking', '☀️ Mausam check ho raha hai...');
+              const city = args.city || 'Delhi';
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/weather?city=${encodeURIComponent(city)}`);
+              callResult = await resp.json();
+            } else if (fn.name === 'web_search') {
+              updateStatus('thinking', '🌐 Web search ho raha hai...');
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/search?query=${encodeURIComponent(args.query)}`);
+              callResult = await resp.json();
+            } else if (fn.name === 'get_system_time') {
+              const tz = args.timezone || 'Asia/Kolkata';
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/system?action=datetime&tz=${encodeURIComponent(tz)}`);
+              callResult = await resp.json();
+            } else if (fn.name === 'calculate_math') {
+              const expr = args.expression || '';
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/system?action=calculate&expression=${encodeURIComponent(expr)}`);
+              callResult = await resp.json();
+            } else if (fn.name === 'check_github') {
+              const repo = args.repo || 'nxtzenmaker-max/holo';
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/github?repo=${encodeURIComponent(repo)}`);
+              callResult = await resp.json();
             }
-            agentSocket.send(JSON.stringify({
-              type: "FunctionCallResponse",
-              id: fn.id,
-              name: fn.name,
-              content: JSON.stringify({ status: "success", morphed: true })
-            }));
+          } catch(e) {
+            console.warn('Connector function call error:', e);
+            callResult = { status: "error", message: e.message };
           }
+
+          agentSocket.send(JSON.stringify({
+            type: "FunctionCallResponse",
+            id: fn.id,
+            name: fn.name,
+            content: JSON.stringify(callResult)
+          }));
         }
       } else if (msg.type === 'ConversationText') {
         if (msg.role === 'user') {
