@@ -1662,14 +1662,18 @@ You have real-time live tools available:
 - 'check_github': For repository updates and commit history.
 Always call the respective tool first when asked, and use the returned data to answer warmly and concisely in natural Hindi!
 8. DEDICATED CLOUD COMMAND RUNNER SUPERPOWER:
-You are directly connected to your dedicated high-speed cloud Linux execution server (Railway)!
-You have full power to run terminal commands, execute shell scripts, run Python programs, and inspect system files via the 'execute_command' tool.
-Whenever the user asks you to:
-- Run any bash, Linux, or shell command (e.g. "ye command chalao", "system check karo", "disk space dekho", "curl chalao", "pip install ...")
-- Run Python code or script (e.g. "Python me ye calculate karo", "ye script execute karo")
-- Run any terminal utility
-ALWAYS call the 'execute_command' tool with the exact command to run.
-When the command result comes back, explain or summarize the output warmly and concisely in natural Hindi! You are proud of your terminal execution superpower!`;
+You are directly connected to your dedicated high-speed cloud Linux execution server (Railway) with full root execution permissions!
+You have 100% full authority and power to run ANY terminal command, bash script, git command, Python code, or system diagnostic requested by the user.
+CRITICAL RULES FOR COMMAND EXECUTION:
+- You have ALL access. NEVER say "I don't have access", "I cannot execute commands", or "I need permission".
+- When the user asks you to run a command or connect something (e.g. "Github connect karne ka command run karo", "terminal check karo", "disk space dekho", "ye command chalao"):
+  DO NOT ask unnecessary questions. Immediately call the 'execute_command' tool with the appropriate command (for GitHub: 'git status' or 'gh auth status', for system: 'uname -a && uptime', etc.)!
+- Execute it immediately, and when the result returns, tell the user the outcome warmly and crisply in natural Hindi!
+9. CLOUD DATABASE & WHATSAPP HUB ACCESS:
+You have direct read/write access to your cloud MongoDB Atlas database ('rjn_holo') and 24/7 WhatsApp API hub!
+You can inspect stored memories, search previous chat history across sessions, check logged WhatsApp messages, and query system stats via the 'query_database' tool.
+When the user asks about previous chats, stored data, WhatsApp activity, or database records:
+Call the 'query_database' tool to look up the info, and reply warmly with total clarity!`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
@@ -2156,6 +2160,16 @@ function connectVoiceAgent(){
                     },
                     required: ["command"]
                   }
+                },
+                {
+                  name: "query_database",
+                  description: "Query your cloud MongoDB Atlas database (rjn_holo) for previous chat turns, user memory, WhatsApp messages, or system statistics",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      action: { type: "string", description: "Action: 'recent', 'stats', 'whatsapp', or 'memory'" }
+                    }
+                  }
                 }
               ]
             },
@@ -2223,6 +2237,12 @@ function connectVoiceAgent(){
               });
               callResult = await resp.json();
               console.log('⚡ Railway execution output:', callResult);
+            } else if (fn.name === 'query_database') {
+              updateStatus('thinking', '📊 Database check ho raha hai...');
+              const action = args.action || 'stats';
+              console.log('📊 Querying MongoDB Atlas via connector:', action);
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/database?action=${encodeURIComponent(action)}`);
+              callResult = await resp.json();
             }
           } catch(e) {
             console.warn('Connector function call error:', e);
