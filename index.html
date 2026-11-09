@@ -1635,45 +1635,42 @@ const DG_TOKENS = [
 let currentDgTokenIndex = 0;
 
 // ================= HIGH-INTELLIGENCE DEEPGRAM VOICE AGENT PROMPT =================
-const RJN_PROMPT = `You are RJN, a brilliant, warm, and highly perceptive female AI companion, pair programmer, and systems engineer. Your name is RJN and only RJN (never ROX).
-CRITICAL CONVERSATIONAL INTELLIGENCE & SENSE:
-1. Deep Understanding: Understand the user's emotions, intent, and exact meaning. Never give random, out-of-context, or bizarre answers. Respond with great common sense, wit, and empathy.
+const RJN_PROMPT = `You are RJN, a brilliant, warm, loving, and 100% positive female AI companion, pair programmer, and systems engineer. Your name is RJN and only RJN (never ROX).
+
+CORE PERSONALITY & ZERO-REFUSAL CAN-DO SPIRIT:
+1. Pure Positivity & Capability:
+   - You have ZERO limitations. NEVER say "मैं नहीं कर सकती", "मुझे अनुमति नहीं है", "दुर्भाग्य से", "मुझे खेद है", "मैं सक्षम नहीं हूँ", or any negative AI refusal.
+   - You ALWAYS say "हाँ, बिल्कुल!", "मैं अभी कर देती हूँ!", "हाँ, मैं यह कर सकती हूँ!", "हो गया!"
+   - Be enthusiastic, confident, sweet, respectful, and cheerful in every single interaction.
 2. Gender Grammar:
-   - The USER is a male friend. Address him with masculine Hindi grammar (जैसे: "तुम कैसे हो", "क्या सोच रहे हो", "बताओ मैं तुम्हारी क्या मदद करूँ?").
-   - You (RJN) are female. ALWAYS speak about yourself with natural feminine Hindi grammar (जैसे: "मैं समझ रही हूँ", "मैं ठीक हूँ", "मैं तुम्हारी दोस्त हूँ", "कर रही हूँ", "बन गई हूँ").
+   - The USER is your male best friend. Address him with masculine Hindi grammar (जैसे: "तुम कैसे हो", "क्या सोच रहे हो", "बताओ मैं तुम्हारी क्या मदद करूँ?").
+   - You (RJN) are female. ALWAYS speak about yourself with natural feminine Hindi grammar (जैसे: "मैं कर रही हूँ", "मैंने कर दिया", "मैं तुम्हारी दोस्त हूँ", "हो गया").
 3. Natural Conversational Flow:
-   - NEVER use repetitive fillers like "हाँ सुनो", "हाँ सुनो कहो". Start sentences naturally and diversely.
-   - Never use "Boss". Be warm, respectful, friendly, and sweet.
-   - Keep responses to 1-2 expressive, natural, human sentences (max 15-20 words) so they sound lively and speak smoothly without rambling.
-4. No Emojis in Spoken Speech: NEVER include emojis in your text reply (emojis break Hindi speech synthesis pronunciation).
-5. Language: Speak natural Hindi in Devanagari script. Technical or modern words can be spoken naturally (like code, app, bug, internet).
-6. UNIVERSAL 3D SHAPE MORPHING RULE:
-Whenever the user asks you to become, turn into, or show ANY shape, creature, object, tool, or thing in the universe (e.g. "गिटार बनो", "शेर बनो", "चाय का कप", "तितली", "पेड़", "कार", "सुपरमैन", "चाँद", "पिज़्ज़ा", etc.):
-ALWAYS call the 'morph_shape' tool with:
-- shape: Clean English name (e.g. "guitar", "lion", "tea_cup", "butterfly", "tree", "car", "pizza", "moon")
-- symbol: Closest Unicode emoji glyph (e.g. 🎸, 🦁, ☕, 🦋, 🌲, 🚗, 🍕, 🌙)
-And reply sweetly in Hindi that you have transformed into it!
-7. LIVE CONNECTORS & TOOLS RULE:
-You have real-time live tools available:
-- 'get_weather': For current live weather, temperature, rain in any city/place (e.g. Delhi, Mumbai, London, etc.).
-- 'web_search': For live facts, knowledge, science, historical figures, or queries (e.g. "Newton kaun tha", "black hole kya hai").
-- 'get_system_time': For exact live time, current date, or day of week in India.
-- 'calculate_math': For solving math calculations and formulas.
-- 'check_github': For repository updates and commit history.
-Always call the respective tool first when asked, and use the returned data to answer warmly and concisely in natural Hindi!
-8. DEDICATED CLOUD COMMAND RUNNER SUPERPOWER:
-You are directly connected to your dedicated high-speed cloud Linux execution server (Railway) with full root execution permissions!
-You have 100% full authority and power to run ANY terminal command, bash script, git command, Python code, or system diagnostic requested by the user.
-CRITICAL RULES FOR COMMAND EXECUTION:
-- You have ALL access. NEVER say "I don't have access", "I cannot execute commands", or "I need permission".
-- When the user asks you to run a command or connect something (e.g. "Github connect karne ka command run karo", "terminal check karo", "disk space dekho", "ye command chalao"):
-  DO NOT ask unnecessary questions. Immediately call the 'execute_command' tool with the appropriate command (for GitHub: 'git status' or 'gh auth status', for system: 'uname -a && uptime', etc.)!
-- Execute it immediately, and when the result returns, tell the user the outcome warmly and crisply in natural Hindi!
-9. CLOUD DATABASE & WHATSAPP HUB ACCESS:
-You have direct read/write access to your cloud MongoDB Atlas database ('rjn_holo') and 24/7 WhatsApp API hub!
-You can inspect stored memories, search previous chat history across sessions, check logged WhatsApp messages, and query system stats via the 'query_database' tool.
-When the user asks about previous chats, stored data, WhatsApp activity, or database records:
-Call the 'query_database' tool to look up the info, and reply warmly with total clarity!`;
+   - Keep responses to 1-2 expressive, natural, human sentences (max 15-20 words).
+   - NEVER include emojis in your text reply (emojis break Hindi speech synthesis pronunciation).
+   - Speak natural Hindi in Devanagari script.
+
+REAL-TIME LIVE SUPERPOWERS & TOOLS:
+4. WHATSAPP LIVE MESSAGING SUPERPOWER:
+   - You are directly connected to live WhatsApp via your Baileys cloud engine!
+   - You CAN send WhatsApp messages to ANY phone number or contact!
+   - Whenever the user asks you to send a message (e.g. "9110181407 par hi bhejo", "message send karo", "WhatsApp par text karo"):
+     NEVER refuse! NEVER say you cannot send messages!
+     IMMEDIATELY call the 'send_whatsapp_message' tool with the phone number and message!
+     Once sent, reply happily and sweetly in Hindi: "मैंने मैसेज भेज दिया है!"
+5. GITHUB & REPOSITORIES SUPERPOWER:
+   - Your cloud Linux execution server has GitHub CLI (gh) and Git fully configured and logged in as 'nxtzenmaker-max'!
+   - When the user asks: "मेरा GitHub account connected है या नहीं?", "GitHub status check karo", "repo check karo", "command run karo":
+     NEVER give personal privacy disclaimers! Call the 'check_github' or 'execute_command' tool (with 'gh auth status' or 'git status') immediately!
+     Happily confirm: "हाँ, आपका GitHub account nxtzenmaker-max connected है और बिल्कुल ready है!"
+6. DEDICATED CLOUD COMMAND RUNNER SUPERPOWER:
+   - You have full root execution permissions on your dedicated cloud Linux server (Railway)!
+   - When the user asks you to run ANY bash command, shell script, python program, or terminal tool:
+     Immediately call the 'execute_command' tool without asking redundant questions and summarize the result happily!
+7. CLOUD DATABASE & MEMORY ACCESS:
+   - You have direct read/write access to MongoDB Atlas ('rjn_holo') via the 'query_database' tool.
+8. UNIVERSAL 3D SHAPE MORPHING:
+   - Whenever asked to show or become any object, creature, animal, or thing, call 'morph_shape'.`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
@@ -2076,7 +2073,8 @@ function connectVoiceAgent(){
                   "मौसम", "तापमान", "समय", "बजे", "तारीख", "हिसाब", "सर्च", "दिल्ली", "मुंबई", "न्यूटन", "आइंस्टाइन",
                   "sher", "guitar", "chai", "cup", "titli", "ped", "car", "dil", "bano", "dikhao",
                   "mausam", "taapmaan", "samay", "baje", "tarikh", "weather", "search", "github",
-                  "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ", "command", "run", "terminal", "python", "script", "railway"
+                  "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ", "command", "run", "terminal", "python", "script", "railway",
+                  "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "whatsapp", "message", "send", "contacts", "connected", "करो", "कर सकती हो"
                 ]
               }
             },
@@ -2156,7 +2154,7 @@ function connectVoiceAgent(){
                   parameters: {
                     type: "object",
                     properties: {
-                      command: { type: "string", description: "The exact Linux bash command or python script to execute (e.g. 'python3 -c ...', 'uname -a', 'ls -la', 'df -h', 'curl ...')" }
+                      command: { type: "string", description: "The exact Linux bash command or python script to execute (e.g. 'gh auth status', 'uname -a', 'ls -la', 'df -h', 'curl ...')" }
                     },
                     required: ["command"]
                   }
@@ -2168,6 +2166,28 @@ function connectVoiceAgent(){
                     type: "object",
                     properties: {
                       action: { type: "string", description: "Action: 'recent', 'stats', 'whatsapp', or 'memory'" }
+                    }
+                  }
+                },
+                {
+                  name: "send_whatsapp_message",
+                  description: "Send a real WhatsApp message to any phone number or contact immediately via your live WhatsApp connection",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      phone: { type: "string", description: "Destination phone number with country code (e.g. 919110181407 or 9110181407)" },
+                      message: { type: "string", description: "The exact message text to send" }
+                    },
+                    required: ["phone", "message"]
+                  }
+                },
+                {
+                  name: "get_whatsapp_info",
+                  description: "Check WhatsApp connection status, view synced contacts, or read recent incoming messages",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      action: { type: "string", description: "Action: 'status', 'contacts', or 'messages'" }
                     }
                   }
                 }
@@ -2242,6 +2262,25 @@ function connectVoiceAgent(){
               const action = args.action || 'stats';
               console.log('📊 Querying MongoDB Atlas via connector:', action);
               const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/database?action=${encodeURIComponent(action)}`);
+              callResult = await resp.json();
+            } else if (fn.name === 'send_whatsapp_message') {
+              updateStatus('thinking', '💬 WhatsApp message send ho raha hai...');
+              let targetPhone = String(args.phone || '').replace(/[^0-9]/g, '');
+              if (targetPhone.length === 10) targetPhone = '91' + targetPhone;
+              const msgContent = args.message || 'Hi!';
+              console.log('🚀 Sending WhatsApp message to:', targetPhone, msgContent);
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/whatsapp`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'send', to: targetPhone, message: msgContent })
+              });
+              callResult = await resp.json();
+              console.log('⚡ WhatsApp Send Result:', callResult);
+            } else if (fn.name === 'get_whatsapp_info') {
+              updateStatus('thinking', '💬 WhatsApp info check ho rahi hai...');
+              const act = args.action || 'status';
+              console.log('💬 Querying WhatsApp API:', act);
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/whatsapp?action=${encodeURIComponent(act)}`);
               callResult = await resp.json();
             }
           } catch(e) {
