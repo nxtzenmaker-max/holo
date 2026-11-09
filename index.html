@@ -2053,7 +2053,7 @@ async function callGroqAI(userMsg){
 }
 
 // ================= REAL-TIME STREAMING AUDIO PLAYER (DEEPGRAM VOICE AGENT) =================
-let scheduledAudioTime = 0;
+let nextPlayTime = 0;
 let activeAudioSources = [];
 let isCallActive = false;
 let micStream = null;
@@ -2063,7 +2063,8 @@ let agentKeepAliveTimer = null;
 let lastUserSpokenMsg = '';
 let currentTurnShape = '';
 let currentTurnSymbol = '';
-let lastAgentAudioTime = 0;
+let isAgentSpeaking = false;
+let agentSpeechEndTimer = null;
 
 function updateStatus(state, msg){
   hintEl.textContent = msg;
@@ -2089,31 +2090,55 @@ function playAgentAudioChunk(arrayBuffer){
   src.connect(masterGain); // Clean unclipped speakers
 
   const now = audioCtx.currentTime;
-  // High-stability jitter buffer cushion: 120ms prevents internet packet jitter from cutting voice
-  if (scheduledAudioTime < now) {
-    scheduledAudioTime = now + 0.12;
+  // Seamless time scheduling: If starting or slightly delayed, start immediately with 5ms anti-click margin
+  // NEVER insert artificial 120ms silence gaps!
+  if (nextPlayTime < now) {
+    nextPlayTime = now + 0.005;
   }
 
-  src.start(scheduledAudioTime);
-  scheduledAudioTime += audioBuf.duration;
+  src.start(nextPlayTime);
+  nextPlayTime += audioBuf.duration;
   activeAudioSources.push(src);
-  lastAgentAudioTime = Date.now();
+
+  // Lock agent as actively speaking
+  isAgentSpeaking = true;
+
+  if (agentSpeechEndTimer) {
+    clearTimeout(agentSpeechEndTimer);
+  }
+
+  // Extend agent speaking lock until physical speaker audio finishes playing + 350ms echo margin
+  const durationRemainingMs = Math.max(250, (nextPlayTime - now) * 1000 + 350);
+  agentSpeechEndTimer = setTimeout(() => {
+    if (activeAudioSources.length === 0 && (!audioCtx || nextPlayTime <= audioCtx.currentTime)) {
+      isAgentSpeaking = false;
+      nextPlayTime = 0;
+      if (isCallActive) {
+        updateStatus('listening', '🎙️ RJN सुन रही है...');
+      }
+    }
+  }, durationRemainingMs);
 
   src.onended = () => {
     const idx = activeAudioSources.indexOf(src);
     if (idx > -1) activeAudioSources.splice(idx, 1);
-    if (activeAudioSources.length === 0 && scheduledAudioTime <= audioCtx.currentTime) {
-      scheduledAudioTime = 0;
+    if (activeAudioSources.length === 0 && (!audioCtx || nextPlayTime <= audioCtx.currentTime)) {
+      nextPlayTime = 0;
     }
   };
 }
 
 function stopAllAudioPlayback(){
+  if (agentSpeechEndTimer) {
+    clearTimeout(agentSpeechEndTimer);
+    agentSpeechEndTimer = null;
+  }
   for (const s of activeAudioSources){
     try { s.onended = null; s.stop(); } catch(e){}
   }
   activeAudioSources = [];
-  scheduledAudioTime = 0;
+  nextPlayTime = 0;
+  isAgentSpeaking = false;
 }
 
 // ================= INTENT-DRIVEN SHAPE MORPHING =================
@@ -2191,21 +2216,28 @@ function handlePcmAudioProcess(e){
   if (!isCallActive) return;
   if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
 
-  // CRITICAL ACOUSTIC ECHO ISOLATION:
-  // When RJN is outputting audio through the speakers, DO NOT stream speaker feedback into Deepgram VAD!
-  // This completely eliminates false-positive barge-in where RJN cuts herself off mid-sentence.
-  const isAgentSpeaking = activeAudioSources.length > 0 || (audioCtx && scheduledAudioTime > audioCtx.currentTime + 0.04);
-  if (isAgentSpeaking) {
-    lastAgentAudioTime = Date.now();
-    return; // Suppress echo bleed during agent speech
-  }
-
-  // 250ms echo-decay cushion after playback ends before re-enabling mic stream
-  if (Date.now() - lastAgentAudioTime < 250) {
+  // 1. ABSOLUTE ECHO LOCK: When RJN is speaking, DO NOT SEND ANY MIC AUDIO!
+  // This completely eliminates speaker echo from reaching Deepgram and cutting off speech.
+  if (isAgentSpeaking || activeAudioSources.length > 0 || (audioCtx && nextPlayTime > audioCtx.currentTime)) {
     return;
   }
 
   const inputData = e.inputBuffer.getChannelData(0);
+
+  // 2. RMS NOISE GATE: Filter out fan noise, background hum, AC, and breathing!
+  // Human speech typically produces RMS > 0.015. Ambient room/fan noise is typically < 0.008.
+  let sum = 0;
+  const len = inputData.length;
+  for (let i = 0; i < len; i++) {
+    sum += inputData[i] * inputData[i];
+  }
+  const rms = Math.sqrt(sum / len);
+
+  // If below speech threshold (fan/ambient hum), DO NOT SEND!
+  if (rms < 0.012) {
+    return;
+  }
+
   const inRate = e.inputBuffer.sampleRate || (audioCtx ? audioCtx.sampleRate : 48000);
   // Always downsample cleanly to 16,000 Hz (Deepgram Nova-3 native acoustic rate)
   const buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
@@ -2570,16 +2602,18 @@ function connectVoiceAgent(){
         }));
       } else if (msg.type === 'SettingsApplied') {
         updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+      } else if (msg.type === 'AgentStartedSpeaking') {
+        isAgentSpeaking = true;
+        updateStatus('speaking', '💬 RJN बोल रही है...');
       } else if (msg.type === 'UserStartedSpeaking') {
-        // Smart Barge-in Filter: Suppress false-positives from speaker echo bleed
-        const isAgentActive = activeAudioSources.length > 0 || (audioCtx && scheduledAudioTime > audioCtx.currentTime + 0.04) || (Date.now() - lastAgentAudioTime < 600);
-        if (isAgentActive) {
-          console.log('⚡ Suppressed false-positive barge-in from speaker echo bleed');
-        } else {
-          console.log('⚡ Genuine user interruption: stopping voice playback');
-          stopAllAudioPlayback();
-          updateStatus('listening', '🎙️ RJN सुन रही है...');
+        // If RJN is currently speaking or has scheduled audio queued, DO NOT STOP!
+        // This ensures the voice is NEVER cut off by background noise or speaker echo!
+        if (isAgentSpeaking || activeAudioSources.length > 0 || (audioCtx && nextPlayTime > audioCtx.currentTime)) {
+          console.log('⚡ Suppressed false-positive barge-in: preserving RJN speech without cut');
+          return;
         }
+        stopAllAudioPlayback();
+        updateStatus('listening', '🎙️ RJN सुन रही है...');
       } else if (msg.type === 'AgentThinking') {
         updateStatus('thinking', '✨ RJN सोच रही है...');
       } else if (msg.type === 'FunctionCallRequest') {
@@ -2809,11 +2843,7 @@ function connectVoiceAgent(){
           }
         }
       } else if (msg.type === 'AgentAudioDone') {
-        setTimeout(() => {
-          if (activeAudioSources.length === 0 && isCallActive) {
-            updateStatus('listening', '🎙️ RJN सुन रही है...');
-          }
-        }, 200);
+        console.log('Deepgram AgentAudioDone received (audio draining from playback queue)');
       }
     } catch(err) {
       console.warn('Voice Agent message error:', err);
@@ -3439,8 +3469,8 @@ if (loginForm) {
 // Global user interaction un-locker for AudioContext & tap-to-interrupt
 window.addEventListener('pointerdown', (e) => {
   unlockAudio();
-  if (isCallActive && activeAudioSources.length > 0) {
-    if (e.target.closest('#hint, #hud, #menuToggleBtn')) {
+  if (isCallActive && (isAgentSpeaking || activeAudioSources.length > 0)) {
+    if (e.target.closest('#hint, #hud, #menuToggleBtn, #c')) {
       stopAllAudioPlayback();
       updateStatus('listening', '🎙️ RJN सुन रही है...');
     }
