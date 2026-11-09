@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie_light.min.js"></script>
 <title>Raj Nandini AI</title>
 <style>
   *, *::before, *::after {
@@ -265,81 +266,269 @@
     user-select: none;
   }
 
-  /* ================= SYSTEM TOP BAR ================= */
-  .system-topbar {
+  /* ================= HAMBURGER MENU BUTTON ================= */
+  .menu-toggle-btn {
     position: fixed;
-    top: 16px;
-    left: 20px;
+    top: 20px;
     right: 20px;
     z-index: 1000;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(15, 18, 28, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  }
+  .menu-toggle-btn:hover {
+    background: rgba(25, 30, 46, 0.85);
+    border-color: rgba(255, 255, 255, 0.16);
+    transform: scale(1.04);
+  }
+  .menu-toggle-btn:active {
+    transform: scale(0.96);
+  }
+  .hamburger-line {
+    width: 18px;
+    height: 1.5px;
+    background: #e4e4e7;
+    border-radius: 2px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* ================= SIDEBAR SLIDER DRAWER ================= */
+  .sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1001;
+    background: rgba(2, 4, 8, 0.65);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .sidebar-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .sidebar-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(320px, 82vw);
+    z-index: 1002;
+    background: rgba(13, 16, 25, 0.96);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    box-shadow: -15px 0 40px rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 20px;
+    transform: translateX(100%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .sidebar-drawer.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    pointer-events: auto;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
-  .topbar-left {
+  .sidebar-brand {
     display: flex;
     align-items: center;
+    gap: 12px;
   }
-  .status-pill {
+  .sidebar-emblem {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #e4e4e7;
+  }
+  .sidebar-emblem svg {
+    width: 18px;
+    height: 18px;
+  }
+  .sidebar-title-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .sidebar-user-name {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: #fafafa;
+  }
+  .sidebar-status-pill {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    background: rgba(15, 18, 28, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 9999px;
-    padding: 6px 14px;
-    color: #d4d4d8;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
+    gap: 6px;
   }
-  .status-dot {
-    width: 7px;
-    height: 7px;
+  .sidebar-status-dot {
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: #22c55e;
-    box-shadow: 0 0 8px rgba(34, 197, 94, 0.65);
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.8);
   }
-  .system-label {
-    color: #e4e4e7;
-  }
-  .topbar-right {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(15, 18, 28, 0.72);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-radius: 9999px;
-    padding: 4px 6px 4px 14px;
-  }
-  .user-name {
-    color: #e4e4e7;
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-  }
-  .logout-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 9999px;
-    padding: 4px 12px;
+  .sidebar-status-text {
+    font-size: 11px;
     color: #a1a1aa;
-    font-size: 12px;
-    font-family: inherit;
     font-weight: 500;
+  }
+  .sidebar-close-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a1a1aa;
     cursor: pointer;
     transition: all 0.15s ease;
   }
-  .logout-btn:hover {
-    color: #ef4444;
+  .sidebar-close-btn:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+  .sidebar-close-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .sidebar-content {
+    flex: 1;
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .sidebar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .sidebar-section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #71717a;
+  }
+  .sidebar-info-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+  .info-label {
+    color: #71717a;
+  }
+  .info-value {
+    color: #e4e4e7;
+    font-weight: 500;
+  }
+
+  .sidebar-footer {
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .sidebar-logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 44px;
+    background: rgba(239, 68, 68, 0.09);
+    border: 1px solid rgba(239, 68, 68, 0.22);
+    border-radius: 10px;
+    color: #f87171;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .sidebar-logout-btn:hover {
+    background: rgba(239, 68, 68, 0.16);
     border-color: rgba(239, 68, 68, 0.35);
-    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    transform: translateY(-1px);
+  }
+  .sidebar-logout-btn:active {
+    transform: translateY(0);
+  }
+  .sidebar-logout-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* ================= NEURAL LOADING OVERLAY ================= */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 99998;
+    background: #03040a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s;
+  }
+  .loading-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+  .lottie-container {
+    width: 160px;
+    height: 160px;
+    filter: invert(0.9) drop-shadow(0 0 16px rgba(70, 150, 255, 0.6));
+  }
+  .loading-caption {
+    margin-top: 20px;
+    color: #94a3b8;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+    opacity: 0.85;
   }
 </style>
 </head>
@@ -347,19 +536,75 @@
 <div id="glow"></div>
 <canvas id="c"></canvas>
 
-<!-- SYSTEM TOP BAR -->
-<header id="systemTopBar" class="system-topbar" style="display: none;">
-  <div class="topbar-left">
-    <div class="status-pill">
-      <span class="status-dot"></span>
-      <span class="system-label">RJN Neural Interface</span>
+<!-- HAMBURGER MENU BUTTON -->
+<button type="button" id="menuToggleBtn" class="menu-toggle-btn" aria-label="Open menu" style="display: none;">
+  <span class="hamburger-line"></span>
+  <span class="hamburger-line"></span>
+  <span class="hamburger-line"></span>
+</button>
+
+<!-- SIDEBAR BACKDROP -->
+<div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+<!-- SIDEBAR DRAWER (SLIDER) -->
+<aside id="sidebarDrawer" class="sidebar-drawer" aria-label="Control Panel">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">
+      <div class="sidebar-emblem">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+      </div>
+      <div class="sidebar-title-group">
+        <div class="sidebar-user-name">Raj Nandini</div>
+        <div class="sidebar-status-pill">
+          <span class="sidebar-status-dot"></span>
+          <span class="sidebar-status-text">Online</span>
+        </div>
+      </div>
+    </div>
+    <button type="button" id="sidebarCloseBtn" class="sidebar-close-btn" aria-label="Close menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="sidebar-content">
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Session</div>
+      <div class="sidebar-info-card">
+        <div class="info-row">
+          <span class="info-label">Interface</span>
+          <span class="info-value">Neural Core v2</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Access Level</span>
+          <span class="info-value">Authorized</span>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="topbar-right">
-    <span class="user-name">Raj Nandini</span>
-    <button type="button" id="logoutBtn" class="logout-btn" title="Sign Out">Sign Out</button>
+
+  <div class="sidebar-footer">
+    <button type="button" id="sidebarLogoutBtn" class="sidebar-logout-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+        <polyline points="16 17 21 12 16 7"/>
+        <line x1="21" y1="12" x2="9" y2="12"/>
+      </svg>
+      <span>Sign Out</span>
+    </button>
   </div>
-</header>
+</aside>
+
+<!-- NEURAL LOADING OVERLAY -->
+<div id="loadingOverlay" class="loading-overlay" style="display: none;">
+  <div id="lottieContainer" class="lottie-container"></div>
+  <div class="loading-caption">Initializing Neural Core</div>
+</div>
 
 <!-- LOGIN GATEWAY -->
 <div id="loginGate" class="login-overlay">
@@ -2260,15 +2505,17 @@ function render(now){
 }
 
 
-// ================= AUTHENTICATION & ACCESS CONTROL =================
+// ================= AUTHENTICATION, HAMBURGER DRAWER & LOTTIE LOADER =================
 const AUTH_KEY = 'rjn_ai_session_auth';
 const VALID_ID = 'Raj Nandini';
 const VALID_PASSWORDS = [
   'Raj Nandini is the heart of Rudra/Zeno)',
   'Raj Nandini is the heart of Rudra/Zeno'
 ];
+const LOTTIE_ANIMATION_DATA = {"v":"5.8.1","fr":30,"ip":0,"op":80,"w":500,"h":500,"nm":"Loading","ddd":0,"assets":[],"layers":[{"ddd":0,"ind":1,"ty":4,"nm":"8","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[100]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":10,"s":[90]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":20,"s":[80]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":30,"s":[70]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":40,"s":[60]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":50,"s":[50]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":60,"s":[40]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":70,"s":[30]},{"t":80,"s":[100]}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[250,57.9,0],"ix":2,"l":2},"a":{"a":0,"k":[75.368,31.785,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[-37.894,-13.4],[0,0],[50.234,-18.428],[0,0]],"o":[[0,0],[-47.002,-17.219],[0,0],[35.551,-12.55]],"v":[[56.628,31.53],[75.117,-13.109],[-75.117,-13.107],[-56.626,31.535]],"c":true},"ix":2},"nm":"Path 1","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[0.223537549786,0.223537549786,0.223537549786,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"Fill 1","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[75.367,31.785],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Group 1","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":80,"st":0,"bm":0},{"ddd":0,"ind":2,"ty":4,"nm":"7","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[90]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":10,"s":[80]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":20,"s":[70]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":30,"s":[60]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":40,"s":[50]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":50,"s":[40]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":60,"s":[30]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":70,"s":[100]},{"t":80,"s":[90]}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[114.141,114.14,0],"ix":2,"l":2},"a":{"a":0,"k":[62.613,62.61,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[-34.011,16.262],[0,0],[21.06,-45.411],[0,0]],"o":[[0,0],[-48.552,22.491],[0,0],[17.322,-36.274]],"v":[[62.363,-17.716],[43.871,-62.36],[-62.363,43.871],[-17.725,62.36]],"c":true},"ix":2},"nm":"Path 1","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[0.223537549786,0.223537549786,0.223537549786,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"Fill 1","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[62.613,62.61],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Group 1","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":80,"st":0,"bm":0},{"ddd":0,"ind":3,"ty":4,"nm":"6","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[80]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":10,"s":[70]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":20,"s":[60]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":30,"s":[50]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":40,"s":[40]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":50,"s":[30]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":60,"s":[100]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":70,"s":[90]},{"t":80,"s":[80]}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[57.9,250,0],"ix":2,"l":2},"a":{"a":0,"k":[31.785,75.368,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[-13.4,37.894],[0,0],[-18.428,-50.235],[0,0]],"o":[[0,0],[-17.219,47.001],[0,0],[-12.551,-35.551]],"v":[[31.529,-56.628],[-13.109,-75.117],[-13.107,75.117],[31.535,56.626]],"c":true},"ix":2},"nm":"Path 1","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[0.223537549786,0.223537549786,0.223537549786,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"Fill 1","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[31.786,75.367],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Group 1","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":80,"st":0,"bm":0},{"ddd":0,"ind":4,"ty":4,"nm":"5","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[70]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":10,"s":[60]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":20,"s":[50]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":30,"s":[40]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":40,"s":[30]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":50,"s":[100]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":60,"s":[90]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":70,"s":[80]},{"t":80,"s":[70]}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[114.141,385.86,0],"ix":2,"l":2},"a":{"a":0,"k":[62.611,62.614,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[16.263,34.011],[0,0],[-45.41,-21.06],[0,0]],"o":[[0,0],[22.49,48.552],[0,0],[-36.275,-17.322]],"v":[[-17.717,-62.363],[-62.361,-43.871],[43.869,62.363],[62.361,17.725]],"c":true},"ix":2},"nm":"Path 1","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[0.223537549786,0.223537549786,0.223537549786,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"Fill 1","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[62.611,62.613],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Group 1","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":80,"st":0,"bm":0},{"ddd":0,"ind":5,"ty":4,"nm":"4","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[60]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":10,"s":[50]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":20,"s":[40]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":30,"s":[30]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":40,"s":[100]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":50,"s":[90]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":60,"s":[80]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":70,"s":[70]},{"t":80,"s":[60]}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[249.999,442.1,0],"ix":2,"l":2},"a":{"a":0,"k":[75.368,31.786,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[37.893,13.4],[0,0],[-50.234,18.428],[0,0]],"o":[[0,0],[47.002,17.218],[0,0],[-35.552,12.551]],"v":[[-56.626,-31.53],[-75.118,13.111],[75.118,13.108],[56.626,-31.536]],"c":true},"ix":2},"nm":"Path 1","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[0.223537549786,0.223537549786,0.223537549786,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"Fill 1","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[75.367,31.786],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Group 1","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":80,"st":0,"bm":0},{"ddd":0,"ind":6,"ty":4,"nm":"3","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[50]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":10,"s":[40]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":20,"s":[30]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":30,"s":[100]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":40,"s":[90]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":50,"s":[80]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":60,"s":[70]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":70,"s":[60]},{"t":80,"s":[50]}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[385.859,385.859,0],"ix":2,"l":2},"a":{"a":0,"k":[62.613,62.611,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[34.011,-16.263],[0,0],[-21.06,45.411]],"o":[[-17.322,36.275],[0,0],[48.552,-22.49],[0,0]],"v":[[17.725,-62.361],[-62.363,17.717],[-43.871,62.361],[62.363,-43.87]],"c":true},"ix":2},"nm":"Path 1","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[0.223537549786,0.223537549786,0.223537549786,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"Fill 1","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[62.613,62.611],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Group 1","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":80,"st":0,"bm":0},{"ddd":0,"ind":7,"ty":4,"nm":"2","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[40]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":10,"s":[30]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":20,"s":[100]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":30,"s":[90]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":40,"s":[80]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":50,"s":[70]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":60,"s":[60]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":70,"s":[50]},{"t":80,"s":[40]}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[442.101,250.001,0],"ix":2,"l":2},"a":{"a":0,"k":[31.786,75.368,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[18.429,50.234],[0,0],[13.401,-37.894],[0,0]],"o":[[0,0],[12.551,35.551],[0,0],[17.219,-47.001]],"v":[[13.107,-75.118],[-31.536,-56.626],[-31.531,56.628],[13.109,75.118]],"c":true},"ix":2},"nm":"Path 1","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[0.223537549786,0.223537549786,0.223537549786,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"Fill 1","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[31.786,75.368],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Group 1","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":80,"st":0,"bm":0},{"ddd":0,"ind":8,"ty":4,"nm":"1","sr":1,"ks":{"o":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[30]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":10,"s":[100]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":20,"s":[90]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":30,"s":[80]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":40,"s":[70]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":50,"s":[60]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":60,"s":[50]},{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":70,"s":[40]},{"t":80,"s":[30]}],"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[385.86,114.141,0],"ix":2,"l":2},"a":{"a":0,"k":[62.61,62.613,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[-16.263,-34.011],[0,0],[45.411,21.06],[0,0]],"o":[[0,0],[-22.491,-48.551],[0,0],[36.274,17.321]],"v":[[17.716,62.363],[62.36,43.871],[-43.871,-62.363],[-62.36,-17.725]],"c":true},"ix":2},"nm":"Path 1","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[0.223537549786,0.223537549786,0.223537549786,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"Fill 1","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[62.61,62.613],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Group 1","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":80,"st":0,"bm":0},{"ddd":0,"ind":9,"ty":4,"nm":"Needle","sr":1,"ks":{"o":{"a":0,"k":100,"ix":11},"r":{"a":1,"k":[{"i":{"x":[0.833],"y":[0.833]},"o":{"x":[0.167],"y":[0.167]},"t":0,"s":[0]},{"t":80,"s":[360]}],"ix":10},"p":{"a":0,"k":[254.596,252.411,0],"ix":2,"l":2},"a":{"a":0,"k":[3.548,117.839,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"shapes":[{"ty":"gr","it":[{"ind":0,"ty":"sh","ix":1,"ks":{"a":0,"k":{"i":[[0,0],[0,0],[0,0],[0,0]],"o":[[0,0],[0,0],[0,0],[0,0]],"v":[[3.298,57.589],[-3.298,57.589],[-3.298,-57.589],[3.298,-57.589]],"c":true},"ix":2},"nm":"Path 1","mn":"ADBE Vector Shape - Group","hd":false},{"ty":"fl","c":{"a":0,"k":[0.137254901961,0.121568634931,0.125490196078,1],"ix":4},"o":{"a":0,"k":100,"ix":5},"r":1,"bm":0,"nm":"Fill 1","mn":"ADBE Vector Graphic - Fill","hd":false},{"ty":"tr","p":{"a":0,"k":[3.548,57.839],"ix":2},"a":{"a":0,"k":[0,0],"ix":1},"s":{"a":0,"k":[100,100],"ix":3},"r":{"a":0,"k":0,"ix":6},"o":{"a":0,"k":100,"ix":7},"sk":{"a":0,"k":0,"ix":4},"sa":{"a":0,"k":0,"ix":5},"nm":"Transform"}],"nm":"Group 1","np":2,"cix":2,"bm":0,"ix":1,"mn":"ADBE Vector Group","hd":false}],"ip":0,"op":80,"st":0,"bm":0},{"ddd":0,"ind":10,"ty":1,"nm":"BG","sr":1,"ks":{"o":{"a":0,"k":100,"ix":11},"r":{"a":0,"k":0,"ix":10},"p":{"a":0,"k":[250,250,0],"ix":2,"l":2},"a":{"a":0,"k":[250,250,0],"ix":1,"l":2},"s":{"a":0,"k":[100,100,100],"ix":6,"l":2}},"ao":0,"sw":500,"sh":500,"sc":"#ffffff00","ip":0,"op":80,"st":0,"bm":0}],"markers":[]};
 
 let isAuthenticated = false;
+let lottieAnimInstance = null;
 
 function initAuth() {
   try {
@@ -2287,7 +2534,9 @@ function initAuth() {
 function applyAuthState(authenticated, animate) {
   isAuthenticated = authenticated;
   const loginGate = document.getElementById('loginGate');
-  const topBar = document.getElementById('systemTopBar');
+  const menuBtn = document.getElementById('menuToggleBtn');
+  const drawer = document.getElementById('sidebarDrawer');
+  const backdrop = document.getElementById('sidebarBackdrop');
 
   if (authenticated) {
     if (animate) {
@@ -2299,14 +2548,132 @@ function applyAuthState(authenticated, animate) {
       loginGate.classList.add('hidden');
       loginGate.style.display = 'none';
     }
-    if (topBar) topBar.style.display = 'flex';
+    if (menuBtn) menuBtn.style.display = 'flex';
   } else {
     loginGate.style.display = 'flex';
     loginGate.classList.remove('hidden');
-    if (topBar) topBar.style.display = 'none';
+    if (menuBtn) menuBtn.style.display = 'none';
+    if (drawer) drawer.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('active');
   }
 }
 
+// Hamburger Menu & Slider Drawer Controls
+const menuToggleBtn = document.getElementById('menuToggleBtn');
+const sidebarDrawer = document.getElementById('sidebarDrawer');
+const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+
+function openSidebar() {
+  if (!isAuthenticated) return;
+  if (sidebarDrawer) sidebarDrawer.classList.add('open');
+  if (sidebarBackdrop) sidebarBackdrop.classList.add('active');
+}
+
+function closeSidebar() {
+  if (sidebarDrawer) sidebarDrawer.classList.remove('open');
+  if (sidebarBackdrop) sidebarBackdrop.classList.remove('active');
+}
+
+if (menuToggleBtn) {
+  menuToggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    openSidebar();
+  });
+}
+if (sidebarCloseBtn) {
+  sidebarCloseBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeSidebar();
+  });
+}
+if (sidebarBackdrop) {
+  sidebarBackdrop.addEventListener('click', (e) => {
+    e.stopPropagation();
+    closeSidebar();
+  });
+}
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeSidebar();
+});
+
+// Sign Out from Sidebar
+const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
+if (sidebarLogoutBtn) {
+  sidebarLogoutBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    closeSidebar();
+    try {
+      localStorage.removeItem(AUTH_KEY);
+    } catch (err) {}
+    if (isCallActive) {
+      if (typeof stopVoiceCall === 'function') stopVoiceCall();
+    }
+    const idIn = document.getElementById('loginId');
+    const passIn = document.getElementById('loginPass');
+    if (idIn) idIn.value = '';
+    if (passIn) passIn.value = '';
+    const errEl = document.getElementById('loginError');
+    if (errEl) errEl.classList.remove('visible');
+    applyAuthState(false, true);
+  });
+}
+
+// Lottie Loading Sequence after Login
+function playLoadingAnimationAndRevealOrb() {
+  const loginGate = document.getElementById('loginGate');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const lottieContainer = document.getElementById('lottieContainer');
+  const menuBtn = document.getElementById('menuToggleBtn');
+
+  // 1. Hide Login Gate
+  loginGate.classList.add('hidden');
+  setTimeout(() => {
+    loginGate.style.display = 'none';
+  }, 350);
+
+  // 2. Show Loading Overlay
+  if (loadingOverlay) {
+    loadingOverlay.style.display = 'flex';
+    loadingOverlay.classList.remove('hidden');
+
+    if (window.lottie && lottieContainer) {
+      lottieContainer.innerHTML = '';
+      try {
+        lottieAnimInstance = lottie.loadAnimation({
+          container: lottieContainer,
+          renderer: 'svg',
+          loop: true,
+          autoplay: true,
+          animationData: LOTTIE_ANIMATION_DATA
+        });
+      } catch (e) {
+        console.warn('Lottie player error:', e);
+      }
+    }
+
+    // Play loading animation for ~2.5 seconds, then reveal orb
+    setTimeout(() => {
+      loadingOverlay.classList.add('hidden');
+      setTimeout(() => {
+        loadingOverlay.style.display = 'none';
+        if (lottieAnimInstance) {
+          try { lottieAnimInstance.destroy(); } catch(e){}
+          lottieAnimInstance = null;
+        }
+      }, 500);
+
+      isAuthenticated = true;
+      if (menuBtn) menuBtn.style.display = 'flex';
+      unlockAudio();
+    }, 2500);
+  } else {
+    applyAuthState(true, true);
+  }
+}
+
+// Password toggle
 const togglePassBtn = document.getElementById('togglePassBtn');
 const passInput = document.getElementById('loginPass');
 if (togglePassBtn && passInput) {
@@ -2321,6 +2688,7 @@ if (togglePassBtn && passInput) {
   });
 }
 
+// Login Form Submit with Lottie Animation
 const loginForm = document.getElementById('loginForm');
 const loginError = document.getElementById('loginError');
 const loginErrorMsg = document.getElementById('loginErrorMsg');
@@ -2346,8 +2714,8 @@ if (loginForm) {
         }));
       } catch (err) {}
 
-      unlockAudio();
-      applyAuthState(true, true);
+      // Play loading animation from JSON, then transition to 3D orb!
+      playLoadingAnimationAndRevealOrb();
     } else {
       if (loginError && loginErrorMsg) {
         if (!isIdMatch && !isPassMatch) {
@@ -2364,24 +2732,6 @@ if (loginForm) {
       passInput.focus();
       passInput.select();
     }
-  });
-}
-
-const logoutBtn = document.getElementById('logoutBtn');
-if (logoutBtn) {
-  logoutBtn.addEventListener('click', (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      localStorage.removeItem(AUTH_KEY);
-    } catch (err) {}
-    if (isCallActive) {
-      if (typeof stopVoiceCall === "function") stopVoiceCall();
-    }
-    idInput.value = '';
-    passInput.value = '';
-    if (loginError) loginError.classList.remove('visible');
-    applyAuthState(false, true);
   });
 }
 
