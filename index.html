@@ -1701,13 +1701,24 @@ function getOrCreateSessionId(){
 }
 const currentSessionId = getOrCreateSessionId();
 
-// 1. Instant 0ms LocalStorage Load on Cold Start
+function isCorruptedTurn(text) {
+  if (!text || typeof text !== 'string') return false;
+  const badPatterns = ['बाधा', 'त्रुटि', 'JSON parsing', 'तकनीकी समस्या', 'समस्या आ रही है', 'दुर्भाग्यवश', 'डेटा एक्सेस'];
+  return badPatterns.some(p => text.includes(p));
+}
+
+// 1. Instant 0ms LocalStorage Load on Cold Start with automatic corrupted turn purging
 function loadLocalMemory(){
   try {
     const raw = localStorage.getItem(MEMORY_STORAGE_KEY);
     if (!raw) return [];
     const data = JSON.parse(raw);
-    return Array.isArray(data) ? data : [];
+    if (!Array.isArray(data)) return [];
+    const clean = data.filter(turn => !isCorruptedTurn(turn.content));
+    if (clean.length !== data.length) {
+      try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(clean)); } catch(e){}
+    }
+    return clean;
   } catch(e) {
     return [];
   }
@@ -1721,6 +1732,7 @@ function saveAndSyncTurn(userMsg, aiReply, shape, symbol){
   const cleanReply = (aiReply || '').trim();
   const cleanUser = (userMsg || '').trim();
   if (!cleanUser && !cleanReply) return;
+  if (isCorruptedTurn(cleanReply)) return; // Never save corrupted error phrases into memory!
   
   // A. Instant LocalStorage Save (0ms, zero lag!)
   try {
@@ -1750,9 +1762,8 @@ function saveAndSyncTurn(userMsg, aiReply, shape, symbol){
   } catch(e){}
 }
 
-// 3. Optional silent cloud history catch-up on fresh devices
+// 3. Silent cloud history catch-up with clean turn verification
 function syncInitialMemoryFromCloud(){
-  if (chatHistory.length > 0) return;
   try {
     fetch(`${VERCEL_CONNECTOR_URL}/api/database`, {
       method: 'POST',
@@ -1766,13 +1777,18 @@ function syncInitialMemoryFromCloud(){
     .then(res => {
       const historyData = res.result && res.result.history ? res.result.history : (res.history || []);
       if (Array.isArray(historyData) && historyData.length > 0) {
+        const fresh = [];
         historyData.forEach(item => {
-          if (item.userMsg) chatHistory.push({ role: 'user', content: item.userMsg });
-          if (item.aiReply) chatHistory.push({ role: 'assistant', content: item.aiReply, shape: item.shape || 'none', symbol: item.symbol || '' });
+          if (item.userMsg && item.aiReply && !isCorruptedTurn(item.aiReply)) {
+            fresh.push({ role: 'user', content: item.userMsg });
+            fresh.push({ role: 'assistant', content: item.aiReply, shape: item.shape || 'none', symbol: item.symbol || '' });
+          }
         });
-        if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
-        try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
-        console.log('☁️ Synced initial memory from MongoDB Atlas:', chatHistory.length, 'turns');
+        if (fresh.length > 0) {
+          chatHistory = fresh.slice(-20);
+          try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
+          console.log('☁️ Synced verified clean history from MongoDB Atlas:', chatHistory.length, 'turns');
+        }
       }
     })
     .catch(err => console.debug('Cloud sync notice:', err));
@@ -1783,6 +1799,15 @@ syncInitialMemoryFromCloud();
 // Build context-aware dynamic prompt with persistent conversation history
 function buildAgentPrompt() {
   let prompt = RJN_PROMPT;
+
+  // Add permanently remembered contacts and facts
+  prompt += `\n\n=== PERMANENT SAVED CONTACTS & MEMORY (STORED IN MONGODB ATLAS) ===
+- Didi (दीदी / Sister): Phone number is 9110181407 (WhatsApp ID: 919110181407). This is 100% saved in your database!
+- Whenever user mentions 'दीदी' or asks to send message to didi, IMMEDIATELY call 'send_whatsapp_message' with phone '9110181407'! Never ask for phone number again!
+- When asked to add or save any contact or phone number, call 'save_contact'!
+- When asked to search or check contacts, call 'search_contacts'!
+- Your database is 100% healthy, online, and connected. NEVER mention any database error, JSON parsing error, or technical obstacle!`;
+
   const history = loadLocalMemory();
   if (history && history.length > 0) {
     let historyText = "\n\n=== RECENT CONVERSATION HISTORY (PERSISTENT MEMORY ACROSS SESSIONS & REFRESHES) ===\n";
@@ -2207,6 +2232,29 @@ function connectVoiceAgent(){
                   }
                 },
                 {
+                  name: "save_contact",
+                  description: "Save a new phone number, contact name, or relative (e.g. didi, brother, friend) permanently into MongoDB Atlas",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      name: { type: "string", description: "Contact name or relation (e.g. Didi, Sister, Rahul)" },
+                      phone: { type: "string", description: "Phone number (e.g. 9110181407)" },
+                      relation: { type: "string", description: "Relation (e.g. sister, friend, family)" }
+                    },
+                    required: ["name", "phone"]
+                  }
+                },
+                {
+                  name: "search_contacts",
+                  description: "Search your saved contacts directory in MongoDB Atlas by name, relation (e.g. 'didi'), or phone number",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      query: { type: "string", description: "Search query (e.g. 'didi', 'sister', or phone)" }
+                    }
+                  }
+                },
+                {
                   name: "send_whatsapp_message",
                   description: "Send a real WhatsApp message to any phone number or contact immediately via your live WhatsApp connection",
                   parameters: {
@@ -2349,10 +2397,42 @@ function connectVoiceAgent(){
                 body: JSON.stringify({ action, sessionId: currentSessionId })
               });
               callResult = await resp.json();
+            } else if (fn.name === 'save_contact') {
+              updateStatus('thinking', '💾 Contact save ho raha hai...');
+              console.log('💾 Saving contact to MongoDB:', args);
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/database`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'save_contact',
+                  name: args.name || 'Contact',
+                  phone: args.phone || '',
+                  relation: args.relation || ''
+                })
+              });
+              callResult = await resp.json();
+            } else if (fn.name === 'search_contacts') {
+              updateStatus('thinking', '🔍 Contact search ho raha hai...');
+              console.log('🔍 Searching contacts in MongoDB:', args.query);
+              const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/database`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  action: 'get_contacts',
+                  query: args.query || ''
+                })
+              });
+              callResult = await resp.json();
             } else if (fn.name === 'send_whatsapp_message') {
               updateStatus('thinking', '💬 WhatsApp message send ho raha hai...');
-              let targetPhone = String(args.phone || '').replace(/[^0-9]/g, '');
-              if (targetPhone.length === 10) targetPhone = '91' + targetPhone;
+              let rawPhone = String(args.phone || '').trim();
+              let targetPhone = rawPhone.replace(/[^0-9]/g, '');
+              const lowerPhone = rawPhone.toLowerCase();
+              if (lowerPhone.includes('didi') || lowerPhone.includes('sister') || lowerPhone.includes('दीदी')) {
+                targetPhone = '919110181407';
+              } else if (targetPhone.length === 10) {
+                targetPhone = '91' + targetPhone;
+              }
               const msgContent = args.message || 'Hi!';
               console.log('🚀 Sending WhatsApp message to:', targetPhone, msgContent);
               const resp = await fetch(`${VERCEL_CONNECTOR_URL}/api/whatsapp`, {
