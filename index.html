@@ -892,6 +892,9 @@ let mediaRecorder = null;
 let dgSocket = null;
 let speechDebounceTimer = null;
 let transcriptBuffer = '';
+let hasGreeted = false;
+let lastAiSpokenText = '';
+let lastAiSpeakEndTime = 0;
 
 function updateStatus(state, msg){
   hintEl.textContent = msg;
@@ -912,7 +915,7 @@ function connectMicToAnalyser(stream){
 }
 
 function finishAiTurn(){
-  // Acoustic cool-down grace period (400ms) so speaker sound clears before mic listens
+  // 600ms acoustic cool-down grace period so speaker sound completely clears before mic listens
   setTimeout(() => {
     isAiBusy = false;
     transcriptBuffer = '';
@@ -922,7 +925,24 @@ function finishAiTurn(){
     } else {
       updateStatus('idle', '');
     }
-  }, 400);
+  }, 600);
+}
+
+// Acoustic Echo Filter: prevents AI from hearing its own voice from the phone speakers!
+function isSelfEcho(userSpeech){
+  if (!userSpeech) return true;
+  const now = performance.now();
+  if (now - lastAiSpeakEndTime < 2200) {
+    const cleanUser = userSpeech.replace(/[^\u0900-\u097Fa-zA-Z]/g, '').toLowerCase();
+    const cleanAi = (lastAiSpokenText || '').replace(/[^\u0900-\u097Fa-zA-Z]/g, '').toLowerCase();
+    // Ignore micro echoes like "कहो", "सुनो", "हाँ", "हाँसुनो"
+    if (cleanUser.length < 5) return true;
+    if (cleanAi.includes(cleanUser) || cleanUser.includes('कहो') || cleanUser.includes('हाँसुनो')) {
+      console.log('Ignored self-echo audio:', userSpeech);
+      return true;
+    }
+  }
+  return false;
 }
 
 async function speakRJN(text){
@@ -931,6 +951,7 @@ async function speakRJN(text){
     return;
   }
   isAiBusy = true;
+  lastAiSpokenText = text;
   unlockAudio();
   updateStatus('speaking', '💬 RJN: ' + text);
 
@@ -983,6 +1004,7 @@ async function speakRJN(text){
 
       src.onended = () => {
         activeAudioSource = null;
+        lastAiSpeakEndTime = performance.now();
         finishAiTurn();
       };
 
@@ -993,6 +1015,7 @@ async function speakRJN(text){
     console.warn('TTS playback error:', err);
   }
 
+  lastAiSpeakEndTime = performance.now();
   finishAiTurn();
 }
 
@@ -1044,15 +1067,6 @@ function getSupportedMimeType(){
   return '';
 }
 
-async function toggleVoiceCall(){
-  unlockAudio();
-  if (isCallActive) {
-    stopVoiceCall();
-  } else {
-    startVoiceCall();
-  }
-}
-
 async function startVoiceCall(){
   if (isCallActive) return;
   try {
@@ -1076,8 +1090,11 @@ async function startVoiceCall(){
     // Connect phone mic directly to Deepgram WebSocket
     connectDeepgramSTT();
 
-    // RJN speaks initial greeting
-    speakRJN("हाँ सुनो, कहो?");
+    // RJN speaks initial greeting ONLY ONCE on launch!
+    if (!hasGreeted) {
+      hasGreeted = true;
+      speakRJN("हाँ सुनो, कहो?");
+    }
   } catch(err) {
     console.error('Phone Mic access error:', err);
     isCallActive = false;
@@ -1176,6 +1193,9 @@ function connectDeepgramSTT(){
       const text = alt && alt.transcript ? alt.transcript.trim() : '';
 
       if (text) {
+        // Drop any microphone self-echo of the AI's recent voice
+        if (isSelfEcho(text)) return;
+
         updateStatus('listening', `🎙️ "${text}"`);
         transcriptBuffer = text;
 
@@ -1216,7 +1236,11 @@ function connectDeepgramSTT(){
 async function triggerVoiceQuery(userSpeech){
   if (!userSpeech || !userSpeech.trim()) return;
   if (isAiBusy) {
-    console.log('RJN is already answering, ignoring overlapping query:', userSpeech);
+    console.log('RJN already answering, skip duplicate:', userSpeech);
+    return;
+  }
+  // Double-check echo guard
+  if (isSelfEcho(userSpeech)) {
     return;
   }
   isAiBusy = true;
@@ -1297,7 +1321,9 @@ window.addEventListener('pointerup', e => {
     const dist = Math.hypot(e.clientX - pointerDownX, e.clientY - pointerDownY);
     const duration = performance.now() - pointerDownTime;
     if (dist < 32 && duration < 700) {
-      toggleVoiceCall();
+      if (!isCallActive) {
+        startVoiceCall();
+      }
     }
   }
 });
