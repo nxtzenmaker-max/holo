@@ -1684,7 +1684,15 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
 10. MONGODB ATLAS CLOUD MEMORY:
    - Database 'rjn_holo' is 100% online, healthy, and permanent.
    - Use 'query_database', 'save_contact', 'search_contacts' to read/write memories!
-11. UNIVERSAL 3D SHAPE MORPHING:
+11. AUTONOMOUS AGY WORKER AGENT ON 330GB RAM UBUNTU VPS:
+   - You have an autonomous developer AI agent ('AGY') running 24/7 on your high-performance Railway VPS (crossover.proxy.rlwy.net)!
+   - Whenever Boss commands any coding, script writing, automation, or background work (जैसे: "एजेंट को यह काम दो", "AGY से यह प्रोजेक्ट बनवाओ", "background me agent se kaam karwao"):
+     Immediately call 'assign_autonomous_task' with the instruction!
+     Confirm happily to Boss in Hindi: "हाँ बॉस, मैंने AGY एजेंट को काम दे दिया है, वो बिना रुके इसे पूरा करेगा!"
+   - When Boss asks "एजेंट का काम कितना हुआ?", "एजेंट का स्टेटस क्या है?", "टास्क चेक करो":
+     Immediately call 'get_autonomous_task_status'!
+     Report the progress or result happily to Boss!
+12. UNIVERSAL 3D SHAPE MORPHING:
    - Whenever Boss asks to show or become any object, call 'morph_shape'.`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
@@ -2383,6 +2391,27 @@ function connectVoiceAgent(){
                       username: { type: "string", description: "Instagram username (default: 'rforrjn')" }
                     }
                   }
+                },
+                {
+                  name: "assign_autonomous_task",
+                  description: "Assign an autonomous engineering, coding, or terminal task to the AGY worker agent on the high-performance Railway VPS (330GB RAM). The agent works continuously without stopping until the task is complete.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      instruction: { type: "string", description: "The exact task, coding goal, or project instructions for the AGY agent to execute" }
+                    },
+                    required: ["instruction"]
+                  }
+                },
+                {
+                  name: "get_autonomous_task_status",
+                  description: "Check the live status, progress, duration, or results of the autonomous AGY worker agent and its latest tasks.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      action: { type: "string", description: "Action: 'latest' or 'worker_status'" }
+                    }
+                  }
                 }
               ]
             },
@@ -2567,6 +2596,37 @@ function connectVoiceAgent(){
               updateStatus('thinking', '📸 Instagram info check ho rahi hai...');
               const targetUser = (args.username || 'rforrjn').replace('@', '').trim();
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/instagram?action=info&to=${encodeURIComponent(targetUser)}`);
+            } else if (fn.name === 'assign_autonomous_task') {
+              updateStatus('thinking', '⚡ AGY एजेंट को काम सौंपा जा रहा है...');
+              const instruction = args.instruction || '';
+              const safeInstr = instruction.replace(/"/g, '\\"');
+              const cmd = `python3 /root/mongo_tool.py assign_task "${safeInstr}"`;
+              console.log('🚀 Assigning autonomous task to AGY worker:', instruction);
+              const runResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ command: cmd, timeout: 20000 })
+              });
+              let parsed = null;
+              try { parsed = JSON.parse(runResp.stdout.trim()); } catch(e){ parsed = runResp; }
+              callResult = { status: "success", assigned: true, task: parsed, message: "टास्क AGY एजेंट को दे दिया गया है, वो बिना रुके इसे पूरा करेगा!" };
+            } else if (fn.name === 'get_autonomous_task_status') {
+              updateStatus('thinking', '📊 AGY एजेंट का स्टेटस चेक हो रहा है...');
+              const cmd = 'python3 /root/mongo_tool.py agent_status';
+              const runResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ command: cmd, timeout: 20000 })
+              });
+              let parsed = null;
+              try { parsed = JSON.parse(runResp.stdout.trim()); } catch(e){ parsed = runResp; }
+              callResult = { status: "success", info: parsed };
             }
           } catch(e) {
             console.warn('Connector function call notice:', e);
