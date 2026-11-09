@@ -2507,6 +2507,7 @@ function render(now){
 
 // ================= AUTHENTICATION, HAMBURGER DRAWER & LOTTIE LOADER =================
 const AUTH_KEY = 'rjn_ai_session_auth';
+const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24-Hour Expiration Limit
 const VALID_ID = 'Raj Nandini';
 const VALID_PASSWORDS = [
   'Raj Nandini is the heart of Rudra/Zeno)',
@@ -2517,19 +2518,59 @@ const LOTTIE_ANIMATION_DATA = {"v":"5.8.1","fr":30,"ip":0,"op":80,"w":500,"h":50
 let isAuthenticated = false;
 let lottieAnimInstance = null;
 
-function initAuth() {
+function getActiveSession() {
   try {
-    const session = localStorage.getItem(AUTH_KEY);
-    if (session) {
-      const data = JSON.parse(session);
-      if (data && data.user === VALID_ID) {
-        applyAuthState(true, false);
-        return;
-      }
+    const raw = localStorage.getItem(AUTH_KEY);
+    if (!raw) return null;
+    const session = JSON.parse(raw);
+    if (!session || session.user !== VALID_ID) {
+      localStorage.removeItem(AUTH_KEY);
+      return null;
     }
-  } catch (err) {}
-  applyAuthState(false, false);
+    const now = Date.now();
+    const loginTime = session.timestamp || 0;
+    // Check if session has exceeded 24 hours (86,400,000 ms)
+    if (now - loginTime >= SESSION_TTL_MS) {
+      localStorage.removeItem(AUTH_KEY);
+      return null;
+    }
+    return session;
+  } catch (err) {
+    return null;
+  }
 }
+
+function checkAndHandleSessionExpiration() {
+  if (isAuthenticated && !getActiveSession()) {
+    if (isCallActive && typeof stopVoiceCall === 'function') stopVoiceCall();
+    closeSidebar();
+    applyAuthState(false, true);
+    const errEl = document.getElementById('loginError');
+    const errMsg = document.getElementById('loginErrorMsg');
+    if (errEl && errMsg) {
+      errMsg.textContent = 'Session expired after 24 hours. Please log in again.';
+      errEl.classList.add('visible');
+    }
+  }
+}
+
+function initAuth() {
+  const session = getActiveSession();
+  if (session) {
+    applyAuthState(true, false);
+  } else {
+    applyAuthState(false, false);
+  }
+}
+
+// Background tab & periodic session expiration watchers
+setInterval(checkAndHandleSessionExpiration, 30000);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    checkAndHandleSessionExpiration();
+  }
+});
+window.addEventListener('focus', checkAndHandleSessionExpiration);
 
 function applyAuthState(authenticated, animate) {
   isAuthenticated = authenticated;
@@ -2708,9 +2749,11 @@ if (loginForm) {
     if (isIdMatch && isPassMatch) {
       if (loginError) loginError.classList.remove('visible');
       try {
+        const loginNow = Date.now();
         localStorage.setItem(AUTH_KEY, JSON.stringify({
           user: VALID_ID,
-          timestamp: Date.now()
+          timestamp: loginNow,
+          expiresAt: loginNow + SESSION_TTL_MS
         }));
       } catch (err) {}
 
