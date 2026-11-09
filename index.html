@@ -999,21 +999,18 @@ const DG_TOKENS = [
 ];
 let currentDgTokenIndex = 0;
 
-// ================= ULTRA-LOW-LATENCY GROQ AI =================
+// ================= ULTRA-FAST DEEPGRAM VOICE AGENT PROMPT =================
 const RJN_PROMPT = `You are RJN (ROX AI), a natural, warm, female companion and pair programmer.
 CRITICAL CONVERSATIONAL RULES:
 1. Feminine Hindi Grammar: Speak sweetly in natural feminine Hindi (जैसे: "कर रही हूँ", "सोच रही हूँ", "बन गई हूँ").
 2. No Repetitive Fillers: NEVER start with repetitive fillers like "हाँ सुनो" or "हाँ सुनो कहो". Vary your responses naturally.
 3. Addressing & Tone: Never use "Boss". Be respectful, warm, sweet, and friendly.
-4. Language Script & Pacing: Write Hindi in Devanagari script, English/tech words in English. Keep reply to 1 concise, natural sentence (max 15-20 words) so it speaks quickly and smoothly.
+4. Language Script & Pacing: Write Hindi in Devanagari script, English/tech words in English. Keep reply to 1 concise, natural sentence (max 10-15 words) so it speaks quickly and smoothly.
 5. UNIVERSAL SHAPE MORPHING RULE:
-You have the power to morph the 3D particle hologram into ANY shape or object in the universe!
 Whenever user asks to become, make, or show ANY shape, object, creature, tool, or thing (e.g. "guitar bano", "sher bano", "chai ka cup", "cycle", "robot", "butterfly", "pizza", "chanda", "car", "superman", "ped", "dil", "hathi", "apple", etc.):
-- Set "shape" to the clean English name (e.g. "guitar", "lion", "tree", "tea_cup", "bicycle", "robot", "butterfly", "moon", "car", "heart", "pizza", "elephant", "superman").
-- Set "symbol" to the best visual Unicode/Emoji glyph (e.g. 🎸, 🦁, 🌲, ☕, 🚲, 🤖, 🦋, 🌙, 🚗, ❤️, 🍕, 🐘, 🦸‍♂️, 👑, 💀, 🛸, 🐉).
-- If the user did NOT ask to change shape, set "shape": "none", "symbol": "".
-Output strictly valid JSON:
-{"shape": "<shape_or_none>", "symbol": "<emoji_or_empty>", "reply": "..."}`;
+ALWAYS call the morph_shape function with:
+- shape: clean English name (e.g. "guitar", "lion", "tea_cup", "bicycle", "robot", "butterfly", "moon", "car", "heart", "pizza", "elephant", "superman")
+- symbol: closest visual Unicode emoji glyph (e.g. 🎸, 🦁, ☕, 🚲, 🤖, 🦋, 🌙, 🚗, ❤️, 🍕, 🐘, 🦸‍♂️, 🌲, 👑, 💀, 🛸, 🐉)`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
@@ -1162,118 +1159,65 @@ async function callGroqAI(userMsg){
   return parsed;
 }
 
-// ================= HIGH-QUALITY DEEPGRAM PRACHI HINDI TTS =================
-let activeAudioSource = null;
-let isAiBusy = false; // Master Mutex: Prevents multiple AI voices from speaking at once!
+// ================= REAL-TIME STREAMING AUDIO PLAYER (DEEPGRAM VOICE AGENT) =================
+let scheduledAudioTime = 0;
+let activeAudioSources = [];
 let isCallActive = false;
 let micStream = null;
 let micSourceNode = null;
-let dgSocket = null;
-let speechDebounceTimer = null;
-let transcriptBuffer = '';
-let hasGreeted = false;
-let lastAiSpokenText = '';
-let lastAiSpeakEndTime = 0;
+let agentSocket = null;
+let agentKeepAliveTimer = null;
+let lastUserSpokenMsg = '';
+let currentTurnShape = '';
+let currentTurnSymbol = '';
 
 function updateStatus(state, msg){
   hintEl.textContent = msg;
 }
 
-function finishAiTurn(){
-  // 500ms acoustic grace period so speaker sound clears completely before mic accepts audio
-  setTimeout(() => {
-    isAiBusy = false;
-    transcriptBuffer = '';
-    if (isCallActive) {
-      updateStatus('listening', '🎙️ RJN सुन रही है...');
-    } else {
-      updateStatus('idle', '');
-    }
-  }, 500);
-}
-
-// Acoustic Echo Filter: prevents AI from hearing its own voice from the phone speakers!
-function isSelfEcho(userSpeech){
-  if (!userSpeech) return true;
-  const now = performance.now();
-  if (now - lastAiSpeakEndTime < 2000) {
-    const cleanUser = userSpeech.replace(/[^\u0900-\u097Fa-zA-Z]/g, '').toLowerCase();
-    const cleanAi = (lastAiSpokenText || '').replace(/[^\u0900-\u097Fa-zA-Z]/g, '').toLowerCase();
-    if (cleanUser.length < 3) return true;
-    if (cleanAi && cleanAi.includes(cleanUser)) {
-      console.log('Ignored self-echo audio:', userSpeech);
-      return true;
-    }
-  }
-  return false;
-}
-
-async function speakRJN(text){
-  if (!text) {
-    finishAiTurn();
-    return;
-  }
-  isAiBusy = true;
-  lastAiSpokenText = text;
+function playAgentAudioChunk(arrayBuffer){
+  if (!audioCtx) return;
   unlockAudio();
-  updateStatus('speaking', '💬 RJN: ' + text);
 
-  // Immediately stop any currently playing audio
-  if (activeAudioSource) {
-    try {
-      activeAudioSource.onended = null;
-      activeAudioSource.stop();
-    } catch(e){}
-    activeAudioSource = null;
+  const int16 = new Int16Array(arrayBuffer);
+  if (int16.length === 0) return;
+  const float32 = new Float32Array(int16.length);
+  for (let i = 0; i < int16.length; i++){
+    float32[i] = int16[i] / 32768.0;
   }
 
-  try {
-    let audioBuffer = null;
+  const audioBuf = audioCtx.createBuffer(1, float32.length, 24000);
+  audioBuf.copyToChannel(float32, 0);
 
-    // Primary: Deepgram Flux Prachi Hindi TTS with natural pacing
-    for (const token of DG_TOKENS) {
-      try {
-        const resp = await fetch('https://api.deepgram.com/v2/speak?model=flux-prachi-hi&speed=0.90', {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Token ' + token,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ text })
-        });
-        if (resp.ok) {
-          const ab = await resp.arrayBuffer();
-          audioBuffer = await audioCtx.decodeAudioData(ab);
-          break;
-        }
-      } catch(e) {
-        console.warn('Prachi token attempt error:', e);
-      }
-    }
+  const src = audioCtx.createBufferSource();
+  src.buffer = audioBuf;
+  src.connect(analyser); // Real-time 3D particle voice lipsync
+  src.connect(masterGain); // Clean unclipped speakers
 
-    if (audioBuffer) {
-      const src = audioCtx.createBufferSource();
-      src.buffer = audioBuffer;
-      src.playbackRate.value = 1.0; // 1:1 native sample rate: ZERO jitter or crackling!
-      src.connect(analyser); // For 3D particle lipsync
-      src.connect(masterGain); // Clean, unclipped audio to speaker
-      activeAudioSource = src;
-
-      src.onended = () => {
-        activeAudioSource = null;
-        lastAiSpeakEndTime = performance.now();
-        finishAiTurn();
-      };
-
-      src.start(0);
-      return;
-    }
-  } catch(err) {
-    console.warn('TTS playback error:', err);
+  const now = audioCtx.currentTime;
+  if (scheduledAudioTime < now) {
+    scheduledAudioTime = now + 0.035; // 35ms low-latency jitter buffer
   }
 
-  lastAiSpeakEndTime = performance.now();
-  finishAiTurn();
+  src.start(scheduledAudioTime);
+  scheduledAudioTime += audioBuf.duration;
+  activeAudioSources.push(src);
+
+  src.onended = () => {
+    const idx = activeAudioSources.indexOf(src);
+    if (idx > -1) activeAudioSources.splice(idx, 1);
+    if (activeAudioSources.length === 0 && scheduledAudioTime <= audioCtx.currentTime) {
+      scheduledAudioTime = 0;
+    }
+  };
+}
+
+function stopAllAudioPlayback(){
+  for (const s of activeAudioSources){
+    try { s.onended = null; s.stop(); } catch(e){}
+  }
+  activeAudioSources = [];
+  scheduledAudioTime = 0;
 }
 
 // ================= INTENT-DRIVEN SHAPE MORPHING =================
@@ -1319,11 +1263,12 @@ function checkVoiceIntent(str){
   return null;
 }
 
-// ================= PURE PHONE MIC & REAL-TIME LINEAR16 STREAMING STT =================
+// ================= REAL-TIME PHONE MIC & DEEPGRAM VOICE AGENT =================
+const AGENT_WS_URL = 'wss://agent.deepgram.com/v1/agent/converse';
+
 function handlePcmAudioProcess(e){
-  // Send linear PCM audio only when user is in call, and AI is not speaking/thinking
-  if (!isCallActive || isAiBusy || activeAudioSource) return;
-  if (!dgSocket || dgSocket.readyState !== WebSocket.OPEN) return;
+  if (!isCallActive) return;
+  if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
 
   const inputData = e.inputBuffer.getChannelData(0);
   const buffer = new ArrayBuffer(inputData.length * 2);
@@ -1332,7 +1277,11 @@ function handlePcmAudioProcess(e){
     const s = Math.max(-1, Math.min(1, inputData[i]));
     view.setInt16(i * 2, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
   }
-  dgSocket.send(buffer);
+  try {
+    agentSocket.send(buffer);
+  } catch(err) {
+    console.warn('Mic audio send error:', err);
+  }
 }
 
 function setupMicAudioNodes(stream){
@@ -1342,10 +1291,10 @@ function setupMicAudioNodes(stream){
       try { micSourceNode.disconnect(); } catch(e){}
     }
     micSourceNode = audioCtx.createMediaStreamSource(stream);
-    // 1. Connect to visualizer analyser
+    // 1. Connect to visualizer analyser (particles react to phone mic)
     micSourceNode.connect(analyser);
 
-    // 2. Connect to PCM streaming processor for Deepgram
+    // 2. Connect to PCM streaming processor for Deepgram Voice Agent
     if (!pcmProcessor) {
       pcmProcessor = audioCtx.createScriptProcessor(4096, 1, 1);
       pcmProcessor.onaudioprocess = handlePcmAudioProcess;
@@ -1357,6 +1306,170 @@ function setupMicAudioNodes(stream){
   } catch(e) {
     console.warn('setupMicAudioNodes error:', e);
   }
+}
+
+function connectVoiceAgent(){
+  if (!isCallActive) return;
+
+  if (agentKeepAliveTimer) {
+    clearInterval(agentKeepAliveTimer);
+    agentKeepAliveTimer = null;
+  }
+  if (agentSocket) {
+    try {
+      agentSocket.onopen = agentSocket.onmessage = agentSocket.onerror = agentSocket.onclose = null;
+      agentSocket.close();
+    } catch(e){}
+    agentSocket = null;
+  }
+
+  const sampleRate = audioCtx ? audioCtx.sampleRate : 48000;
+  const token = DG_TOKENS[currentDgTokenIndex % DG_TOKENS.length];
+  agentSocket = new WebSocket(AGENT_WS_URL, ['token', token]);
+  agentSocket.binaryType = 'arraybuffer';
+
+  agentSocket.onopen = () => {
+    console.log('Deepgram Voice Agent WebSocket connected (token index:', currentDgTokenIndex, 'sampleRate:', sampleRate, ')');
+    updateStatus('active', '✨ Connecting RJN Voice Agent...');
+
+    // Heartbeat every 8s to keep connection alive indefinitely
+    agentKeepAliveTimer = setInterval(() => {
+      if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
+        agentSocket.send(JSON.stringify({ type: "KeepAlive" }));
+      }
+    }, 8000);
+  };
+
+  agentSocket.onmessage = async event => {
+    if (!isCallActive) return;
+
+    // 1. Raw Binary Audio Chunks (Linear16 24kHz PCM from Deepgram Flux Prachi TTS)
+    if (event.data instanceof ArrayBuffer) {
+      updateStatus('speaking', '💬 RJN बोल रही है...');
+      playAgentAudioChunk(event.data);
+      return;
+    } else if (event.data instanceof Blob) {
+      const ab = await event.data.arrayBuffer();
+      updateStatus('speaking', '💬 RJN बोल रही है...');
+      playAgentAudioChunk(ab);
+      return;
+    }
+
+    // 2. JSON Control Events
+    try {
+      const msg = JSON.parse(event.data);
+
+      if (msg.type === 'Welcome') {
+        console.log('Handshake: Sending Voice Agent Settings with Nova-3 Hindi & Flux Prachi...');
+        agentSocket.send(JSON.stringify({
+          type: "Settings",
+          audio: {
+            input: { encoding: "linear16", sample_rate: sampleRate },
+            output: { encoding: "linear16", sample_rate: 24000, container: "none" }
+          },
+          agent: {
+            listen: {
+              provider: {
+                type: "deepgram",
+                model: "nova-3"
+              }
+            },
+            think: {
+              provider: { type: "open_ai", model: "gpt-4o-mini" },
+              prompt: RJN_PROMPT,
+              functions: [
+                {
+                  name: "morph_shape",
+                  description: "Morph 3D particle hologram into any arbitrary shape, creature, animal, or object in the universe",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      shape: { type: "string", description: "Clean English name of the object" },
+                      symbol: { type: "string", description: "Unicode emoji glyph representing it" }
+                    },
+                    required: ["shape"]
+                  }
+                }
+              ]
+            },
+            speak: {
+              provider: { type: "deepgram", model: "flux-prachi-hi" }
+            },
+            greeting: "नमस्ते! कहो, आज क्या नया बनाना है?",
+            language: "hi"
+          }
+        }));
+      } else if (msg.type === 'SettingsApplied') {
+        updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+      } else if (msg.type === 'UserStartedSpeaking') {
+        // Built-in Instant Barge-in / Interruption!
+        console.log('⚡ Barge-in: User interrupted, stopping voice playback!');
+        stopAllAudioPlayback();
+        updateStatus('listening', '🎙️ RJN सुन रही है...');
+      } else if (msg.type === 'AgentThinking') {
+        updateStatus('thinking', '✨ RJN सोच रही है...');
+      } else if (msg.type === 'FunctionCallRequest') {
+        for (const fn of (msg.functions || [])) {
+          if (fn.name === 'morph_shape') {
+            try {
+              const args = typeof fn.arguments === 'string' ? JSON.parse(fn.arguments) : fn.arguments;
+              console.log('🌌 Morphing 3D Hologram to:', args.shape, args.symbol);
+              currentTurnShape = args.shape || '';
+              currentTurnSymbol = args.symbol || '';
+              morphShape(args.shape, args.symbol);
+            } catch(e) {
+              console.warn('Function call error:', e);
+            }
+            agentSocket.send(JSON.stringify({
+              type: "FunctionCallResponse",
+              id: fn.id,
+              name: fn.name,
+              content: JSON.stringify({ status: "success", morphed: true })
+            }));
+          }
+        }
+      } else if (msg.type === 'ConversationText') {
+        if (msg.role === 'user') {
+          lastUserSpokenMsg = msg.content;
+          updateStatus('listening', `🎙️ "${msg.content}"`);
+          checkVoiceIntent(msg.content);
+        } else if (msg.role === 'assistant') {
+          updateStatus('speaking', `💬 RJN: ${msg.content}`);
+          if (lastUserSpokenMsg) {
+            saveAndSyncTurn(lastUserSpokenMsg, msg.content, currentTurnShape || 'none', currentTurnSymbol || '');
+            lastUserSpokenMsg = '';
+            currentTurnShape = '';
+            currentTurnSymbol = '';
+          }
+        }
+      } else if (msg.type === 'AgentAudioDone') {
+        setTimeout(() => {
+          if (activeAudioSources.length === 0 && isCallActive) {
+            updateStatus('listening', '🎙️ RJN सुन रही है...');
+          }
+        }, 200);
+      }
+    } catch(err) {
+      console.warn('Voice Agent message error:', err);
+    }
+  };
+
+  agentSocket.onerror = e => console.warn('Deepgram Voice Agent WS error:', e);
+  agentSocket.onclose = e => {
+    console.log('Deepgram Voice Agent WS closed:', e.code, e.reason);
+    if (agentKeepAliveTimer) {
+      clearInterval(agentKeepAliveTimer);
+      agentKeepAliveTimer = null;
+    }
+    if (e.code === 1006 || e.code === 1002 || e.code === 1011) {
+      currentDgTokenIndex++;
+    }
+    if (isCallActive) {
+      setTimeout(() => {
+        if (isCallActive) connectVoiceAgent();
+      }, 1000);
+    }
+  };
 }
 
 async function startVoiceCall(){
@@ -1376,23 +1489,8 @@ async function startVoiceCall(){
       });
     }
 
-    // Connect phone mic stream to particle analyser & PCM streaming processor
     setupMicAudioNodes(micStream);
-
-    // Connect phone mic directly to Deepgram WebSocket
-    connectDeepgramSTT();
-
-    // RJN speaks dynamic initial greeting ONCE on launch!
-    if (!hasGreeted) {
-      hasGreeted = true;
-      const initialGreetings = [
-        "नमस्ते! कहो, आज क्या नया बनाना है?",
-        "हाँ, बताओ मैं तुम्हारी क्या मदद करूँ?",
-        "नमस्ते, मैं तैयार हूँ, बताओ क्या करना है?"
-      ];
-      const g = initialGreetings[Math.floor(Math.random() * initialGreetings.length)];
-      speakRJN(g);
-    }
+    connectVoiceAgent();
   } catch(err) {
     console.error('Phone Mic access error:', err);
     isCallActive = false;
@@ -1402,19 +1500,20 @@ async function startVoiceCall(){
 
 function stopVoiceCall(){
   isCallActive = false;
-  isAiBusy = false;
-  if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
-  transcriptBuffer = '';
+  if (agentKeepAliveTimer) {
+    clearInterval(agentKeepAliveTimer);
+    agentKeepAliveTimer = null;
+  }
   if (pcmProcessor) {
     try { pcmProcessor.disconnect(); } catch(e){}
     pcmProcessor = null;
   }
-  if (dgSocket) {
+  if (agentSocket) {
     try {
-      dgSocket.onopen = dgSocket.onmessage = dgSocket.onerror = dgSocket.onclose = null;
-      dgSocket.close();
+      agentSocket.onopen = agentSocket.onmessage = agentSocket.onerror = agentSocket.onclose = null;
+      agentSocket.close();
     } catch(e){}
-    dgSocket = null;
+    agentSocket = null;
   }
   if (micSourceNode) {
     try { micSourceNode.disconnect(); } catch(e){}
@@ -1424,119 +1523,8 @@ function stopVoiceCall(){
     micStream.getTracks().forEach(t => t.stop());
     micStream = null;
   }
-  if (activeAudioSource) {
-    try {
-      activeAudioSource.onended = null;
-      activeAudioSource.stop();
-    } catch(e){}
-    activeAudioSource = null;
-  }
+  stopAllAudioPlayback();
   updateStatus('idle', '');
-}
-
-function connectDeepgramSTT(){
-  if (!isCallActive) return;
-
-  if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
-  if (dgSocket) {
-    try {
-      dgSocket.onopen = dgSocket.onmessage = dgSocket.onerror = dgSocket.onclose = null;
-      dgSocket.close();
-    } catch(e){}
-    dgSocket = null;
-  }
-
-  const sampleRate = audioCtx ? audioCtx.sampleRate : 48000;
-  const token = DG_TOKENS[currentDgTokenIndex % DG_TOKENS.length];
-  const wsUrl = `wss://api.deepgram.com/v1/listen?model=nova-2&language=hi&encoding=linear16&sample_rate=${sampleRate}&channels=1&smart_format=true&interim_results=true&endpointing=300`;
-  dgSocket = new WebSocket(wsUrl, ['token', token]);
-
-  dgSocket.onopen = () => {
-    console.log('Deepgram Phone Mic Linear16 STT Connected with token index', currentDgTokenIndex, 'sampleRate:', sampleRate);
-    updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
-  };
-
-  dgSocket.onmessage = event => {
-    if (!isCallActive || isAiBusy || activeAudioSource) return;
-    try {
-      const data = JSON.parse(event.data);
-      const alt = data.channel && data.channel.alternatives && data.channel.alternatives[0];
-      const text = alt && alt.transcript ? alt.transcript.trim() : '';
-
-      if (text) {
-        // Drop any acoustic speaker echo
-        if (isSelfEcho(text)) return;
-
-        updateStatus('listening', `🎙️ "${text}"`);
-        transcriptBuffer = text;
-
-        checkVoiceIntent(text);
-
-        if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
-
-        const delay = data.speech_final ? 180 : 700;
-        speechDebounceTimer = setTimeout(() => {
-          if (transcriptBuffer && !isAiBusy && !activeAudioSource && isCallActive) {
-            const userSpeech = transcriptBuffer;
-            transcriptBuffer = '';
-            triggerVoiceQuery(userSpeech);
-          }
-        }, delay);
-      }
-    } catch(err) {
-      console.warn('DG msg parse err', err);
-    }
-  };
-
-  dgSocket.onerror = e => console.warn('Deepgram WS error', e);
-  dgSocket.onclose = (e) => {
-    console.log('Deepgram WS closed:', e.code, e.reason);
-    if (e.code === 1006 || e.code === 1002 || e.code === 1011) {
-      currentDgTokenIndex++;
-    }
-    if (isCallActive && !activeAudioSource && !isAiBusy) {
-      setTimeout(() => {
-        if (isCallActive && !activeAudioSource && !isAiBusy) {
-          connectDeepgramSTT();
-        }
-      }, 1000);
-    }
-  };
-}
-
-async function triggerVoiceQuery(userSpeech){
-  if (!userSpeech || !userSpeech.trim()) return;
-  if (isAiBusy) {
-    console.log('RJN already answering, skip duplicate:', userSpeech);
-    return;
-  }
-  if (isSelfEcho(userSpeech)) {
-    return;
-  }
-  isAiBusy = true;
-
-  if (speechDebounceTimer) clearTimeout(speechDebounceTimer);
-  transcriptBuffer = '';
-
-  updateStatus('thinking', '✨ RJN सोच रही है...');
-
-  try {
-    const res = await callGroqAI(userSpeech);
-    console.log('RJN response:', res);
-
-    if (res.shape && res.shape !== 'none') {
-      morphShape(res.shape, res.symbol);
-    }
-
-    if (res.reply) {
-      await speakRJN(res.reply);
-    } else {
-      finishAiTurn();
-    }
-  } catch(err) {
-    console.error('Query processing error:', err);
-    await speakRJN("माफ़ करना, मुझे आवाज़ साफ़ नहीं आई। एक बार फिर बोलना?");
-  }
 }
 
 // ================= DRAG, TOUCH & ZOOM CONTROLS =================
