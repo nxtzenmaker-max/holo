@@ -502,33 +502,146 @@
     position: fixed;
     inset: 0;
     z-index: 99998;
-    background: #03040a;
+    background: radial-gradient(ellipse at center, #070d18 0%, #03040a 75%, #010204 100%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     opacity: 1;
     visibility: visible;
-    transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s;
+    transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.6s, transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    transform: scale(1);
+    user-select: none;
+    -webkit-user-select: none;
   }
   .loading-overlay.hidden {
     opacity: 0;
     visibility: hidden;
+    transform: scale(1.04);
     pointer-events: none;
   }
+  .loading-reactor {
+    position: relative;
+    width: 170px;
+    height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .reactor-ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    pointer-events: none;
+  }
+  .ring-outer {
+    inset: 0;
+    border-top: 2px solid rgba(56, 189, 248, 0.85);
+    border-bottom: 2px solid rgba(168, 85, 247, 0.6);
+    animation: rotateClockwise 6s linear infinite;
+    filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.45));
+  }
+  .ring-mid {
+    inset: 16px;
+    border-left: 2px dashed rgba(56, 189, 248, 0.65);
+    border-right: 2px dashed rgba(168, 85, 247, 0.7);
+    animation: rotateCounterClockwise 4.5s linear infinite;
+  }
+  .ring-inner {
+    inset: 32px;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-top-color: rgba(56, 189, 248, 0.95);
+    animation: rotateClockwise 3s linear infinite;
+  }
+  .reactor-glow {
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(168, 85, 247, 0.18) 50%, transparent 70%);
+    animation: pulseGlow 2.2s ease-in-out infinite;
+    pointer-events: none;
+  }
+  @keyframes rotateClockwise {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  @keyframes rotateCounterClockwise {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+  }
+  @keyframes pulseGlow {
+    0%, 100% { transform: scale(0.92); opacity: 0.6; }
+    50% { transform: scale(1.22); opacity: 1; }
+  }
   .lottie-container {
-    width: 160px;
-    height: 160px;
-    filter: invert(0.9) drop-shadow(0 0 16px rgba(70, 150, 255, 0.6));
+    width: 120px;
+    height: 120px;
+    position: relative;
+    z-index: 2;
+    filter: invert(0.92) hue-rotate(180deg) drop-shadow(0 0 16px rgba(56, 189, 248, 0.7));
+  }
+  .loading-brand {
+    margin-top: 24px;
+    text-align: center;
+  }
+  .loading-title {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    background: linear-gradient(135deg, #ffffff 20%, #38bdf8 65%, #a855f7 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 24px rgba(56, 189, 248, 0.4);
+  }
+  .loading-subtitle {
+    margin-top: 6px;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    color: #64748b;
+    font-weight: 600;
+  }
+  .loading-bar-wrap {
+    width: 250px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    margin-top: 22px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.6);
+  }
+  .loading-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #0ea5e9, #38bdf8, #a855f7);
+    border-radius: 999px;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.85);
+    transition: width 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .loading-meta {
+    width: 250px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
   }
   .loading-caption {
-    margin-top: 20px;
     color: #94a3b8;
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.04em;
     font-weight: 500;
-    opacity: 0.85;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 195px;
+  }
+  .loading-percent {
+    font-size: 11px;
+    color: #38bdf8;
+    font-weight: 600;
+    font-family: monospace;
+    letter-spacing: 0.05em;
   }
 </style>
 </head>
@@ -600,10 +713,26 @@
   </div>
 </aside>
 
-<!-- NEURAL LOADING OVERLAY -->
-<div id="loadingOverlay" class="loading-overlay" style="display: none;">
-  <div id="lottieContainer" class="lottie-container"></div>
-  <div class="loading-caption">Initializing Neural Core</div>
+<!-- NEURAL LOADING OVERLAY (Active on every page boot) -->
+<div id="loadingOverlay" class="loading-overlay">
+  <div class="loading-reactor">
+    <div class="reactor-ring ring-outer"></div>
+    <div class="reactor-ring ring-mid"></div>
+    <div class="reactor-ring ring-inner"></div>
+    <div id="lottieContainer" class="lottie-container"></div>
+    <div class="reactor-glow"></div>
+  </div>
+  <div class="loading-brand">
+    <div class="loading-title">RAJ NANDINI</div>
+    <div class="loading-subtitle">NEURAL SYSTEM v2.5 &bull; BOSS COMPANION</div>
+  </div>
+  <div class="loading-bar-wrap">
+    <div id="loadingProgressBar" class="loading-bar-fill"></div>
+  </div>
+  <div class="loading-meta">
+    <div id="loadingCaption" class="loading-caption">Initializing Neural Core...</div>
+    <div id="loadingPercent" class="loading-percent">0%</div>
+  </div>
 </div>
 
 <!-- LOGIN GATEWAY -->
@@ -1934,6 +2063,7 @@ let agentKeepAliveTimer = null;
 let lastUserSpokenMsg = '';
 let currentTurnShape = '';
 let currentTurnSymbol = '';
+let lastAgentAudioTime = 0;
 
 function updateStatus(state, msg){
   hintEl.textContent = msg;
@@ -1959,13 +2089,15 @@ function playAgentAudioChunk(arrayBuffer){
   src.connect(masterGain); // Clean unclipped speakers
 
   const now = audioCtx.currentTime;
+  // High-stability jitter buffer cushion: 120ms prevents internet packet jitter from cutting voice
   if (scheduledAudioTime < now) {
-    scheduledAudioTime = now + 0.035; // 35ms low-latency jitter buffer
+    scheduledAudioTime = now + 0.12;
   }
 
   src.start(scheduledAudioTime);
   scheduledAudioTime += audioBuf.duration;
   activeAudioSources.push(src);
+  lastAgentAudioTime = Date.now();
 
   src.onended = () => {
     const idx = activeAudioSources.indexOf(src);
@@ -2059,6 +2191,20 @@ function handlePcmAudioProcess(e){
   if (!isCallActive) return;
   if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
 
+  // CRITICAL ACOUSTIC ECHO ISOLATION:
+  // When RJN is outputting audio through the speakers, DO NOT stream speaker feedback into Deepgram VAD!
+  // This completely eliminates false-positive barge-in where RJN cuts herself off mid-sentence.
+  const isAgentSpeaking = activeAudioSources.length > 0 || (audioCtx && scheduledAudioTime > audioCtx.currentTime + 0.04);
+  if (isAgentSpeaking) {
+    lastAgentAudioTime = Date.now();
+    return; // Suppress echo bleed during agent speech
+  }
+
+  // 250ms echo-decay cushion after playback ends before re-enabling mic stream
+  if (Date.now() - lastAgentAudioTime < 250) {
+    return;
+  }
+
   const inputData = e.inputBuffer.getChannelData(0);
   const inRate = e.inputBuffer.sampleRate || (audioCtx ? audioCtx.sampleRate : 48000);
   // Always downsample cleanly to 16,000 Hz (Deepgram Nova-3 native acoustic rate)
@@ -2079,11 +2225,11 @@ function setupMicAudioNodes(stream){
     }
     micSourceNode = audioCtx.createMediaStreamSource(stream);
 
-    // Boost mic sensitivity by 2.2x so whispers and casual Hindi speech are picked up clearly!
+    // Clean WebRTC mic gain (1.0 without clipping/distortion so hardware AEC functions cleanly)
     if (!micGainNode) {
       micGainNode = audioCtx.createGain();
     }
-    micGainNode.gain.value = 2.2;
+    micGainNode.gain.value = 1.0;
     micSourceNode.connect(micGainNode);
 
     // 1. Connect to visualizer analyser (particles react to phone mic)
@@ -2425,10 +2571,15 @@ function connectVoiceAgent(){
       } else if (msg.type === 'SettingsApplied') {
         updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
       } else if (msg.type === 'UserStartedSpeaking') {
-        // Built-in Instant Barge-in / Interruption!
-        console.log('⚡ Barge-in: User interrupted, stopping voice playback!');
-        stopAllAudioPlayback();
-        updateStatus('listening', '🎙️ RJN सुन रही है...');
+        // Smart Barge-in Filter: Suppress false-positives from speaker echo bleed
+        const isAgentActive = activeAudioSources.length > 0 || (audioCtx && scheduledAudioTime > audioCtx.currentTime + 0.04) || (Date.now() - lastAgentAudioTime < 600);
+        if (isAgentActive) {
+          console.log('⚡ Suppressed false-positive barge-in from speaker echo bleed');
+        } else {
+          console.log('⚡ Genuine user interruption: stopping voice playback');
+          stopAllAudioPlayback();
+          updateStatus('listening', '🎙️ RJN सुन रही है...');
+        }
       } else if (msg.type === 'AgentThinking') {
         updateStatus('thinking', '✨ RJN सोच रही है...');
       } else if (msg.type === 'FunctionCallRequest') {
@@ -3106,57 +3257,118 @@ if (sidebarLogoutBtn) {
   });
 }
 
-// Lottie Loading Sequence after Login
-function playLoadingAnimationAndRevealOrb() {
-  const loginGate = document.getElementById('loginGate');
+// ================= HIGH-TECH NEURAL SYSTEM STARTUP SEQUENCE =================
+function runSystemStartupSequence(onComplete) {
   const loadingOverlay = document.getElementById('loadingOverlay');
   const lottieContainer = document.getElementById('lottieContainer');
-  const menuBtn = document.getElementById('menuToggleBtn');
+  const progressBar = document.getElementById('loadingProgressBar');
+  const captionEl = document.getElementById('loadingCaption');
+  const percentEl = document.getElementById('loadingPercent');
 
-  // 1. Hide Login Gate
-  loginGate.classList.add('hidden');
-  setTimeout(() => {
-    loginGate.style.display = 'none';
-  }, 350);
+  if (!loadingOverlay) {
+    if (onComplete) onComplete();
+    return;
+  }
 
-  // 2. Show Loading Overlay
-  if (loadingOverlay) {
-    loadingOverlay.style.display = 'flex';
-    loadingOverlay.classList.remove('hidden');
+  // Ensure loading overlay is prominently displayed
+  loadingOverlay.style.display = 'flex';
+  loadingOverlay.classList.remove('hidden');
 
-    if (window.lottie && lottieContainer) {
-      lottieContainer.innerHTML = '';
-      try {
-        lottieAnimInstance = lottie.loadAnimation({
-          container: lottieContainer,
-          renderer: 'svg',
-          loop: true,
-          autoplay: true,
-          animationData: LOTTIE_ANIMATION_DATA
-        });
-      } catch (e) {
-        console.warn('Lottie player error:', e);
+  // Start Lottie animation immediately
+  if (window.lottie && lottieContainer) {
+    lottieContainer.innerHTML = '';
+    try {
+      if (lottieAnimInstance) {
+        try { lottieAnimInstance.destroy(); } catch(e){}
+      }
+      lottieAnimInstance = lottie.loadAnimation({
+        container: lottieContainer,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        animationData: LOTTIE_ANIMATION_DATA
+      });
+    } catch(e) {
+      console.warn('Lottie player notice:', e);
+    }
+  }
+
+  // Pre-warm audio subsystem during startup
+  try { initAudioContext(); } catch(e){}
+
+  const phases = [
+    { p: 18, msg: "⚡ Booting Neural Quantum Core..." },
+    { p: 42, msg: "🌌 Compiling 3D Holographic Particle Mesh..." },
+    { p: 68, msg: "🔊 Tuning HD Voice Engine & Jitter Buffer..." },
+    { p: 88, msg: "🔗 Syncing MongoDB Atlas & Gateway..." },
+    { p: 100, msg: "✨ RJN Systems Online. Welcome Boss!" }
+  ];
+
+  const startTime = performance.now();
+  const totalDuration = 1800; // 1.8s smooth cinematic boot sequence
+
+  function step(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(1, elapsed / totalDuration);
+    // Cubic ease-out for snappy high-tech feel
+    const eased = 1 - Math.pow(1 - progress, 2.6);
+    const pct = Math.floor(eased * 100);
+
+    if (progressBar) progressBar.style.width = pct + '%';
+    if (percentEl) percentEl.textContent = pct + '%';
+
+    for (let i = phases.length - 1; i >= 0; i--) {
+      if (pct >= phases[i].p) {
+        if (captionEl) captionEl.textContent = phases[i].msg;
+        break;
       }
     }
 
-    // Play loading animation for ~2.5 seconds, then reveal orb
-    setTimeout(() => {
-      loadingOverlay.classList.add('hidden');
-      setTimeout(() => {
-        loadingOverlay.style.display = 'none';
-        if (lottieAnimInstance) {
-          try { lottieAnimInstance.destroy(); } catch(e){}
-          lottieAnimInstance = null;
-        }
-      }, 500);
+    if (progress < 1) {
+      requestAnimationFrame(step);
+    } else {
+      if (progressBar) progressBar.style.width = '100%';
+      if (percentEl) percentEl.textContent = '100%';
+      if (captionEl) captionEl.textContent = '✨ RJN Systems Online. Welcome Boss!';
 
-      isAuthenticated = true;
-      if (menuBtn) menuBtn.style.display = 'flex';
-      unlockAudio();
-    }, 2500);
-  } else {
-    applyAuthState(true, true);
+      setTimeout(() => {
+        loadingOverlay.classList.add('hidden');
+        setTimeout(() => {
+          loadingOverlay.style.display = 'none';
+          if (lottieAnimInstance) {
+            try { lottieAnimInstance.destroy(); } catch(e){}
+            lottieAnimInstance = null;
+          }
+        }, 600);
+
+        if (onComplete) onComplete();
+      }, 350);
+    }
   }
+
+  requestAnimationFrame(step);
+}
+
+// Lottie Loading Sequence after Login Form Submission
+function playLoadingAnimationAndRevealOrb() {
+  const loginGate = document.getElementById('loginGate');
+  const loadingOverlay = document.getElementById('loadingOverlay');
+  const menuBtn = document.getElementById('menuToggleBtn');
+
+  // 1. Hide Login Gate
+  if (loginGate) {
+    loginGate.classList.add('hidden');
+    setTimeout(() => {
+      loginGate.style.display = 'none';
+    }, 350);
+  }
+
+  // 2. Run high-tech verification sequence
+  runSystemStartupSequence(() => {
+    isAuthenticated = true;
+    if (menuBtn) menuBtn.style.display = 'flex';
+    unlockAudio();
+  });
 }
 
 // Password toggle
@@ -3224,7 +3436,22 @@ if (loginForm) {
   });
 }
 
-initAuth();
+// Global user interaction un-locker for AudioContext & tap-to-interrupt
+window.addEventListener('pointerdown', (e) => {
+  unlockAudio();
+  if (isCallActive && activeAudioSources.length > 0) {
+    if (e.target.closest('#hint, #hud, #menuToggleBtn')) {
+      stopAllAudioPlayback();
+      updateStatus('listening', '🎙️ RJN सुन रही है...');
+    }
+  }
+}, { passive: true });
+
+// Boot system with High-Tech Startup Sequence on every page load
+runSystemStartupSequence(() => {
+  initAuth();
+});
+
 requestAnimationFrame(render);
 </script>
 </body>
