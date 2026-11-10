@@ -1750,35 +1750,7 @@ function unlockAudio(){
     } catch(e){}
   }
 }
-// ================= NATIVE LIVE AI SPOKEN VERBAL ACKNOWLEDGMENTS =================
-// Deepgram Voice Agent natively streams real-time verbal acknowledgment in her
-// actual flux-prachi-hi voice immediately when a tool is triggered!
-function speakImmediateAcknowledgment(toolName) {
-  let ackText = "रुकिए बॉस, मैं अभी कर रही हूँ...";
-  if (toolName === 'execute_command') ackText = "जी बॉस, कमांड चला रही हूँ...";
-  else if (toolName === 'send_whatsapp_message') ackText = "रुकिए बॉस, व्हाट्सएप मैसेज भेज रही हूँ...";
-  else if (toolName === 'send_telegram_message') ackText = "रुकिए बॉस, टेलीग्राम मैसेज भेज रही हूँ...";
-  else if (toolName === 'send_instagram_dm') ackText = "जी बॉस, इंस्टाग्राम पर मैसेज भेज रही हूँ...";
-  else if (toolName === 'assign_autonomous_task') ackText = "हाँ बॉस, मैं तुरंत एजेंट को काम सौंप रही हूँ...";
-  else if (toolName === 'get_autonomous_task_status') ackText = "रुकिए बॉस, एजेंट से कनेक्ट कर रही हूँ...";
-  else if (toolName === 'search_contacts' || toolName === 'save_contact') ackText = "रुकिए बॉस, कॉन्टैक्ट्स चेक कर रही हूँ...";
-  else if (toolName === 'get_weather') ackText = "रुकिए बॉस, मौसम चेक कर रही हूँ...";
-  else if (toolName === 'web_search') ackText = "रुकिए बॉस, अभी सर्च कर रही हूँ...";
 
-  updateStatus('speaking', '💬 RJN: ' + ackText);
-
-  // Directly tell Deepgram Voice Agent to stream dynamic spoken voice natively:
-  if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
-    try {
-      agentSocket.send(JSON.stringify({
-        type: "InjectAgentMessage",
-        content: ackText
-      }));
-    } catch(e) {
-      console.warn('Native InjectAgentMessage notice:', e);
-    }
-  }
-}
 
 
 // ================= ULTRA-FAST KEYS & CREDENTIALS =================
@@ -2137,18 +2109,9 @@ function playAgentAudioChunk(arrayBuffer){
   const int16 = new Int16Array(arrayBuffer);
   if (int16.length === 0) return;
 
-  // Normalized Float32 conversion
   const float32 = new Float32Array(int16.length);
   for (let i = 0; i < int16.length; i++){
     float32[i] = int16[i] / (int16[i] < 0 ? 32768.0 : 32767.0);
-  }
-
-  // Micro linear de-clicking envelope (16 samples = 0.6ms) to eliminate pops
-  const fadeLen = Math.min(16, float32.length);
-  for (let i = 0; i < fadeLen; i++) {
-    const ramp = i / fadeLen;
-    float32[i] *= ramp;
-    float32[float32.length - 1 - i] *= ramp;
   }
 
   const audioBuf = audioCtx.createBuffer(1, float32.length, 24000);
@@ -2273,40 +2236,14 @@ function resampleAndConvertToInt16(inputData, fromRate, toRate = 16000) {
   return buffer;
 }
 
-function createZeroPcmBuffer(inputLen, fromRate, toRate = 16000) {
-  const newLength = Math.round(inputLen / (fromRate / toRate));
-  return new ArrayBuffer(newLength * 2);
-}
-
 function handlePcmAudioProcess(e){
   if (!isCallActive) return;
   if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
 
   const inputData = e.inputBuffer.getChannelData(0);
   const inRate = e.inputBuffer.sampleRate || (audioCtx ? audioCtx.sampleRate : 48000);
-
-  // CONTINUOUS SILENCE HARDWARE ECHO SHIELD:
-  // When RJN is speaking or playing audio out of the speaker:
-  // Send continuous zero frames (silence). This keeps Deepgram connection 100% alive
-  // without Deepgram EVER hearing the speaker output or interrupting itself!
-  const isSpeakingNow = isAgentSpeaking || activeAudioSources.length > 0 || (audioCtx && scheduledAudioTime > audioCtx.currentTime);
-
-  let buffer;
-  if (isSpeakingNow) {
-    buffer = createZeroPcmBuffer(inputData.length, inRate, 16000);
-  } else {
-    // Check background noise gate: send silence if purely quiet background, or send real speech
-    let sum = 0;
-    const len = inputData.length;
-    for (let i = 0; i < len; i++) sum += inputData[i] * inputData[i];
-    const rms = Math.sqrt(sum / len);
-    if (rms < 0.005) {
-      buffer = createZeroPcmBuffer(inputData.length, inRate, 16000);
-    } else {
-      buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
-    }
-  }
-
+  // Continuous 16kHz audio stream directly to Deepgram Nova-3 (100% smooth, no chopping)
+  const buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
   try {
     agentSocket.send(buffer);
   } catch(err) {
@@ -2683,11 +2620,6 @@ function connectVoiceAgent(){
         updateStatus('thinking', '✨ RJN सोच रही है...');
       } else if (msg.type === 'FunctionCallRequest') {
         for (const fn of (msg.functions || [])) {
-          // ⚡ INSTANT VERBAL SPOKEN ACKNOWLEDGMENT (0ms - speaks out loud before tool fetch runs!)
-          if (fn.name !== 'morph_shape') {
-            speakImmediateAcknowledgment(fn.name);
-          }
-
           let callResult = { status: "success" };
           try {
             const args = typeof fn.arguments === 'string' ? JSON.parse(fn.arguments) : (fn.arguments || {});
