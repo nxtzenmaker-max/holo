@@ -2480,15 +2480,20 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
      * When Boss asks to see anything, call 'show_media' to display it visually on screen!
 
 5. OUTGOING MESSAGES TO CONTACTS (WHATSAPP, TELEGRAM, INSTAGRAM):
-   - CRITICAL: When sending a message to Didi or any person, NEVER compose long emotional essays, letters, or poetry!
-   - Keep messages strictly to 1 short, sweet line (max 8-10 words in Hindi letters), e.g.: "नमस्ते दीदी! भाई ने आपको याद किया है।" or the exact text Boss commanded!
-   - If Boss says "दीदी को मैसेज भेजो hi", send: "नमस्ते दीदी! भाई ने हाय बोला है।"
+   - CRITICAL: Outgoing messages must make 100% COMPLETE SENSE and be clear, natural everyday Hindi!
+   - NEVER compose poetic essays, letters, dramatic Sanskritized words, or robotic nonsense!
+   - Send the EXACT meaning Boss commanded (max 1 short line in Hindi letters):
+     * If Boss says "दीदी को मैसेज भेजो hi": send message: "नमस्ते दीदी! भाई ने हाय बोला है।"
+     * If Boss says "दीदी को पूछो खाना खा लिया": send message: "नमस्ते दीदी! भाई पूछ रहे हैं कि क्या आपने खाना खा लिया?"
+     * If Boss says "दीदी को फोटो भेजो" / "WhatsApp pe image bhejo": CALL 'send_whatsapp_message' with 'imageUrl' and short message (e.g. "नमस्ते दीदी! भाई ने आपके लिए यह फोटो भेजी है।")!
+     * If Boss says "दीदी को T-shirt का लिंक भेजो": send message with the real clean Meesho/Amazon link!
 
 YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
 6. WHATSAPP & CONTACTS (Baileys Engine):
    - Connected to WhatsApp on 8083797688!
    - Didi (दीदी / Sister) phone number is 9110181407 (WhatsApp: 919110181407). Permanently saved in your database!
-   - When Boss says "दीदी को मैसेज भेजो" or mentions WhatsApp, immediately call 'send_whatsapp_message' with phone '9110181407'! Keep the message short (e.g. "नमस्ते दीदी! भाई ने याद किया है।")!
+   - When Boss says "दीदी को मैसेज भेजो" or mentions WhatsApp, immediately call 'send_whatsapp_message' with phone '9110181407'!
+   - When Boss asks to send a photo/image on WhatsApp, pass 'imageUrl' in 'send_whatsapp_message'!
    - To save any new contact Boss gives, immediately call 'save_contact'!
    - To search saved contacts, call 'search_contacts'!
 7. TELEGRAM LIVE MESSAGING (MTProto @ZnMnsooe):
@@ -3431,14 +3436,15 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "send_whatsapp_message",
-                  description: "Send a real WhatsApp message to any phone number or contact immediately via your live WhatsApp connection",
+                  description: "Send a real WhatsApp message or image/photo to any phone number or contact immediately via your live WhatsApp connection. MUST CALL whenever Boss asks to send a WhatsApp message, photo, image, or link to Didi or any contact.",
                   parameters: {
                     type: "object",
                     properties: {
-                      phone: { type: "string", description: "Destination phone number with country code (e.g. 919110181407 or 9110181407)" },
-                      message: { type: "string", description: "The message text to send. Keep it short, casual everyday language in Hindi letters (Devanagari). Max 1 short line. NEVER write long poetic essays or pure Sanskritized Hindi." }
+                      phone: { type: "string", description: "Destination phone number with country code (e.g. 919110181407 or 9110181407 for Didi)" },
+                      message: { type: "string", description: "The message text or caption to send. Keep it short, casual everyday language in Hindi letters (Devanagari). EXACT words Boss commanded. NEVER write long poetic drama or robotic essays." },
+                      imageUrl: { type: "string", description: "Optional image URL (e.g. AI-generated image or photo link) to send as a real image attachment on WhatsApp" }
                     },
-                    required: ["phone", "message"]
+                    required: ["phone"]
                   }
                 },
                 {
@@ -3916,15 +3922,37 @@ function connectVoiceAgent(){
               } else if (targetPhone.length === 10) {
                 targetPhone = '91' + targetPhone;
               }
-              let msgContent = args.message || 'Hi!';
-              if (msgContent.length > 70 && (msgContent.includes('हृदय') || msgContent.includes('स्नेह') || msgContent.includes('रोशनी') || msgContent.includes('गहराइयों') || msgContent.includes('लम्हे') || msgContent.includes('आशीर्वादित') || msgContent.includes('प्रेरणा'))) {
-                msgContent = "नमस्ते दीदी! भाई ने आपको याद किया है।";
+              let msgContent = String(args.message || '').trim();
+              let imgUrl = String(args.imageUrl || args.image || '').trim();
+
+              // If Boss asked to send an image or photo, but AI omitted imageUrl, auto-fill with the latest generated image or alpine valley scene
+              if (!imgUrl && /photo|image|तस्वीर|फोटो|सीन|scene|nature|tree/i.test(msgContent + ' ' + (lastUserSpokenMsg || ''))) {
+                imgUrl = 'https://image.pollinations.ai/prompt/panoramic%20alpine%20valley%20with%20turquoise%20glacial%20lake%20cascading%20waterfall%20snow-capped%20peaks%20and%20wildflower%20meadows%20at%20golden%20hour%20photorealistic%208k?width=1024&height=1024&model=flux&nologo=true';
               }
-              console.log('🚀 Sending WhatsApp message to:', targetPhone, msgContent);
+
+              // Clean text: strip out bizarre literary nonsense or philosophical poetry
+              msgContent = msgContent
+                .replace(/हृदय की गहराइयों से|सद्भावना|गौरवान्वित|आशीर्वादित|प्रेरणा स्वरूप|लम्हे अनमोल|स्नेह से परिपूर्ण/gi, '')
+                .replace(/\s{2,}/g, ' ')
+                .trim();
+
+              if (!msgContent && imgUrl) {
+                msgContent = "नमस्ते दीदी! भाई ने आपके लिए यह फोटो भेजी है।";
+              } else if (!msgContent) {
+                msgContent = "नमस्ते दीदी!";
+              }
+
+              console.log('🚀 Sending WhatsApp message/image to:', targetPhone, msgContent, imgUrl);
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'send', to: targetPhone, message: msgContent })
+                body: JSON.stringify({
+                  action: 'send',
+                  to: targetPhone,
+                  message: msgContent,
+                  imageUrl: imgUrl,
+                  caption: msgContent
+                })
               });
               console.log('⚡ WhatsApp Send Result:', callResult);
             } else if (fn.name === 'get_whatsapp_info') {
