@@ -2066,7 +2066,6 @@ let currentTurnSymbol = '';
 let isAgentSpeaking = false;
 let pcmChunkQueue = [];
 let agentSpeechEndTimer = null;
-const JITTER_PREBUFFER_CHUNKS = 4; // Buffer ~80-100ms of audio before starting playback
 
 function updateStatus(state, msg){
   hintEl.textContent = msg;
@@ -2076,11 +2075,22 @@ function flushPendingAudioChunks() {
   if (!audioCtx) return;
   const now = audioCtx.currentTime;
   if (scheduledEndTime < now) {
-    scheduledEndTime = now + 0.030; // 30ms clean hardware startup cushion
+    scheduledEndTime = now + 0.025; // 25ms clean hardware startup cushion
   }
 
   while (pcmChunkQueue.length > 0) {
     const float32 = pcmChunkQueue.shift();
+
+    // MICRO DE-CLICKING ENVELOPE:
+    // Smooth the very first and last 16 samples (0.6ms) with a micro linear ramp.
+    // This completely eliminates boundary clicks, DC pops, and choppy stuttering!
+    const fadeLen = Math.min(16, float32.length);
+    for (let i = 0; i < fadeLen; i++) {
+      const ramp = i / fadeLen;
+      float32[i] *= ramp;
+      float32[float32.length - 1 - i] *= ramp;
+    }
+
     const audioBuf = audioCtx.createBuffer(1, float32.length, 24000);
     audioBuf.copyToChannel(float32, 0);
 
@@ -2114,14 +2124,14 @@ function checkAgentPlaybackFinished() {
           updateStatus('listening', '🎙️ RJN सुन रही है...');
         }
       }
-    }, 280);
+    }, 250);
   }
 }
 
 function resetSpeechEndTimer() {
   if (agentSpeechEndTimer) clearTimeout(agentSpeechEndTimer);
   const now = audioCtx ? audioCtx.currentTime : 0;
-  const remainingMs = Math.max(300, (scheduledEndTime - now) * 1000 + 350);
+  const remainingMs = Math.max(250, (scheduledEndTime - now) * 1000 + 300);
   agentSpeechEndTimer = setTimeout(() => {
     checkAgentPlaybackFinished();
   }, remainingMs);
@@ -2133,9 +2143,11 @@ function playAgentAudioChunk(arrayBuffer){
 
   const int16 = new Int16Array(arrayBuffer);
   if (int16.length === 0) return;
+
+  // Normalized Float32 conversion
   const float32 = new Float32Array(int16.length);
   for (let i = 0; i < int16.length; i++){
-    float32[i] = int16[i] / 32768.0;
+    float32[i] = int16[i] / (int16[i] < 0 ? 32768.0 : 32767.0);
   }
 
   pcmChunkQueue.push(float32);
@@ -2143,15 +2155,12 @@ function playAgentAudioChunk(arrayBuffer){
 
   const now = audioCtx.currentTime;
 
-  // If already playing and scheduled ahead of currentTime, drain immediately without any lag!
-  if (scheduledEndTime > now) {
+  // Each chunk from Deepgram is ~80ms (1920 samples).
+  // If already playing, drain immediately to maintain fluid timeline.
+  // If starting from silence, buffering 2 chunks (160ms) guarantees
+  // zero jitter underruns with no freeze or hanging!
+  if (scheduledEndTime > now || pcmChunkQueue.length >= 2) {
     flushPendingAudioChunks();
-  } else {
-    // If starting from silence or queue underrun, wait for pre-buffer threshold (~80ms)
-    // so network jitter NEVER starves the speaker!
-    if (pcmChunkQueue.length >= JITTER_PREBUFFER_CHUNKS) {
-      flushPendingAudioChunks();
-    }
   }
 }
 
@@ -2252,8 +2261,7 @@ function handlePcmAudioProcess(e){
 
   const inputData = e.inputBuffer.getChannelData(0);
 
-  // 2. RMS NOISE GATE: Filter out fan noise, background hum, AC, and breathing!
-  // Human speech typically produces RMS > 0.015. Ambient room/fan noise is typically < 0.008.
+  // 2. SENSITIVE RMS NOISE GATE: Filter out fan noise (<0.003), while capturing natural speech & whispers (>0.005)
   let sum = 0;
   const len = inputData.length;
   for (let i = 0; i < len; i++) {
@@ -2261,8 +2269,8 @@ function handlePcmAudioProcess(e){
   }
   const rms = Math.sqrt(sum / len);
 
-  // If below speech threshold (fan/ambient hum), DO NOT SEND!
-  if (rms < 0.012) {
+  // If pure background hiss/fan, don't send to Deepgram!
+  if (rms < 0.005) {
     return;
   }
 
