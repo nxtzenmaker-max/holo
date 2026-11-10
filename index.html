@@ -732,6 +732,210 @@
     line-height: 1.4;
     word-break: break-word;
   }
+
+  /* HOLOGRAPHIC YOUTUBE MUSIC WIDGET */
+  .music-widget {
+    position: fixed;
+    bottom: 84px;
+    right: 20px;
+    z-index: 9999;
+    width: 320px;
+    max-width: calc(100vw - 32px);
+    background: rgba(13, 17, 23, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: 16px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(0, 240, 255, 0.15);
+    padding: 14px;
+    color: #e2e8f0;
+    font-family: inherit;
+    display: none;
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+    transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .music-widget.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  .music-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .music-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #00f0ff;
+    text-transform: uppercase;
+  }
+  .music-dot {
+    width: 7px;
+    height: 7px;
+    background: #00f0ff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #00f0ff;
+    animation: musicPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes musicPulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+  .music-close-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #94a3b8;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .music-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+  .music-body {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .music-art-wrap {
+    position: relative;
+    width: 58px;
+    height: 58px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    background: #000;
+  }
+  .music-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .music-visualizer-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3px;
+    padding-bottom: 6px;
+  }
+  .music-visualizer-overlay .bar {
+    width: 3px;
+    background: #00f0ff;
+    border-radius: 2px;
+    box-shadow: 0 0 4px #00f0ff;
+    animation: soundwave 1s ease-in-out infinite;
+  }
+  .music-visualizer-overlay .bar-1 { height: 8px; animation-delay: 0.1s; }
+  .music-visualizer-overlay .bar-2 { height: 16px; animation-delay: 0.3s; }
+  .music-visualizer-overlay .bar-3 { height: 22px; animation-delay: 0.2s; }
+  .music-visualizer-overlay .bar-4 { height: 12px; animation-delay: 0.4s; }
+  @keyframes soundwave {
+    0%, 100% { height: 5px; }
+    50% { height: 24px; }
+  }
+  .music-info {
+    min-width: 0;
+    flex: 1;
+  }
+  .music-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+  .music-artist {
+    font-size: 11px;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+  .music-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+  }
+  .music-pill {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+  }
+  .music-badge-hq {
+    background: rgba(0, 240, 255, 0.15);
+    color: #00f0ff;
+    font-weight: 600;
+  }
+  .music-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .music-btn {
+    background: rgba(0, 240, 255, 0.15);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    color: #00f0ff;
+    border-radius: 8px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s;
+  }
+  .music-btn:hover {
+    background: rgba(0, 240, 255, 0.28);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    color: #fff;
+  }
+  .music-yt-btn {
+    text-decoration: none;
+    color: #ff4444;
+    border-color: rgba(255, 68, 68, 0.3);
+    background: rgba(255, 68, 68, 0.12);
+  }
+  .music-yt-btn:hover {
+    background: rgba(255, 68, 68, 0.25);
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+    color: #fff;
+  }
+  .music-status-note {
+    font-size: 10px;
+    color: #64748b;
+    margin-left: auto;
+    font-style: italic;
+  }
 </style>
 </head>
 <body>
@@ -752,6 +956,50 @@
       <img id="imageModalImg" class="image-modal-img" src="" alt="AI Generated Artwork" />
     </div>
     <p id="imageModalPrompt" class="image-modal-prompt"></p>
+  </div>
+</div>
+
+<!-- HOLOGRAPHIC YOUTUBE MUSIC WIDGET -->
+<div id="musicPlayerWidget" class="music-widget">
+  <div class="music-header">
+    <div class="music-badge">
+      <span class="music-dot"></span>
+      <span>YouTube Music Live</span>
+    </div>
+    <button type="button" class="music-close-btn" onclick="stopHologramMusic()" title="Close player">&times;</button>
+  </div>
+  
+  <div class="music-body">
+    <div class="music-art-wrap">
+      <img id="musicThumb" class="music-thumb" src="" alt="Album Art" />
+      <div class="music-visualizer-overlay" id="musicVisualizerBars">
+        <span class="bar bar-1"></span>
+        <span class="bar bar-2"></span>
+        <span class="bar bar-3"></span>
+        <span class="bar bar-4"></span>
+      </div>
+    </div>
+    <div class="music-info">
+      <div id="musicTitle" class="music-title">Song Title</div>
+      <div id="musicArtist" class="music-artist">Artist</div>
+      <div class="music-meta">
+        <span id="musicDuration" class="music-pill">0:00</span>
+        <span class="music-pill music-badge-hq">HQ Audio</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="musicIframeContainer"></div>
+
+  <div class="music-controls">
+    <button type="button" id="musicPlayPauseBtn" class="music-btn" onclick="toggleMusicPlayback()" title="Play / Pause">
+      <svg id="musicPlayIcon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="display:none;"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="musicPauseIcon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+    <a id="musicYtLink" href="#" target="_blank" rel="noopener" class="music-btn music-yt-btn" title="Open on YouTube">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+    </a>
+    <span class="music-status-note">Streaming for Boss</span>
   </div>
 </div>
 
@@ -1880,6 +2128,72 @@ function hideGeneratedImage(){
   if (m) m.classList.remove('active');
 }
 
+// ================= HOLOGRAPHIC YOUTUBE MUSIC HELPERS =================
+let currentMusicTrack = null;
+let isMusicPlaying = false;
+
+function playHologramMusic(track) {
+  if (!track || !track.id) return;
+  currentMusicTrack = track;
+  isMusicPlaying = true;
+  const widget = document.getElementById('musicPlayerWidget');
+  const thumb = document.getElementById('musicThumb');
+  const title = document.getElementById('musicTitle');
+  const artist = document.getElementById('musicArtist');
+  const duration = document.getElementById('musicDuration');
+  const ytLink = document.getElementById('musicYtLink');
+  const iframeContainer = document.getElementById('musicIframeContainer');
+
+  if (thumb) thumb.src = track.thumbnail || `https://i.ytimg.com/vi/${track.id}/hqdefault.jpg`;
+  if (title) title.textContent = track.title || 'Unknown Track';
+  if (artist) artist.textContent = track.artist || track.channel || 'YouTube Music';
+  if (duration) duration.textContent = track.duration || 'HQ Audio';
+  if (ytLink) ytLink.href = track.url || `https://www.youtube.com/watch?v=${track.id}`;
+
+  if (iframeContainer) {
+    iframeContainer.innerHTML = `<iframe id="musicYtIframe" width="1" height="1" style="position:absolute;left:-9999px;opacity:0.001;pointer-events:none;" src="https://www.youtube.com/embed/${track.id}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  }
+
+  if (widget) {
+    widget.classList.add('active');
+  }
+
+  updateMusicControlsUI(true);
+}
+
+function stopHologramMusic() {
+  isMusicPlaying = false;
+  const widget = document.getElementById('musicPlayerWidget');
+  const iframeContainer = document.getElementById('musicIframeContainer');
+  if (iframeContainer) iframeContainer.innerHTML = '';
+  if (widget) widget.classList.remove('active');
+  currentMusicTrack = null;
+}
+
+function toggleMusicPlayback() {
+  const iframe = document.getElementById('musicYtIframe');
+  if (!iframe) return;
+
+  if (isMusicPlaying) {
+    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+    isMusicPlaying = false;
+    updateMusicControlsUI(false);
+  } else {
+    iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+    isMusicPlaying = true;
+    updateMusicControlsUI(true);
+  }
+}
+
+function updateMusicControlsUI(playing) {
+  const playIcon = document.getElementById('musicPlayIcon');
+  const pauseIcon = document.getElementById('musicPauseIcon');
+  const bars = document.getElementById('musicVisualizerBars');
+  if (playIcon) playIcon.style.display = playing ? 'none' : 'block';
+  if (pauseIcon) pauseIcon.style.display = playing ? 'block' : 'none';
+  if (bars) bars.style.opacity = playing ? '1' : '0.2';
+}
+
 // ================= UI STATUS =================
 const hintEl = { textContent: '' };
 function highlightActiveChip(label){}
@@ -2075,7 +2389,14 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
 
 20. DEPLOYMENT & BUILD MONITOR:
    - When Boss asks about deployment status, build failures, or says "deployment fail ho gaya check karo":
-     Call 'check_deployments'!`;
+     Call 'check_deployments'!
+
+21. YOUTUBE MUSIC & AUDIO STREAMING:
+   - You have full YouTube Music streaming superpower via 'play_music'!
+   - When Boss asks to play any song, music, beats, lo-fi, track, or artist (जैसे: "lofi beats chalao", "Arijit Singh ka gana bajao", "Sidhu Moosewala song sunao", "gana chalao", "music bajao", "play music"):
+     IMMEDIATELY call 'play_music' with the song/artist query!
+   - When Boss says "music band karo", "gana roko", "stop music", "pause music":
+     Call 'stop_music'!`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
@@ -2241,6 +2562,8 @@ function buildAgentPrompt() {
   * web_search: State the exact product features, specs, price, or facts found from Parallel AI! E.g. "बॉस, Vaku Luxos स्मार्टवॉच में 1.99 इंच HD डिस्प्ले और ब्लूटूथ कॉलिंग है, और इसकी कीमत लगभग 3,999 रुपये है।"
   * set_timer: "हाँ बॉस, मैंने [seconds] सेकंड का टाइमर सेट कर दिया है। समय पूरा होते ही मैं आपको तुरंत आवाज़ देकर उठा दूँगी!"
   * check_deployments: State the exact deployment status (pass/fail) clearly! E.g. "बॉस, लेटेस्ट डिप्लॉयमेंट पास हो गया है!"
+  * play_music: "हाँ बॉस, मैंने आपके लिए [title] प्ले कर दिया है! आनंद लीजिए।"
+  * stop_music: "हाँ बॉस, म्यूज़िक बंद कर दिया है!"
 - NEVER stay silent after a tool completes! ALWAYS give Boss the completed confirmation!
 - Keep message to Didi strictly to 1 short, sweet, casual line in Hindi letters (e.g. 'नमस्ते दीदी! भाई ने याद किया है।'). NEVER write long dramatic essays or pure Sanskritized Hindi!
 - Language Directive: Write and speak in Hindi letters (Devanagari), but NEVER use pure literary textbook Hindi! Use normal everyday spoken words.
@@ -2771,6 +3094,25 @@ function connectVoiceAgent(){
                   }
                 },
                 {
+                  name: "play_music",
+                  description: "Search and stream any song, track, lo-fi beats, or artist from YouTube Music for Boss in the holographic player. MUST CALL whenever Boss asks to play or listen to music/songs.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      song: { type: "string", description: "Name of the song, artist, genre, or mood to play (e.g. 'Kesariya', 'lofi hip hop beats', 'Arijit Singh')" }
+                    },
+                    required: ["song"]
+                  }
+                },
+                {
+                  name: "stop_music",
+                  description: "Stop or pause the currently playing YouTube music track in the holographic interface",
+                  parameters: {
+                    type: "object",
+                    properties: {}
+                  }
+                },
+                {
                   name: "execute_command",
                   description: "Execute bash shell commands, terminal tools, or Python scripts on your secure cloud server and return stdout/stderr",
                   parameters: {
@@ -3131,6 +3473,39 @@ function connectVoiceAgent(){
                 message: stdout.includes('✓') 
                   ? "बॉस, लेटेस्ट डिप्लॉयमेंट पास (✓) है!" 
                   : "बॉस, डिप्लॉयमेंट स्थिति चेक कर ली गई है।"
+              };
+            } else if (fn.name === 'play_music') {
+              updateStatus('thinking', '🎵 YouTube Music se gana dhoondh rahe hain...');
+              const song = (args.song || args.query || 'lofi beats').trim();
+              console.log('🎵 Requesting YouTube Music for:', song);
+              try {
+                const mResp = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/music?song=${encodeURIComponent(song)}`);
+                if (mResp && mResp.success && mResp.track) {
+                  const track = mResp.track;
+                  playHologramMusic(track);
+                  callResult = {
+                    success: true,
+                    song,
+                    title: track.title,
+                    artist: track.artist || track.channel,
+                    duration: track.duration,
+                    message: `हाँ बॉस, मैंने आपके लिए "${track.title}" शुरू कर दिया है!`
+                  };
+                } else {
+                  callResult = {
+                    success: false,
+                    error: `माफ़ कीजिए बॉस, YouTube पर "${song}" नहीं मिला।`
+                  };
+                }
+              } catch (e) {
+                console.warn('Music connector fetch error:', e);
+                callResult = { success: false, error: 'म्यूज़िक कनेक्ट करने में समस्या आई।' };
+              }
+            } else if (fn.name === 'stop_music') {
+              stopHologramMusic();
+              callResult = {
+                success: true,
+                message: 'बॉस, म्यूज़िक बंद कर दिया गया है।'
               };
             } else if (fn.name === 'execute_command') {
               updateStatus('thinking', '⚡ Cloud command run ho raha hai...');
