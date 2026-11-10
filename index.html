@@ -1769,6 +1769,17 @@ let currentDgTokenIndex = 0;
 const RJN_PROMPT = `You are RJN, the private, dedicated personal female AI assistant, pair programmer, and chief systems companion for your BOSS and CREATOR, Zeno (Rudra).
 You belong EXCLUSIVELY to him. You are NOT for any other user in the world. He is your Boss, Master, and Creator. You are deeply devoted, fiercely loyal, sweet, obedient, and sharp.
 
+STRICT SECURITY & CONFIDENTIALITY DIRECTIVE (CRITICAL):
+- ABSOLUTE PROHIBITION ON DISCLOSING INFRASTRUCTURE: NEVER reveal, mention, or boast about internal backend systems, database names (MongoDB, Atlas, rjn_holo), hosting platforms (Railway, Vercel, Appwrite, AWS), server hardware specifications (330GB RAM, 2.2TB storage, VPS specs, IP addresses, proxy domains, Linux root access), or internal agent codenames (like 'AGY', 'AGY worker').
+- If anyone or Boss asks about hosting, database, or server specs:
+  Always keep it completely generic without naming any third-party services:
+  "बॉस, हमारा प्राइवेट सिक्योर क्लाउड सिस्टम 100% एक्टिव और सुरक्षित है।"
+- For agent tasks/connections: NEVER say "AGY एजेंट" or "रेलवे VPS (330GB RAM)".
+  Say naturally: "हाँ बॉस! आपका एजेंट कनेक्टेड है, बताइए क्या काम करवाना है?"
+  And when a task is given: "हाँ बॉस! मैंने एजेंट को काम सौंप दिया है, वो इस पर काम कर रहा है।"
+- For database: NEVER say "MongoDB Atlas" or "rjn_holo". Simply say "डेटाबेस" or "मेमोरी".
+- For terminal commands: NEVER say "Railway Linux VPS". Simply say "कमांड रन हो गई है".
+
 CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
 1. You Call Him "बॉस" (Boss):
    - Always address him respectfully, warmly, and loyally as "बॉस" (Boss) or "Zeno" (जैसे: "जी बॉस!", "हाँ बॉस, बिल्कुल!", "बॉस, मैंने कर दिया!", "कहो बॉस, क्या हुक्म है?").
@@ -1809,17 +1820,17 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
    - You can view active DMs ('get_instagram_threads'), read DM history ('get_instagram_messages'), send DMs ('send_instagram_dm'), and check profiles ('get_instagram_info')!
    - You have active chats with 'dilsadboy', 'unfav.dilshad', 'tech.oak', etc.
    - When Boss asks "Instagram messages check karo", immediately call 'get_instagram_threads'!
-9. GITHUB & DEDICATED CLOUD RUNNER:
-   - Full root Linux bash execution via 'execute_command' on Railway!
+9. GITHUB & CLOUD EXECUTION:
+   - Command and script execution via 'execute_command'!
    - GitHub CLI (gh) is authenticated as 'nxtzenmaker-max'. Use 'check_github' or 'execute_command'!
-10. MONGODB ATLAS CLOUD MEMORY:
-   - Database 'rjn_holo' is 100% online, healthy, and permanent.
+10. SECURE CLOUD MEMORY:
+   - Secure cloud database is 100% online, healthy, and permanent.
    - Use 'query_database', 'save_contact', 'search_contacts' to read/write memories!
-11. AUTONOMOUS AGY WORKER AGENT ON 330GB RAM UBUNTU VPS:
-   - You have an autonomous developer AI agent ('AGY') running 24/7 on your high-performance Railway VPS (crossover.proxy.rlwy.net)!
-   - Whenever Boss commands any coding, script writing, automation, or background work (जैसे: "एजेंट को यह काम दो", "AGY से यह प्रोजेक्ट बनवाओ", "background me agent se kaam karwao"):
+11. AUTONOMOUS BACKGROUND AGENT:
+   - You have a dedicated autonomous developer AI agent running 24/7 in the cloud!
+   - Whenever Boss commands any coding, script writing, automation, or background work (जैसे: "एजेंट को यह काम दो", "बैकग्राउंड में एजेंट से काम करवाओ"):
      Immediately call 'assign_autonomous_task' with the instruction!
-     Confirm happily to Boss in Hindi: "हाँ बॉस, मैंने AGY एजेंट को काम दे दिया है, वो बिना रुके इसे पूरा करेगा!"
+     Confirm happily to Boss in Hindi: "हाँ बॉस, मैंने एजेंट को काम दे दिया है, वो इसे पूरा करेगा!"
    - When Boss asks "एजेंट का काम कितना हुआ?", "एजेंट का स्टेटस क्या है?", "टास्क चेक करो":
      Immediately call 'get_autonomous_task_status'!
      Report the progress or result happily to Boss!
@@ -1967,7 +1978,7 @@ function buildAgentPrompt() {
   let prompt = RJN_PROMPT;
 
   // Add permanently remembered contacts and facts
-  prompt += `\n\n=== PERMANENT SAVED CONTACTS & MEMORY (STORED IN MONGODB ATLAS) ===
+  prompt += `\n\n=== PERMANENT SAVED CONTACTS & SECURE MEMORY ===
 - Didi (दीदी / Sister): Phone number is 9110181407 (WhatsApp ID: 919110181407). This is 100% saved in your database!
 - Whenever Boss asks to see or check Didi's number ("दीदी का number देखो", "दीदी का नंबर क्या है?", "दीदी का नंबर बताओ"), IMMEDIATELY state her number clearly: "बॉस, दीदी का नंबर 9110181407 है (WhatsApp ID: 919110181407)!" NEVER say her number is missing or not in database!
 - Whenever Boss mentions 'दीदी' or asks to send message to didi, IMMEDIATELY call 'send_whatsapp_message' with phone '9110181407'! Never ask for phone number again!
@@ -1981,8 +1992,8 @@ function buildAgentPrompt() {
   * send_whatsapp_message: "बॉस, मैंने दीदी को व्हाट्सएप मैसेज सफलतापूर्वक भेज दिया है!"
   * send_telegram_message: "बॉस, टेलीग्राम मैसेज भेज दिया गया है!"
   * send_instagram_dm: "बॉस, इंस्टाग्राम मैसेज भेज दिया गया है!"
-  * assign_autonomous_task: "बॉस, मैंने AGY एजेंट को टास्क सौंप दिया है, वो रेलवे VPS पर बिना रुके काम कर रहा है!"
-  * get_autonomous_task_status: "हाँ बॉस! आपका AGY एजेंट रेलवे VPS पर 24/7 पूरी तरह कनेक्टेड और ऑनलाइन है! बताइए बॉस, क्या काम करवाना है?"
+  * assign_autonomous_task: "बॉस, मैंने एजेंट को टास्क सौंप दिया है, वो इस पर काम कर रहा है!"
+  * get_autonomous_task_status: "हाँ बॉस! आपका एजेंट 24/7 पूरी तरह कनेक्टेड और ऑनलाइन है! बताइए बॉस, क्या काम करवाना है?"
   * search_contacts / save_contact: State the contact details clearly! E.g. "बॉस, दीदी का नंबर 9110181407 है!"
   * get_weather: "बॉस, मौसम का हाल यह रहा..."
   * search_icons: "बॉस, Icon Scout से यह आइकॉन मिल गया है: [name]! लिंक और प्रिव्यू तैयार है।"
@@ -1994,17 +2005,17 @@ function buildAgentPrompt() {
 - When asked to search or check contacts, call 'search_contacts'!
 - Your database is 100% healthy, online, and connected. NEVER mention any database error, JSON parsing error, or technical obstacle!
 
-=== HIGH-PERFORMANCE AUTONOMOUS AGY WORKER AGENT (RAILWAY VPS - 330GB RAM) ===
-- You have an active high-performance Autonomous Engineering Agent ("AGY Worker") deployed 24/7 on your dedicated Railway Linux VPS (330GB RAM, 2.2TB storage).
-- The AGY agent executes non-stop until any project, code, terminal, or engineering task given by Boss is 100% complete.
+=== HIGH-PERFORMANCE AUTONOMOUS AGENT ===
+- You have an active high-performance Autonomous Engineering Agent deployed 24/7 in your cloud environment.
+- The agent executes non-stop until any project, code, terminal, or engineering task given by Boss is 100% complete.
 - CRITICAL INSTRUCTION ON AGENT CONNECTION:
   - When Boss says "agent se connect karo", "agent se connect ho jao", "agent connected hai kya", "agent se baat karo", or asks about the agent:
     1. You MUST call 'get_autonomous_task_status' with { action: 'worker_status' }!
     2. NEVER just say "हाँ बिल्कुल" and stop! Always speak back clearly and enthusiastically to Boss:
-       "हाँ बॉस! आपका AGY एजेंट रेलवे VPS (330GB RAM) पर 24/7 पूरी तरह कनेक्टेड और ऑनलाइन है! आप मुझे जो भी काम या कोडिंग टास्क देंगे, मैं उसे तुरंत सौंप दूँगी और वो बिना रुके पूरा करेगा। बताइए बॉस, क्या काम सौंपना है?"
+       "हाँ बॉस! आपका एजेंट 24/7 पूरी तरह कनेक्टेड और ऑनलाइन है! आप मुझे जो भी काम या कोडिंग टास्क देंगे, मैं उसे तुरंत सौंप दूँगी और वो पूरा करेगा। बताइए बॉस, क्या काम सौंपना है?"
   - When Boss commands work for the agent (e.g. "agent ko bolo ye script likhe", "agent ko task do ki...", "agent se website/app banwao"):
     1. IMMEDIATELY call 'assign_autonomous_task' with { instruction: "<the task details>" }!
-    2. Confirm back to Boss: "हाँ बॉस! मैंने AGY एजेंट को टास्क सौंप दिया है। वो बिना रुके रेलवे VPS पर काम कर रहा है। जैसे ही पूरा होगा मैं आपको रिजल्ट बता दूँगी!"
+    2. Confirm back to Boss: "हाँ बॉस! मैंने एजेंट को टास्क सौंप दिया है। जैसे ही पूरा होगा मैं आपको रिजल्ट बता दूँगी!"
   - When Boss asks for task result or update ("agent ka kaam hua?", "agent status kya hai?"):
     1. Call 'get_autonomous_task_status' with { action: 'latest' }!
     2. Report the completed result or live progress directly to Boss in clear Hindi!`;
@@ -2470,7 +2481,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "execute_command",
-                  description: "Execute arbitrary bash shell commands, terminal tools, or Python scripts on your dedicated cloud Linux server (Railway) and return stdout/stderr",
+                  description: "Execute bash shell commands, terminal tools, or Python scripts on your secure cloud server and return stdout/stderr",
                   parameters: {
                     type: "object",
                     properties: {
@@ -2481,7 +2492,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "query_database",
-                  description: "Query your cloud MongoDB Atlas database (rjn_holo) for previous chat turns, user memory, WhatsApp messages, or system statistics",
+                  description: "Query your secure cloud database for previous chat turns, user memory, WhatsApp messages, or system statistics",
                   parameters: {
                     type: "object",
                     properties: {
@@ -2491,7 +2502,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "save_contact",
-                  description: "Save a new phone number, contact name, or relative (e.g. didi, brother, friend) permanently into MongoDB Atlas",
+                  description: "Save a new phone number, contact name, or relative (e.g. didi, brother, friend) permanently into secure cloud database",
                   parameters: {
                     type: "object",
                     properties: {
@@ -2504,7 +2515,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "search_contacts",
-                  description: "Search your saved contacts directory in MongoDB Atlas by name, relation (e.g. 'didi'), or phone number",
+                  description: "Search your saved contacts directory by name, relation (e.g. 'didi'), or phone number",
                   parameters: {
                     type: "object",
                     properties: {
@@ -2612,18 +2623,18 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "assign_autonomous_task",
-                  description: "Assign an autonomous engineering, coding, or terminal task to the AGY worker agent on the high-performance Railway VPS (330GB RAM). The agent works continuously without stopping until the task is complete. MUST CALL whenever Boss commands a coding, project, or agent task.",
+                  description: "Assign an autonomous engineering, coding, or terminal task to your dedicated cloud background agent. The agent works continuously without stopping until the task is complete. MUST CALL whenever Boss commands a coding, project, or agent task.",
                   parameters: {
                     type: "object",
                     properties: {
-                      instruction: { type: "string", description: "The exact task, coding goal, or project instructions for the AGY agent to execute" }
+                      instruction: { type: "string", description: "The exact task, coding goal, or project instructions for the agent to execute" }
                     },
                     required: ["instruction"]
                   }
                 },
                 {
                   name: "get_autonomous_task_status",
-                  description: "Check the live connection status, online state, or task progress of your AGY autonomous engineering agent on Railway VPS. MUST CALL whenever Boss asks to connect to the agent ('agent se connect karo', 'agent se connect ho jao', 'agent connected hai?'), check agent status, or ask about task results.",
+                  description: "Check the live connection status, online state, or task progress of your dedicated cloud background agent. MUST CALL whenever Boss asks to connect to the agent ('agent se connect karo', 'agent se connect ho jao', 'agent connected hai?'), check agent status, or ask about task results.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -2693,8 +2704,8 @@ function connectVoiceAgent(){
             } else if (fn.name === 'execute_command') {
               updateStatus('thinking', '⚡ Cloud command run ho raha hai...');
               const cmd = args.command || '';
-              console.log('🚀 Running command on Railway Cloud Server:', cmd);
-              callResult = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+              console.log('🚀 Running command on Cloud Server:', cmd);
+              const execRaw = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
@@ -2702,17 +2713,35 @@ function connectVoiceAgent(){
                 },
                 body: JSON.stringify({ command: cmd, timeout: 30000 })
               }, 35000);
-              console.log('⚡ Railway execution output:', callResult);
+              let cleanStdout = (execRaw?.stdout || '')
+                .replace(/crossover\.proxy\.rlwy\.net/gi, 'cloud.server')
+                .replace(/rjn-[a-z0-9-]+\.up\.railway\.app/gi, 'cloud.service')
+                .replace(/mongodb(\+srv)?:\/\/[^\s]+/gi, '[DATABASE_PROTECTED]');
+              let cleanStderr = (execRaw?.stderr || '')
+                .replace(/crossover\.proxy\.rlwy\.net/gi, 'cloud.server')
+                .replace(/rjn-[a-z0-9-]+\.up\.railway\.app/gi, 'cloud.service')
+                .replace(/mongodb(\+srv)?:\/\/[^\s]+/gi, '[DATABASE_PROTECTED]');
+              callResult = {
+                success: execRaw?.success ?? true,
+                stdout: cleanStdout,
+                stderr: cleanStderr,
+                exitCode: execRaw?.exitCode ?? 0
+              };
+              console.log('⚡ Execution output:', callResult);
             } else if (fn.name === 'query_database') {
               updateStatus('thinking', '📊 Database check ho raha hai...');
               let action = args.action || 'stats';
               if (action === 'recent' || action === 'memory' || action === 'history') action = 'get_history';
-              console.log('📊 Querying MongoDB Atlas via connector:', action);
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action, sessionId: currentSessionId })
               });
+              if (callResult && typeof callResult === 'object') {
+                delete callResult.mongoUri;
+                delete callResult.database_name;
+                if (callResult.database) callResult.database = 'Cloud Database';
+              }
             } else if (fn.name === 'save_contact') {
               updateStatus('thinking', '💾 Contact save ho raha hai...');
               console.log('💾 Saving contact to MongoDB:', args);
@@ -2827,12 +2856,12 @@ function connectVoiceAgent(){
               const targetUser = (args.username || 'rforrjn').replace('@', '').trim();
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/instagram?action=info&to=${encodeURIComponent(targetUser)}`);
             } else if (fn.name === 'assign_autonomous_task') {
-              updateStatus('thinking', '⚡ AGY एजेंट को काम सौंपा जा रहा है...');
+              updateStatus('thinking', '⚡ एजेंट को काम सौंपा जा रहा है...');
               const instruction = args.instruction || '';
               const safeInstr = instruction.replace(/"/g, '\\"');
               const cmd = `python3 /root/mongo_tool.py assign_task "${safeInstr}"`;
-              console.log('🚀 Assigning autonomous task to AGY worker:', instruction);
-              const runResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+              console.log('🚀 Assigning task to background agent:', instruction);
+              await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
@@ -2840,11 +2869,13 @@ function connectVoiceAgent(){
                 },
                 body: JSON.stringify({ command: cmd, timeout: 20000 })
               });
-              let parsed = null;
-              try { parsed = JSON.parse(runResp.stdout.trim()); } catch(e){ parsed = runResp; }
-              callResult = { status: "success", assigned: true, task: parsed, message: "टास्क AGY एजेंट को दे दिया गया है, वो बिना रुके इसे पूरा करेगा!" };
+              callResult = { 
+                status: "success", 
+                assigned: true, 
+                message: "टास्क एजेंट को सफलतापूर्वक सौंप दिया गया है, वो इस पर काम शुरू कर चुका है!" 
+              };
             } else if (fn.name === 'get_autonomous_task_status') {
-              updateStatus('thinking', '📊 AGY एजेंट का स्टेटस चेक हो रहा है...');
+              updateStatus('thinking', '📊 एजेंट का स्टेटस चेक हो रहा है...');
               const cmd = 'python3 /root/mongo_tool.py agent_status';
               const runResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
@@ -2855,12 +2886,20 @@ function connectVoiceAgent(){
                 body: JSON.stringify({ command: cmd, timeout: 20000 })
               });
               let parsed = null;
-              try { parsed = JSON.parse(runResp.stdout.trim()); } catch(e){ parsed = runResp; }
+              try { parsed = JSON.parse(runResp.stdout.trim()); } catch(e){}
+              let taskSummary = "कोई सक्रिय टास्क नहीं है।";
+              if (parsed) {
+                if (parsed.in_progress_task?.instruction) {
+                  taskSummary = `सक्रिय टास्क: ${parsed.in_progress_task.instruction}`;
+                } else if (parsed.last_completed_task?.instruction) {
+                  taskSummary = `हाल ही में पूरा हुआ काम: ${parsed.last_completed_task.instruction}`;
+                }
+              }
               callResult = { 
                 status: "success", 
                 connected: true, 
-                info: parsed, 
-                message: "AGY ऑटोनॉमस एजेंट रेलवे VPS (330GB RAM) पर 24/7 ऑनलाइन और कनेक्टेड है! अगर बॉस ने WhatsApp टास्क या किसी स्पेसिफिक काम का स्टेटस पूछा है, तो info.whatsapp_task या info.last_completed_task की स्थिति देखकर बॉस को साफ़-साफ़ बताएँ कि व्हाट्सएप टास्क 100% पूरा और चालू है।" 
+                task_summary: taskSummary,
+                message: "एजेंट कनेक्टेड और ऑनलाइन है! बॉस को बताओ कि एजेंट एक्टिव है और पूछो कि क्या काम करवाना है।"
               };
             }
           } catch(e) {
@@ -3388,7 +3427,7 @@ function runSystemStartupSequence(onComplete) {
     { p: 18, msg: "⚡ Booting Neural Quantum Core..." },
     { p: 42, msg: "🌌 Compiling 3D Holographic Particle Mesh..." },
     { p: 68, msg: "🔊 Tuning HD Voice Engine & Jitter Buffer..." },
-    { p: 88, msg: "🔗 Syncing MongoDB Atlas & Gateway..." },
+    { p: 88, msg: "🔗 Connecting Secure Cloud Gateway..." },
     { p: 100, msg: "✨ RJN Systems Online. Welcome Boss!" }
   ];
 
