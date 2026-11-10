@@ -2087,6 +2087,8 @@ async function callGroqAI(userMsg){
 
 // ================= REAL-TIME STREAMING AUDIO PLAYER (DEEPGRAM VOICE AGENT) =================
 let scheduledAudioTime = 0;
+let agentPlaybackEndTime = 0;
+let isAgentPlayingAudio = false;
 let activeAudioSources = [];
 let isCallActive = false;
 let micStream = null;
@@ -2124,19 +2126,23 @@ function playAgentAudioChunk(arrayBuffer){
 
   const now = audioCtx.currentTime;
   if (scheduledAudioTime < now) {
-    scheduledAudioTime = now + 0.035; // 35ms ultra-low latency cushion
+    scheduledAudioTime = now + 0.040; // 40ms low-latency jitter cushion
   }
 
   src.start(scheduledAudioTime);
   scheduledAudioTime += audioBuf.duration;
-  activeAudioSources.push(src);
+  agentPlaybackEndTime = scheduledAudioTime;
+  isAgentPlayingAudio = true;
   isAgentSpeaking = true;
+  activeAudioSources.push(src);
 
   src.onended = () => {
     const idx = activeAudioSources.indexOf(src);
     if (idx > -1) activeAudioSources.splice(idx, 1);
-    if (activeAudioSources.length === 0 && scheduledAudioTime <= (audioCtx ? audioCtx.currentTime : 0)) {
+    const curr = audioCtx ? audioCtx.currentTime : 0;
+    if (activeAudioSources.length === 0 && curr >= (agentPlaybackEndTime - 0.05)) {
       scheduledAudioTime = 0;
+      isAgentPlayingAudio = false;
       isAgentSpeaking = false;
       if (isCallActive) {
         updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
@@ -2151,6 +2157,8 @@ function stopAllAudioPlayback(){
   }
   activeAudioSources = [];
   scheduledAudioTime = 0;
+  agentPlaybackEndTime = 0;
+  isAgentPlayingAudio = false;
   isAgentSpeaking = false;
 }
 
@@ -2242,8 +2250,23 @@ function handlePcmAudioProcess(e){
 
   const inputData = e.inputBuffer.getChannelData(0);
   const inRate = e.inputBuffer.sampleRate || (audioCtx ? audioCtx.sampleRate : 48000);
-  // Continuous 16kHz audio stream directly to Deepgram Nova-3 (100% smooth, no chopping)
-  const buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
+
+  // ROCK-SOLID HARDWARE ACOUSTIC ECHO SHIELD:
+  // While RJN is speaking through the phone speaker, send continuous 16kHz silence frames (zeros).
+  // This keeps the WebSocket connection 100% alive while preventing Deepgram server
+  // from hearing the speaker and cutting off its own voice!
+  const now = audioCtx ? audioCtx.currentTime : 0;
+  const isPlayingNow = isAgentPlayingAudio || activeAudioSources.length > 0 || (now < (agentPlaybackEndTime + 0.150));
+
+  let buffer;
+  if (isPlayingNow) {
+    const outSamples = Math.round(inputData.length / (inRate / 16000));
+    buffer = new ArrayBuffer(outSamples * 2); // 0dB silence
+  } else {
+    // Pure, full-fidelity unfiltered user speech directly to Deepgram Nova-3:
+    buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
+  }
+
   try {
     agentSocket.send(buffer);
   } catch(err) {
@@ -2610,9 +2633,10 @@ function connectVoiceAgent(){
         isAgentSpeaking = true;
         updateStatus('speaking', '💬 RJN बोल रही है...');
       } else if (msg.type === 'UserStartedSpeaking') {
-        // Deepgram detected user speech
-        if (activeAudioSources.length > 0) {
-          console.log('⚡ Preserving agent audio playback');
+        // Echo Shield: If agent is speaking or playback is finishing, ignore false barge-in!
+        const now = audioCtx ? audioCtx.currentTime : 0;
+        if (isAgentPlayingAudio || activeAudioSources.length > 0 || (now < (agentPlaybackEndTime + 0.150))) {
+          console.log('⚡ Preserving agent audio playback against speaker echo');
           return;
         }
         updateStatus('listening', '🎙️ RJN सुन रही है...');
