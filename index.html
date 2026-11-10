@@ -2805,7 +2805,7 @@ function buildAgentPrompt() {
 function getAgentGreeting() {
   const history = loadLocalMemory();
   if (history && history.length > 0) {
-    return "नमस्ते बॉस! मैं वापस कनेक्ट हो गई हूँ, कहो क्या हुक्म है?";
+    return "नमस्ते बॉस! मैं तैयार हूँ, कहो क्या हुक्म है?";
   }
   return "नमस्ते बॉस! मैं आपकी RJN हूँ, बताओ आज क्या काम करना है?";
 }
@@ -3186,14 +3186,15 @@ function connectVoiceAgent(){
 
   agentSocket.onopen = () => {
     console.log('Deepgram Voice Agent WebSocket connected (token index:', currentDgTokenIndex, 'input: 16000Hz)');
+    voiceReconnectAttempts = 0;
     updateStatus('active', '✨ Connecting RJN Voice Agent...');
 
-    // Heartbeat every 8s to keep connection alive indefinitely
+    // Heartbeat every 5s to keep connection alive indefinitely
     agentKeepAliveTimer = setInterval(() => {
       if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
         agentSocket.send(JSON.stringify({ type: "KeepAlive" }));
       }
-    }, 8000);
+    }, 5000);
   };
 
   agentSocket.onmessage = async event => {
@@ -4156,6 +4157,9 @@ function connectVoiceAgent(){
     }
   };
 
+  let voiceReconnectAttempts = 0;
+  let voiceReconnectTimer = null;
+
   agentSocket.onerror = e => console.warn('Deepgram Voice Agent WS error:', e);
   agentSocket.onclose = e => {
     console.log('Deepgram Voice Agent WS closed:', e.code, e.reason);
@@ -4163,15 +4167,45 @@ function connectVoiceAgent(){
       clearInterval(agentKeepAliveTimer);
       agentKeepAliveTimer = null;
     }
-    if (e.code === 1006 || e.code === 1002 || e.code === 1011) {
+    if (e.code === 1006 || e.code === 1002 || e.code === 1011 || e.code === 4000) {
       currentDgTokenIndex++;
     }
     if (isCallActive) {
-      setTimeout(() => {
-        if (isCallActive) connectVoiceAgent();
-      }, 1000);
+      voiceReconnectAttempts++;
+      const delay = Math.min(1000 * Math.pow(1.5, Math.min(voiceReconnectAttempts - 1, 4)), 5000);
+      console.log(`🔄 Auto-reconnecting Voice Agent (attempt ${voiceReconnectAttempts} in ${Math.round(delay)}ms)...`);
+      if (voiceReconnectTimer) clearTimeout(voiceReconnectTimer);
+      voiceReconnectTimer = setTimeout(async () => {
+        if (isCallActive) {
+          await ensureMicStreamActive();
+          connectVoiceAgent();
+        }
+      }, delay);
     }
   };
+}
+
+async function ensureMicStreamActive() {
+  if (!isCallActive) return;
+  const tracks = micStream ? micStream.getTracks() : [];
+  const allLive = tracks.length > 0 && tracks.every(t => t.readyState === 'live');
+  if (!allLive) {
+    try {
+      console.log('🎤 Refreshing microphone stream...');
+      micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: { ideal: true },
+          noiseSuppression: { ideal: true },
+          autoGainControl: { ideal: true },
+          channelCount: 1,
+          sampleRate: { ideal: 16000 }
+        }
+      });
+      setupMicAudioNodes(micStream);
+    } catch(err) {
+      console.warn('Microphone stream refresh error:', err);
+    }
+  }
 }
 
 async function startVoiceCall(){
@@ -4179,6 +4213,7 @@ async function startVoiceCall(){
   try {
     isCallActive = true;
     unlockAudio();
+    requestScreenWakeLock();
     updateStatus('active', '🎙️ Connecting Phone Mic...');
 
     if (!micStream) {
@@ -4198,13 +4233,19 @@ async function startVoiceCall(){
   } catch(err) {
     console.error('Phone Mic access error:', err);
     isCallActive = false;
+    releaseScreenWakeLock();
     updateStatus('idle', '⚠️ Mic Permission Allow Karo');
   }
 }
 
 function stopVoiceCall(){
   isCallActive = false;
-  hasSpokenInitialGreeting = false;
+  releaseScreenWakeLock();
+  if (voiceReconnectTimer) {
+    clearTimeout(voiceReconnectTimer);
+    voiceReconnectTimer = null;
+  }
+  voiceReconnectAttempts = 0;
   if (agentKeepAliveTimer) {
     clearInterval(agentKeepAliveTimer);
     agentKeepAliveTimer = null;
@@ -4441,7 +4482,7 @@ function render(now){
 
 // ================= AUTHENTICATION, HAMBURGER DRAWER & LOTTIE LOADER =================
 const AUTH_KEY = 'rjn_ai_session_auth';
-const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24-Hour Expiration Limit
+const SESSION_TTL_MS = 365 * 24 * 60 * 60 * 1000; // Permanent 1-Year Rolling Session (Never Auto-Kills)
 const VALID_ID = 'Raj Nandini';
 const VALID_PASSWORDS = [
   'Raj Nandini is the heart of Rudra/Zeno)',
@@ -4459,16 +4500,13 @@ function getActiveSession() {
     const session = JSON.parse(raw);
     const userId = (session && (session.userId || session.user)) || '';
     if (!session || userId.toLowerCase() !== VALID_ID.toLowerCase()) {
-      localStorage.removeItem(AUTH_KEY);
       return null;
     }
+    // Slide expiration forward on activity so Boss is never logged out
     const now = Date.now();
-    const loginTime = session.timestamp || 0;
-    // Check if session has exceeded 24 hours (86,400,000 ms)
-    if (now - loginTime >= SESSION_TTL_MS) {
-      localStorage.removeItem(AUTH_KEY);
-      return null;
-    }
+    session.timestamp = now;
+    session.expiresAt = now + SESSION_TTL_MS;
+    try { localStorage.setItem(AUTH_KEY, JSON.stringify(session)); } catch(e){}
     return session;
   } catch (err) {
     return null;
@@ -4476,16 +4514,10 @@ function getActiveSession() {
 }
 
 function checkAndHandleSessionExpiration() {
-  if (isAuthenticated && !getActiveSession()) {
-    if (isCallActive && typeof stopVoiceCall === 'function') stopVoiceCall();
-    closeSidebar();
-    applyAuthState(false, true);
-    const errEl = document.getElementById('loginError');
-    const errMsg = document.getElementById('loginErrorMsg');
-    if (errEl && errMsg) {
-      errMsg.textContent = 'Session expired after 24 hours. Please log in again.';
-      errEl.classList.add('visible');
-    }
+  // Only refresh session; never kill active voice calls on blur/tab-switch!
+  const session = getActiveSession();
+  if (session && !isAuthenticated) {
+    applyAuthState(true, false);
   }
 }
 
@@ -4498,14 +4530,69 @@ function initAuth() {
   }
 }
 
-// Background tab & periodic session expiration watchers
+// Screen WakeLock helper to keep mobile screens active during voice calls
+let appWakeLock = null;
+async function requestScreenWakeLock() {
+  try {
+    if ('wakeLock' in navigator && !appWakeLock) {
+      appWakeLock = await navigator.wakeLock.request('screen');
+      appWakeLock.addEventListener('release', () => {
+        appWakeLock = null;
+      });
+      console.log('🛡️ Screen WakeLock active: screen will stay awake without dropping session');
+    }
+  } catch (err) {
+    console.warn('WakeLock notice:', err);
+  }
+}
+
+function releaseScreenWakeLock() {
+  try {
+    if (appWakeLock) {
+      appWakeLock.release();
+      appWakeLock = null;
+    }
+  } catch (err) {}
+}
+
+// Background tab & periodic session refreshers
 setInterval(checkAndHandleSessionExpiration, 30000);
-document.addEventListener('visibilitychange', () => {
+
+document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible') {
     checkAndHandleSessionExpiration();
+    if (isCallActive) {
+      requestScreenWakeLock();
+    }
+    // Resume audio context if browser suspended it during tab switch
+    if (audioCtx && audioCtx.state === 'suspended') {
+      try {
+        await audioCtx.resume();
+        console.log('🔊 AudioContext resumed after tab return');
+      } catch (e) {}
+    }
+    // Reconnect voice socket if disconnected while in background
+    if (isCallActive && (!agentSocket || agentSocket.readyState !== WebSocket.OPEN)) {
+      console.log('🔄 Reconnecting voice agent after tab return...');
+      await ensureMicStreamActive();
+      connectVoiceAgent();
+    }
   }
 });
-window.addEventListener('focus', checkAndHandleSessionExpiration);
+
+window.addEventListener('focus', async () => {
+  checkAndHandleSessionExpiration();
+  if (isCallActive) {
+    requestScreenWakeLock();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    try { await audioCtx.resume(); } catch (e) {}
+  }
+  if (isCallActive && (!agentSocket || agentSocket.readyState !== WebSocket.OPEN)) {
+    await ensureMicStreamActive();
+    connectVoiceAgent();
+  }
+});
 
 function applyAuthState(authenticated, animate) {
   isAuthenticated = authenticated;
