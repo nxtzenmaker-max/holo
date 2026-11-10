@@ -2716,14 +2716,12 @@ function playAgentAudioChunk(arrayBuffer){
 
   const now = audioCtx.currentTime;
 
-  // Seamless scheduling: If scheduledAudioTime has fallen behind, add a smooth 80ms jitter buffer
+  // Seamless scheduling: If scheduledAudioTime has fallen behind, schedule with smooth 25ms low latency
   // Otherwise, schedule back-to-back with zero gap for continuous speech flow
-  if (scheduledAudioTime < now) {
-    scheduledAudioTime = now + 0.080;
-  }
+  const startAt = Math.max(now + 0.025, scheduledAudioTime);
 
-  src.start(scheduledAudioTime);
-  scheduledAudioTime += audioBuf.duration;
+  src.start(startAt);
+  scheduledAudioTime = startAt + audioBuf.duration;
   agentPlaybackEndTime = scheduledAudioTime;
   activeAudioSources.push(src);
 
@@ -2741,7 +2739,7 @@ function checkTurnCompletion(){
   // If server finished streaming audio (AgentAudioDone) OR all sources finished:
   if (curr >= (agentPlaybackEndTime - 0.030) && activeAudioSources.length === 0) {
     if (turnFinishTimeout) clearTimeout(turnFinishTimeout);
-    // 350ms silence debounce window to ensure turn has completely finished
+    // 250ms silence debounce window to ensure turn has completely finished
     turnFinishTimeout = setTimeout(() => {
       const now = audioCtx ? audioCtx.currentTime : 0;
       if (now >= (agentPlaybackEndTime - 0.030) && activeAudioSources.length === 0) {
@@ -2753,7 +2751,7 @@ function checkTurnCompletion(){
           updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
         }
       }
-    }, 350);
+    }, 250);
   }
 }
 
@@ -2864,15 +2862,14 @@ function handlePcmAudioProcess(e){
   const inRate = e.inputBuffer.sampleRate || (audioCtx ? audioCtx.sampleRate : 48000);
 
   // UNBREAKABLE HARDWARE ACOUSTIC ECHO SHIELD:
-  // While RJN is generating speech, speaking through the phone speaker, or audio queue is active
-  // (plus 350ms tail after playback completes), send continuous 16kHz silence frames (zeros).
-  // This keeps the WebSocket connection 100% active while preventing Deepgram's model
-  // from hearing the assistant's own voice and cutting itself off mid-sentence!
+  // While RJN speaker audio is actively playing or queued in AudioContext (+ 150ms tail),
+  // send continuous 16kHz silence frames (zeros) to prevent microphone feedback from interrupting speech.
+  // The moment playback ends, microphone immediately streams full user speech to Nova-3.
   const now = audioCtx ? audioCtx.currentTime : 0;
-  const isProtectedTime = isAgentSpeaking || isAgentPlayingAudio || (activeAudioSources.length > 0) || (now < (agentPlaybackEndTime + 0.350));
+  const isAudioPlaying = (activeAudioSources.length > 0) || (now < (agentPlaybackEndTime + 0.150));
 
   let buffer;
-  if (isProtectedTime) {
+  if (isAudioPlaying) {
     const outSamples = Math.round(inputData.length / (inRate / 16000));
     buffer = new ArrayBuffer(outSamples * 2); // 0dB silence
   } else {
@@ -2985,8 +2982,6 @@ function connectVoiceAgent(){
                 version: "v1",
                 model: "nova-3",
                 language: "hi",
-                eot_threshold: 0.75,
-                eot_timeout_ms: 1200,
                 keyterms: [
                   "नमस्ते", "शेर", "गिटार", "तितली", "चाय", "कप", "पेड़", "कार", "दिल", "फूल", "चाँद",
                   "बनो", "दिखाओ", "होलोग्राम", "कैसी हो", "क्या हाल है", "कोड", "बग",
@@ -3331,9 +3326,9 @@ function connectVoiceAgent(){
         }
         updateStatus('speaking', '💬 RJN बोल रही है...');
       } else if (msg.type === 'UserStartedSpeaking') {
-        // Echo Shield: If agent is speaking or audio playback queue is active, ignore false barge-in!
+        // Echo Shield: If audio playback queue is active, ignore false barge-in from speaker!
         const now = audioCtx ? audioCtx.currentTime : 0;
-        if (isAgentSpeaking || isAgentPlayingAudio || (activeAudioSources.length > 0) || (now < (agentPlaybackEndTime + 0.350))) {
+        if ((activeAudioSources.length > 0) || (now < (agentPlaybackEndTime + 0.150))) {
           console.log('⚡ Preserving agent audio playback against speaker echo');
           return;
         }
