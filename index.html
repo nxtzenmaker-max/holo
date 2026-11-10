@@ -4212,6 +4212,9 @@ async function startVoiceCall(){
   if (!isAuthenticated || isCallActive) return;
   try {
     isCallActive = true;
+    if (window.Android && Android.startBackgroundSession) {
+      Android.startBackgroundSession();
+    }
     unlockAudio();
     requestScreenWakeLock();
     updateStatus('active', '🎙️ Connecting Phone Mic...');
@@ -4233,6 +4236,9 @@ async function startVoiceCall(){
   } catch(err) {
     console.error('Phone Mic access error:', err);
     isCallActive = false;
+    if (window.Android && Android.stopBackgroundSession) {
+      Android.stopBackgroundSession();
+    }
     releaseScreenWakeLock();
     updateStatus('idle', '⚠️ Mic Permission Allow Karo');
   }
@@ -4240,6 +4246,9 @@ async function startVoiceCall(){
 
 function stopVoiceCall(){
   isCallActive = false;
+  if (window.Android && Android.stopBackgroundSession) {
+    Android.stopBackgroundSession();
+  }
   releaseScreenWakeLock();
   if (voiceReconnectTimer) {
     clearTimeout(voiceReconnectTimer);
