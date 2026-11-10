@@ -30,6 +30,7 @@
         <service
             android:name=".AssistantTileService"
             android:label="RJN Assistant"
+            android:icon="@drawable/ic_assistant_tile"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
             android:exported="true">
             <intent-filter>
@@ -37,6 +38,9 @@
             </intent-filter>
             <meta-data
                 android:name="android.service.quicksettings.ACTIVE_TILE"
+                android:value="true" />
+            <meta-data
+                android:name="android.service.quicksettings.TOGGLEABLE_TILE"
                 android:value="true" />
         </service>
     </application>
