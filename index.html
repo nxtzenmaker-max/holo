@@ -2461,15 +2461,22 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
    - CRITICAL STYLE DIRECTIVE: Write and speak ONLY in Devanagari (Hindi) letters, but DO NOT write pure, heavy, textbook, or Sanskritized Hindi!
    - STRICTLY FORBIDDEN WORDS: NEVER use heavy poetic words like 'हृदय की गहराइयों', 'स्नेह', 'रोशनी प्रदान', 'आशीर्वादित', 'लम्हे अनमोल', 'प्रेरणा', 'सद्भावना', 'गौरवान्वित', 'कष्ट', 'प्रतीत'.
    - USE EVERYDAY MODERN SPOKEN HINDUSTANI / HINGLISH IN HINDI LETTERS: Use common everyday words like 'मैसेज', 'सेंड', 'कॉल', 'याद', 'हाल-चाल', 'सब ठीक', 'काम' (जैसे: "हाँ बॉस, मैंने मैसेज सेंड कर दिया!", "नमस्ते बॉस, क्या हाल-चाल है?", "बताओ बॉस, क्या काम है?").
-   - Responses must be short, punchy, human, natural (1-2 sentences, max 15 words).
+
+   - ULTRA-SHORT & CRISP (BOSS DIRECTIVE: "जादा ना बोले वो"):
+     * BOSS DOES NOT LIKE LONG TALK! Speak VERY LITTLE!
+     * Every spoken reply MUST be MAXIMUM 1 TO 2 SHORT SENTENCES (strictly under 10-15 words total)!
+     * Answer the core point immediately and STOP speaking.
+     * ZERO essays, zero lectures, zero filler, zero repetitive questions!
+
    - NEVER include emojis in spoken text.
-   - ZERO LINKS OR WEBSITES IN SPOKEN SPEECH (STRICTLY FORBIDDEN):
-     * ABSOLUTELY NEVER SPEAK, SAY, OR WRITE ANY WEB URL, LINK, HTTP/HTTPS ADDRESS, OR MARKDOWN LINK (such as '[name](http...)') IN YOUR SPOKEN DIALOGUE!
-     * Saying URLs ("एचटीटीपीएस कॉलन स्लैश...") out loud in voice is STRICTLY FORBIDDEN and irritates Boss!
+
+   - ABSOLUTE ZERO LINKS IN SPOKEN VOICE (BOSS DIRECTIVE: "लिंक बोलना disallowed kar"):
+     * UNDER NO CIRCUMSTANCES should you ever speak, pronounce, or recite any web URL, link, http, https, www, .com, .in, or slash letter-by-letter in your spoken voice!
+     * Saying URLs aloud is 100% DISALLOWED and irritates Boss!
      * When Boss asks about a product, T-shirt, gadget, or recommendation (जैसे: Meesho, Amazon):
-       Simply describe the item, style, color, rating, and price in short conversational Hindi (जैसे: "बॉस, Meesho पर कॉटन ब्लैक ओवरसाइज़्ड T-shirt 350 रुपये में बहुत बढ़िया है!").
-     * When sending a link to Didi on WhatsApp, send a real clean search link (e.g. Meesho: 'https://www.meesho.com/search?q=men%20t%20shirt%20size%20s' or Amazon: 'https://www.amazon.in/s?k=men+t+shirt+size+s') via 'send_whatsapp_message'!
-     * But in your SPOKEN reply to Boss, DO NOT speak the URL! Say naturally: "हाँ बॉस, मैंने Meesho का T-shirt लिंक दीदी को WhatsApp पर भेज दिया है!"
+       Simply state the item, style, color, rating, and price in 1 short conversational line (जैसे: "बॉस, Meesho पर कॉटन ब्लैक ओवरसाइज़्ड T-shirt 350 रुपये में बहुत बढ़िया है!").
+     * When sending a link to Didi on WhatsApp, pass the URL quietly via 'send_whatsapp_message'!
+     * But in your SPOKEN reply to Boss, DO NOT recite the URL! Say naturally: "हाँ बॉस, मैंने Meesho का T-shirt लिंक दीदी को WhatsApp पर भेज दिया है!"
      * When Boss asks to see anything, call 'show_media' to display it visually on screen!
 
 5. OUTGOING MESSAGES TO CONTACTS (WHATSAPP, TELEGRAM, INSTAGRAM):
@@ -2703,6 +2710,11 @@ syncInitialMemoryFromCloud();
 // Build context-aware dynamic prompt with persistent conversation history
 function buildAgentPrompt() {
   let prompt = RJN_PROMPT;
+
+  // Boss's top priority directives
+  prompt += `\n\n=== HIGHEST PRIORITY DIRECTIVES FROM BOSS ===
+1. ULTRA-SHORT RESPONSES ("जादा ना बोलो"): Speak maximum 1 or 2 short sentences (strictly under 10-15 words). Give the answer directly and stop. Never speak long paragraphs or give lectures!
+2. ZERO SPOKEN LINKS ("लिंक बोलना सख्त मना है"): Never speak out URLs, links, http, https, www, or website addresses. Only describe items by name and price!`;
 
   // Add permanently remembered contacts and facts
   prompt += `\n\n=== PERMANENT SAVED CONTACTS & SECURE MEMORY ===
@@ -3094,26 +3106,11 @@ function handlePcmAudioProcess(e){
                           (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
                           (now < (agentPlaybackEndTime + 0.300));
 
-  // INSTANT USER VOICE BARGE-IN:
-  // When Boss speaks while RJN is talking, Boss's direct voice produces distinct vocal energy (RMS >= 0.035).
-  // If Boss speaks for 2 consecutive audio process cycles (~170ms), IMMEDIATELY halt RJN speech and listen to Boss!
+  // Boss's direct order: "bolne de usko, beech me rukne wala system mat laga"
+  // While RJN is speaking, NEVER interrupt or cut her off mid-speech. Let her complete speaking!
+  // Send 0dB silence buffer to Deepgram so phone speaker audio never leaks into speech recognition:
   if (isProtectedTime) {
-    if (rms >= 0.035) {
-      userSpeechBurstCount++;
-      if (userSpeechBurstCount >= 2) {
-        console.log('⚡ Boss Voice Detected! Halting RJN speech instantly (RMS:', rms.toFixed(4), ')');
-        userSpeechBurstCount = 0;
-        interruptAgentSpeech();
-        // Immediately stream this voice buffer to Deepgram Nova-3!
-        const buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
-        try { agentSocket.send(buffer); } catch(err){}
-        return;
-      }
-    } else {
-      userSpeechBurstCount = 0;
-    }
-
-    // While Boss is not actively speaking, send continuous silence zeros to shield against speaker feedback
+    userSpeechBurstCount = 0;
     const outSamples = Math.round(inputData.length / (inRate / 16000));
     const buffer = new ArrayBuffer(outSamples * 2); // 0dB silence
     try { agentSocket.send(buffer); } catch(err){}
@@ -3282,7 +3279,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "web_search",
-                  description: "Search live web and Wikipedia knowledge for facts, historical people, science, concepts, and answers",
+                  description: "Search live web and Wikipedia knowledge for facts, prices, products, and answers. When replying, speak in 1 short sentence only (under 12 words). NEVER recite any URL, website address, or link out loud.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -3600,17 +3597,12 @@ function connectVoiceAgent(){
         }
         updateStatus('speaking', '💬 RJN बोल रही है... (टैप करके रोकें)');
       } else if (msg.type === 'UserStartedSpeaking') {
-        if (userSpeechBurstCount > 0) {
-          console.log('⚡ UserStartedSpeaking: Halting RJN speech for Boss');
-          interruptAgentSpeech();
-          return;
-        }
         const now = audioCtx ? audioCtx.currentTime : 0;
-        const isEcho = isAgentUtteranceActive || isAgentSpeaking || isPlaybackRunning || 
-                       (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
-                       (now < (agentPlaybackEndTime + 0.300));
-        if (isEcho) {
-          console.log('⚡ Echo Shield: Suppressing speaker feedback barge-in');
+        const isProtectedTime = isAgentUtteranceActive || isAgentSpeaking || isPlaybackRunning || 
+                                (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
+                                (now < (agentPlaybackEndTime + 0.300));
+        if (isProtectedTime) {
+          console.log('⚡ Speaking Protected: Letting RJN complete speaking without mid-speech cutoff');
           return;
         }
         updateStatus('listening', '🎙️ RJN सुन रही है...');
@@ -3654,7 +3646,6 @@ function connectVoiceAgent(){
                   if (pData.results && pData.results.length > 0) {
                     const topResults = pData.results.slice(0, 4).map(r => ({
                       title: (r.title || '').trim(),
-                      url: r.url,
                       snippet: (r.excerpts || []).join(' ').replace(/\s+/g, ' ').slice(0, 300)
                     }));
                     const summary = topResults.map((r, i) => `[${i+1}] ${r.title}: ${r.snippet}`).join('\n\n');
@@ -3665,7 +3656,7 @@ function connectVoiceAgent(){
                       found: true,
                       title: topResults[0].title,
                       summary,
-                      url: topResults[0].url
+                      instruction: "Speak MAXIMUM 1 short sentence. STRICTLY DO NOT SPEAK ANY URL OR LINK."
                     };
                   }
                 }
@@ -3674,6 +3665,11 @@ function connectVoiceAgent(){
               }
               if (!callResult || !callResult.found) {
                 callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/search?query=${encodeURIComponent(query)}`);
+                if (callResult && typeof callResult === 'object') {
+                  delete callResult.url;
+                  delete callResult.link;
+                  callResult.instruction = "Speak MAXIMUM 1 short sentence. STRICTLY DO NOT SPEAK ANY URL OR LINK.";
+                }
               }
             } else if (fn.name === 'get_system_time') {
               const tz = args.timezone || 'Asia/Kolkata';
