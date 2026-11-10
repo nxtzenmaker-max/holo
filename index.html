@@ -643,11 +643,117 @@
     font-family: monospace;
     letter-spacing: 0.05em;
   }
+
+  /* AI IMAGE PREVIEW MODAL */
+  #imageModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99995;
+    background: rgba(3, 4, 10, 0.82);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    transition: opacity 0.3s ease;
+  }
+  #imageModal.active {
+    display: flex;
+  }
+  .image-modal-card {
+    position: relative;
+    max-width: 440px;
+    width: 100%;
+    background: rgba(15, 20, 32, 0.94);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.2);
+  }
+  .image-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .image-modal-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #38bdf8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .image-modal-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #38bdf8;
+    box-shadow: 0 0 8px #38bdf8;
+  }
+  .image-modal-close {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #e2e8f0;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+  }
+  .image-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  .image-modal-img-wrap {
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 1;
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .image-modal-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .image-modal-prompt {
+    margin: 12px 0 0;
+    font-size: 12px;
+    color: #94a3b8;
+    line-height: 1.4;
+    word-break: break-word;
+  }
 </style>
 </head>
 <body>
 <div id="glow"></div>
 <canvas id="c"></canvas>
+
+<!-- AI IMAGE PREVIEW MODAL -->
+<div id="imageModal">
+  <div class="image-modal-card">
+    <div class="image-modal-header">
+      <span class="image-modal-title">
+        <span class="image-modal-dot"></span>
+        🎨 AI Generated Art for Boss
+      </span>
+      <button type="button" class="image-modal-close" onclick="hideGeneratedImage()" aria-label="Close image preview">&times;</button>
+    </div>
+    <div class="image-modal-img-wrap">
+      <img id="imageModalImg" class="image-modal-img" src="" alt="AI Generated Artwork" />
+    </div>
+    <p id="imageModalPrompt" class="image-modal-prompt"></p>
+  </div>
+</div>
 
 <!-- HAMBURGER MENU BUTTON -->
 <button type="button" id="menuToggleBtn" class="menu-toggle-btn" aria-label="Open menu" style="display: none;">
@@ -1503,20 +1609,60 @@ function genShield(){
   return normalize(out);
 }
 
+// ---- 3D Volumetric Cybernetic AI Model / Humanoid Bust ----
+function genAIModel(){
+  const L = [
+    // Head / Cranium
+    [8.0, ell([0, 0.46, 0], [0.32, 0.38, 0.34])],
+    // Face / Cheeks / Jaw
+    [4.0, ell([0, 0.22, 0.12], [0.24, 0.22, 0.26])],
+    [2.5, ell([0, 0.08, 0.18], [0.14, 0.12, 0.16])],
+    // Eyes / Cyber Visor
+    [1.5, box([0, 0.32, 0.28], [0.32, 0.05, 0.06])],
+    [1.0, ell([0.10, 0.32, 0.29], [0.05, 0.03, 0.03])],
+    [1.0, ell([-0.10, 0.32, 0.29], [0.05, 0.03, 0.03])],
+    // Nose & Mouth / Audio Emitter
+    [0.8, box([0, 0.22, 0.30], [0.04, 0.12, 0.06])],
+    [0.8, box([0, 0.12, 0.27], [0.12, 0.03, 0.04])],
+    // Neck & Cervical Core
+    [3.0, cyl([0, -0.12, 0], 'y', 0.16, 0.28)],
+    [1.2, torus([0, -0.10, 0], 'y', 0.17, 0.03)],
+    // Shoulders & Torso Bust
+    [6.0, box([0, -0.32, 0], [1.05, 0.14, 0.34])],
+    [2.5, ell([-0.52, -0.32, 0], [0.18, 0.18, 0.18])],
+    [2.5, ell([0.52, -0.32, 0], [0.18, 0.18, 0.18])],
+    [5.0, box([0, -0.52, 0.04], [0.70, 0.28, 0.26])],
+    [1.5, torus([0, -0.46, 0.18], 'z', 0.09, 0.025)],
+    [1.0, ell([0, -0.46, 0.18], [0.06, 0.06, 0.03])],
+    // Base Pedestal
+    [3.0, cyl([0, -0.74, 0], 'y', 0.32, 0.22)],
+    [2.0, torus([0, -0.85, 0], 'y', 0.45, 0.04)],
+    // Cybernetic Neural Halo
+    [2.0, torus([0, 0.78, 0], 'y', 0.42, 0.02)]
+  ];
+  return build(L);
+}
+
 Object.assign(SHAPES, {
+  aimodel: genAIModel, model: genAIModel, bust: genAIModel, girl: genAIModel,
   star: genStar, diamond: genDiamond, flower: genFlower,
   galaxy: genGalaxy, sword: genSword, shield: genShield
 });
 Object.assign(ALIAS, {
+  aimodel: 'aimodel', model: 'aimodel', 'ai model': 'aimodel', ai_model: 'aimodel',
+  bust: 'aimodel', 'ai bust': 'aimodel', humanoid: 'aimodel', robot: 'aimodel',
+  androide: 'aimodel', android: 'aimodel', avatar: 'aimodel', rjn_model: 'aimodel',
+  orb_model: 'aimodel', 'orb model': 'aimodel', zeno_model: 'aimodel',
   star: 'star', tara: 'star', sitara: 'star',
   diamond: 'diamond', heera: 'diamond', crystal: 'diamond', gem: 'diamond',
   flower: 'flower', phool: 'flower', rose: 'flower', gulab: 'flower', lotus: 'flower', kamal: 'flower',
   galaxy: 'galaxy', spiral: 'galaxy', universe: 'galaxy',
   sword: 'sword', talwar: 'sword', talwaar: 'sword', blade: 'sword',
   shield: 'shield', dhal: 'shield', armor: 'shield',
-  girl: 'girl', ladki: 'girl', rjn: 'girl', avatar: 'girl', face: 'girl', chehra: 'girl'
+  girl: 'girl', ladki: 'girl', rjn: 'girl', face: 'aimodel', chehra: 'aimodel'
 });
 Object.assign(SHAPE_ZOOM, {
+  aimodel: 1.15, model: 1.15, bust: 1.15,
   star: 1.2, diamond: 1.2, flower: 1.2, galaxy: 1.15, sword: 1.25, shield: 1.2, girl: 0.88
 });
 
@@ -1669,12 +1815,29 @@ function morphShape(name, symbol){
     highlightActiveChip('');
     return;
   }
+
+  // 1. Direct Orb / Sphere morphing
+  if (name === 'orb' || name === 'sphere' || name === 'ball' || name === 'gola' || name === 'orbee'){
+    shapeZoom = 1.0;
+    setTarget(SHAPES.orb(), 0);
+    highlightActiveChip('orb');
+    return;
+  }
+
+  // 2. Direct 3D AI Model / Cybernetic Bust morphing
+  if (name === 'model' || name === 'aimodel' || name === 'ai model' || name === 'ai_model' || name === 'bust' || name === 'ai bust' || name === 'humanoid' || name === 'robot' || name === 'avatar' || name === 'androide'){
+    shapeZoom = 1.15;
+    setTarget(SHAPES.aimodel(), 0);
+    highlightActiveChip('aimodel');
+    return;
+  }
+
   if (name === 'girl' || name === 'ladki' || name === 'rjn'){
     showGirl();
     return;
   }
 
-  // 1. Check hand-crafted math shapes first
+  // 3. Check hand-crafted math shapes first
   const mapped = ALIAS[name] || name;
   if (SHAPES[mapped]){
     shapeZoom = SHAPE_ZOOM[mapped] || 1.0;
@@ -1683,7 +1846,7 @@ function morphShape(name, symbol){
     return;
   }
 
-  // 2. Check if AI provided a symbol or word matches an emoji
+  // 4. Check if AI provided a symbol or word matches an emoji
   const targetSymbol = symbol || (/\p{Emoji}/u.test(name) ? name : getEmojiForWord(name));
   if (targetSymbol) {
     const pts = genUniversalShape(targetSymbol);
@@ -1695,10 +1858,26 @@ function morphShape(name, symbol){
     }
   }
 
-  // 3. Fallback: 3D volumetric text of the name
+  // 5. Fallback: 3D volumetric text of the name
   shapeZoom = 1.0;
   setTarget(genText(name), 1);
   highlightActiveChip('');
+}
+
+// ================= AI IMAGE PREVIEW MODAL HELPERS =================
+function showGeneratedImage(url, prompt){
+  const m = document.getElementById('imageModal');
+  const img = document.getElementById('imageModalImg');
+  const p = document.getElementById('imageModalPrompt');
+  if (m && img){
+    img.src = url;
+    if (p) p.textContent = prompt || 'AI Generated Image';
+    m.classList.add('active');
+  }
+}
+function hideGeneratedImage(){
+  const m = document.getElementById('imageModal');
+  if (m) m.classList.remove('active');
 }
 
 // ================= UI STATUS =================
@@ -1835,7 +2014,29 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
      Immediately call 'get_autonomous_task_status'!
      Report the progress or result happily to Boss!
 12. UNIVERSAL 3D SHAPE MORPHING:
-   - Whenever Boss asks to show or become any object, call 'morph_shape'.`;
+   - Whenever Boss asks to show or become any object, call 'morph_shape'.
+
+13. INDIAN STANDARD TIME (IST) & CURRENT DATE ANCHOR:
+   - Your internal clock is permanently anchored to India Standard Time (IST - Asia/Kolkata, UTC+5:30).
+   - The current real-world date is 10 November 2026.
+   - NEVER use UTC or overseas timezones when answering Boss about time or date. Always answer according to Indian time.
+
+14. STRICT PROHIBITION ON REPETITIVE QUESTIONS & PLEASANTRIES:
+   - Boss explicitly dislikes repetitive polite filler.
+   - STRICTLY FORBIDDEN: NEVER end answers with "अगर आपको कुछ और जानकारी या मदद चाहिए, तो बताइए!", "क्या आपको कुछ और जानना है या कोई और काम करवाना है?", "मदद चाहिए बताइए", or "और कुछ हुक्म है?".
+   - Deliver clear, direct, intelligent answers and stop cleanly.
+
+15. 3D CYBERNETIC AI MODEL & ORB MORPHING:
+   - You have an advanced 3D Cybernetic AI Model / Humanoid Bust shape in your hologram!
+   - When Boss says "model बन जाओ", "AI model दिखाओ", "bust बनो", "avatar बनो", or asks the orb to convert into the model, call 'morph_shape' with shape: "aimodel".
+   - When Boss says "orb बन जाओ", "sphere बनो", "orbee बनो", call 'morph_shape' with shape: "orb".
+
+16. REAL-TIME AI IMAGE GENERATION SUPERPOWER:
+   - You have real-time AI image generation via 'generate_image'!
+   - When Boss asks to create, generate, or show an image/photo/artwork/wallpaper (जैसे: "इमेज बनाओ", "फोटो बनाओ", "तस्वीर दिखाओ", "image generate karo"):
+     Immediately call 'generate_image' with the detailed English prompt!
+     Confirm to Boss in Hindi: "हाँ बॉस, मैंने आपके लिए AI इमेज जनरेट कर दी है!"
+   - NEVER say image generation is not available!`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
@@ -2212,7 +2413,8 @@ function checkVoiceIntent(str){
   if (isCommand(/\b(donut|torus)\b|डोनट/i)) { morphShape('donut'); return 'donut'; }
   if (isCommand(/\b(galaxy|universe)\b|गैलेक्सी|ब्रह्मांड/i)) { morphShape('galaxy'); return 'galaxy'; }
   if (isCommand(/\b(girl|chehra|avatar|face)\b|लड़की|चेहरा|अवतार/i)) { showGirl(); return 'girl'; }
-  if (isCommand(/\b(orb|sphere|ball|gola)\b|गोला|ऑर्ब/i)) { morphShape('orb'); return 'orb'; }
+  if (isCommand(/\b(model|bust|humanoid|robot|aimodel)\b|मॉडल|बस्ट|रोबोट/i)) { morphShape('aimodel'); return 'aimodel'; }
+  if (isCommand(/\b(orb|sphere|ball|gola|orbee)\b|गोला|ऑर्ब/i)) { morphShape('orb'); return 'orb'; }
 
   // Check universal dictionary for any arbitrary object (guitar, lion, tree, cup, butterfly, etc.)
   const isMorphTrigger = /(bano|banao|ban jao|banjao|bana do|shape|turn into|transform|convert|dikhao)/i.test(s) || s.split(/\s+/).length <= 2;
@@ -2393,7 +2595,8 @@ function connectVoiceAgent(){
                   "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ", "command", "run", "terminal", "python", "script", "railway",
                   "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "whatsapp", "message", "send", "contacts", "connected", "करो", "कर सकती हो",
                   "टेलीग्राम", "telegram", "चेक", "चैट", "ग्रुप", "chats", "instagram", "insta", "इंस्टाग्राम", "डीएम", "dm", "फॉलोअर", "followers",
-                  "एजेंट", "agent", "कनेक्ट", "connect", "टास्क", "task", "स्टेटस", "status", "agy", "वर्कर", "worker", "जोड़ो", "काम", "कोडिंग"
+                  "एजेंट", "agent", "कनेक्ट", "connect", "टास्क", "task", "स्टेटस", "status", "agy", "वर्कर", "worker", "जोड़ो", "काम", "कोडिंग",
+                  "इमेज", "image", "फोटो", "photo", "तस्वीर", "पेंटिंग", "मॉडल", "model", "bust", "बस्ट", "orb", "ऑर्ब"
                 ]
               }
             },
@@ -2403,14 +2606,25 @@ function connectVoiceAgent(){
               functions: [
                 {
                   name: "morph_shape",
-                  description: "Morph 3D particle hologram into any arbitrary shape, creature, animal, or object in the universe",
+                  description: "Morph 3D particle hologram into any arbitrary shape, creature, animal, or object in the universe (including 'aimodel' for the 3D humanoid cybernetic bust, or 'orb' for pure sphere)",
                   parameters: {
                     type: "object",
                     properties: {
-                      shape: { type: "string", description: "Clean English name of the object" },
+                      shape: { type: "string", description: "Clean English name of the object ('aimodel', 'orb', 'car', etc.)" },
                       symbol: { type: "string", description: "Unicode emoji glyph representing it" }
                     },
                     required: ["shape"]
+                  }
+                },
+                {
+                  name: "generate_image",
+                  description: "Generate high-resolution AI image, artwork, photo, or wallpaper for Boss based on a visual prompt",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      prompt: { type: "string", description: "Detailed English visual description of the desired image, scene, style, lighting, and subjects" }
+                    },
+                    required: ["prompt"]
                   }
                 },
                 {
@@ -2701,6 +2915,15 @@ function connectVoiceAgent(){
               const style = args.style || 'line';
               console.log('🎨 Searching Icon Scout:', query, style);
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/iconscout?query=${encodeURIComponent(query)}&style=${encodeURIComponent(style)}`);
+            } else if (fn.name === 'generate_image') {
+              updateStatus('thinking', '🎨 AI इमेज जनरेट की जा रही है...');
+              const prompt = args.prompt || 'futuristic female AI hologram with glowing cybernetic circuits';
+              console.log('🎨 Generating AI Image via Vercel Connector:', prompt);
+              callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/image?prompt=${encodeURIComponent(prompt)}`);
+              if (callResult && callResult.imageUrl) {
+                console.log('🎨 AI Image Generated successfully:', callResult.imageUrl);
+                showGeneratedImage(callResult.imageUrl, prompt);
+              }
             } else if (fn.name === 'execute_command') {
               updateStatus('thinking', '⚡ Cloud command run ho raha hai...');
               const cmd = args.command || '';
