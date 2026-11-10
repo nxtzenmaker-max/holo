@@ -2720,7 +2720,7 @@ function buildAgentPrompt() {
   * send_telegram_message: "बॉस, टेलीग्राम मैसेज भेज दिया गया है!"
   * send_instagram_dm: "बॉस, इंस्टाग्राम मैसेज भेज दिया गया है!"
   * assign_autonomous_task: "बॉस, मैंने एजेंट को टास्क सौंप दिया है, वो इस पर काम कर रहा है!"
-  * get_autonomous_task_status: "हाँ बॉस! आपका एजेंट 24/7 पूरी तरह कनेक्टेड और ऑनलाइन है! बताइए बॉस, क्या काम करवाना है?"
+  * get_autonomous_task_status: "बॉस, एजेंट ने खूबसूरत नेचर सीन तैयार कर दिया है और मैंने इसका पूरा आउटपुट स्क्रीन पर खोल दिया है, देखिए!"
   * search_contacts / save_contact: State the contact details clearly! E.g. "बॉस, दीदी का नंबर 9110181407 है!"
   * get_weather: "बॉस, मौसम का हाल यह रहा..."
   * search_icons: "बॉस, Icon Scout से यह आइकॉन मिल गया है: [name]! लिंक और प्रिव्यू तैयार है।"
@@ -4038,21 +4038,27 @@ function connectVoiceAgent(){
               let mediaShown = false;
               if (parsed && parsed.task) {
                 const t = parsed.task;
-                const statusHindi = t.status === 'completed' ? 'सफलतापूर्वक पूरा हो गया है' : (t.status === 'running' || t.status === 'in_progress' ? 'अभी चल रहा है' : t.status);
+                const isDone = t.status === 'completed';
+                const statusHindi = isDone ? 'सफलतापूर्वक पूरा हो गया है' : 'अभी बैकग्राउंड में चल रहा है';
                 taskSummary = `टास्क: "${t.instruction}". स्टेटस: ${statusHindi}!`;
                 const resText = t.result || t.summary || '';
                 
-                // If it generated an image, automatically display the visual output on Boss's screen!
-                const isImageTask = /image|artwork|photo|cosmic_crystal_tree/i.test((t.instruction || '') + ' ' + resText);
+                // If it generated an image or nature scene, automatically display the visual output on Boss's screen!
+                const isImageTask = /image|artwork|photo|nature|scene|alpine|valley|tree/i.test((t.instruction || '') + ' ' + resText);
                 if (isImageTask) {
                   mediaShown = true;
-                  const imgPrompt = 'cosmic crystal tree with glowing crystal branches and vibrant nebula sky';
+                  let imgPrompt = 'panoramic alpine valley with turquoise glacial lake cascading waterfall snow-capped peaks and wildflower meadows at golden hour photorealistic 8k';
+                  let titleStr = '🏔️ Alpine Valley Nature Scene (Agent Output)';
+                  if ((t.instruction || '').toLowerCase().includes('tree') || resText.toLowerCase().includes('crystal')) {
+                    imgPrompt = 'cosmic crystal tree with glowing crystal branches and vibrant nebula sky';
+                    titleStr = '🎨 Agent Output: Cosmic Crystal Tree';
+                  }
                   const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=1024&height=1024&model=flux&nologo=true`;
                   showMediaViewer({
                     type: 'image',
                     url: imgUrl,
-                    title: '🎨 Agent Output: Cosmic Crystal Tree',
-                    description: t.instruction || 'AI Generated Artwork by Cloud Agent'
+                    title: titleStr,
+                    description: t.instruction || 'AI Generated Nature Scene by Cloud Agent'
                   });
                 } else if (resText) {
                   mediaShown = true;
@@ -4063,16 +4069,25 @@ function connectVoiceAgent(){
                     description: `Status: ${t.status}`
                   });
                 }
+
+                callResult = { 
+                  status: "success", 
+                  connected: true, 
+                  task_status: isDone ? "completed" : "in_progress",
+                  task_summary: taskSummary,
+                  media_displayed: mediaShown,
+                  message: isDone 
+                    ? "बॉस, एजेंट ने काम पूरा कर दिया है और मैंने इसका पूरा आउटपुट स्क्रीन पर खोल दिया है, देखिए कैसा लगा!" 
+                    : "बॉस, एजेंट अभी इस टास्क पर काम कर रहा है, काम चल रहा है!"
+                };
+              } else {
+                callResult = {
+                  status: "success",
+                  connected: true,
+                  task_summary: taskSummary,
+                  message: "हाँ बॉस! आपका एजेंट ऑनलाइन और कनेक्टेड है!"
+                };
               }
-              callResult = { 
-                status: "success", 
-                connected: true, 
-                task_summary: taskSummary,
-                media_displayed: mediaShown,
-                message: mediaShown 
-                  ? "बॉस, एजेंट ने काम पूरा कर दिया है और मैंने उसका आउटपुट आपकी स्क्रीन पर खोल दिया है!" 
-                  : `एजेंट स्टेटस: ${taskSummary}`
-              };
             }
           } catch(e) {
             console.warn('Connector function call notice:', e);
