@@ -644,253 +644,104 @@
     letter-spacing: 0.05em;
   }
 
-  /* ================= NEXT-GEN HOLOGRAPHIC SCOUT8 SHOWCASE HUD ================= */
+  /* UNIVERSAL HOLOGRAPHIC MEDIA VIEWER (IMAGE, VIDEO, DOCS) */
   #imageModal {
     display: none;
     position: fixed;
     inset: 0;
     z-index: 99995;
-    background: radial-gradient(circle at center, rgba(6, 12, 28, 0.88) 0%, rgba(2, 4, 10, 0.96) 100%);
-    backdrop-filter: blur(28px) saturate(190%);
-    -webkit-backdrop-filter: blur(28px) saturate(190%);
+    background: rgba(3, 4, 10, 0.85);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     align-items: center;
     justify-content: center;
-    padding: 16px;
-    animation: holoFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-  @keyframes holoFadeIn {
-    from { opacity: 0; transform: scale(0.96); }
-    to { opacity: 1; transform: scale(1); }
+    padding: 20px;
+    transition: opacity 0.3s ease;
   }
   #imageModal.active {
     display: flex;
   }
   .image-modal-card {
     position: relative;
-    max-width: 680px;
+    max-width: 520px;
     width: 100%;
-    background: linear-gradient(180deg, rgba(13, 20, 38, 0.96) 0%, rgba(6, 10, 20, 0.98) 100%);
-    border: 1px solid rgba(0, 240, 255, 0.4);
-    border-radius: 22px;
-    padding: 0;
-    box-shadow: 0 0 45px rgba(0, 240, 255, 0.2), 0 25px 70px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-    overflow: hidden;
-  }
-  .image-modal-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, #00f0ff, #7928ca, #ff0080, #00f0ff);
-    background-size: 200% 100%;
-    animation: cyberGlowMove 4s linear infinite;
-    z-index: 10;
-  }
-  @keyframes cyberGlowMove {
-    0% { background-position: 0% 0%; }
-    100% { background-position: 200% 0%; }
+    background: rgba(15, 20, 32, 0.95);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 20px;
+    padding: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(56, 189, 248, 0.25);
   }
   .image-modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 14px 18px;
-    background: rgba(255, 255, 255, 0.03);
-    border-bottom: 1px solid rgba(0, 240, 255, 0.15);
-  }
-  .image-modal-meta {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .image-modal-badge-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .image-modal-badge {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #00f0ff;
-    padding: 2px 7px;
-    border-radius: 6px;
-    background: rgba(0, 240, 255, 0.1);
-    border: 1px solid rgba(0, 240, 255, 0.25);
-    font-family: ui-monospace, SFMono-Regular, monospace;
+    margin-bottom: 12px;
   }
   .image-modal-title {
-    font-size: 15px;
-    font-weight: 700;
-    color: #fff;
-    letter-spacing: -0.01em;
-    margin: 0;
-  }
-  .image-modal-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .cyber-action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    color: #38bdf8;
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
-    text-decoration: none;
-    padding: 6px 12px;
-    border-radius: 10px;
-    background: rgba(56, 189, 248, 0.1);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    cursor: pointer;
-    transition: all 0.2s;
-    line-height: 1;
-  }
-  .cyber-action-btn:hover {
-    background: rgba(56, 189, 248, 0.25);
-    border-color: #00f0ff;
-    color: #fff;
-    box-shadow: 0 0 12px rgba(0, 240, 255, 0.35);
-  }
-  .image-modal-close {
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #94a3b8;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s;
-  }
-  .image-modal-close:hover {
-    background: rgba(255, 68, 68, 0.2);
-    border-color: rgba(255, 68, 68, 0.4);
-    color: #ff4444;
-    box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
-  }
-  .image-modal-body {
-    padding: 16px 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .image-modal-img-wrap {
-    position: relative;
-    border-radius: 16px;
-    overflow: hidden;
-    max-height: 50vh;
-    min-height: 240px;
-    background: radial-gradient(circle at center, rgba(0, 240, 255, 0.06) 0%, rgba(3, 6, 14, 0.98) 75%);
-    border: 1px solid rgba(0, 240, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
-  }
-  .image-modal-img-wrap::before, .image-modal-img-wrap::after {
-    content: '';
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    pointer-events: none;
-    z-index: 5;
-  }
-  .image-modal-img-wrap::before {
-    top: 8px; left: 8px;
-    border-top: 2px solid #00f0ff;
-    border-left: 2px solid #00f0ff;
-  }
-  .image-modal-img-wrap::after {
-    bottom: 8px; right: 8px;
-    border-bottom: 2px solid #00f0ff;
-    border-right: 2px solid #00f0ff;
-  }
-  .image-modal-img {
-    max-width: 100%;
-    max-height: 48vh;
-    object-fit: contain;
-    filter: drop-shadow(0 15px 30px rgba(0, 0, 0, 0.8));
-    transition: transform 0.3s ease;
-  }
-  .image-modal-img:hover {
-    transform: scale(1.02);
-  }
-  .media-gallery-wrap {
-    display: none;
-    margin-top: 4px;
-  }
-  .media-gallery-title {
-    font-size: 11px;
-    font-weight: 700;
     color: #38bdf8;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-    font-family: ui-monospace, monospace;
     display: flex;
     align-items: center;
     gap: 6px;
   }
-  .media-gallery-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
-    gap: 8px;
-    max-height: 180px;
-    overflow-y: auto;
-    padding: 2px;
+  .image-modal-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #38bdf8;
+    box-shadow: 0 0 8px #38bdf8;
   }
-  .media-gallery-item {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 8px 6px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 5px;
+  .image-modal-close {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #e2e8f0;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
     cursor: pointer;
-    transition: all 0.2s;
+    font-size: 16px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
   }
-  .media-gallery-item:hover, .media-gallery-item.active {
-    background: rgba(0, 240, 255, 0.12);
-    border-color: rgba(0, 240, 255, 0.4);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 14px rgba(0, 240, 255, 0.2);
+  .image-modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
   }
-  .media-gallery-item img {
-    width: 44px;
-    height: 44px;
-    object-fit: contain;
-  }
-  .media-gallery-name {
-    font-size: 10px;
-    color: #cbd5e1;
-    text-align: center;
-    max-width: 100%;
+  .image-modal-img-wrap {
+    border-radius: 14px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-family: ui-monospace, monospace;
+    position: relative;
+    max-height: 55vh;
+    background: #000;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .image-modal-img {
+    max-width: 100%;
+    max-height: 55vh;
+    object-fit: contain;
+    display: block;
   }
   .media-video-wrap {
-    border-radius: 16px;
+    border-radius: 14px;
     overflow: hidden;
     position: relative;
     aspect-ratio: 16/9;
     background: #000;
-    border: 1px solid rgba(0, 240, 255, 0.25);
+    border: 1px solid rgba(56, 189, 248, 0.2);
   }
   .media-doc-wrap {
-    border-radius: 16px;
-    max-height: 50vh;
+    border-radius: 14px;
+    max-height: 55vh;
     overflow-y: auto;
-    background: rgba(4, 7, 16, 0.95);
-    border: 1px solid rgba(0, 240, 255, 0.25);
+    background: rgba(7, 10, 18, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.2);
     padding: 16px;
   }
   .media-doc-content {
@@ -901,46 +752,28 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
   .media-code-block {
-    background: rgba(0, 0, 0, 0.75);
-    border: 1px solid rgba(0, 240, 255, 0.25);
-    border-radius: 10px;
-    padding: 12px;
-    margin: 10px 0;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 8px 0;
     overflow-x: auto;
-    color: #00f0ff;
+    color: #38bdf8;
     font-size: 12px;
   }
   .media-inline-code {
-    background: rgba(0, 240, 255, 0.12);
-    color: #00f0ff;
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
     padding: 2px 6px;
     border-radius: 4px;
     font-size: 11px;
   }
-  .media-footer-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 18px 14px;
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(0, 0, 0, 0.25);
-  }
-  .media-caption-text {
+  .image-modal-prompt {
+    margin: 12px 0 0;
     font-size: 12px;
     color: #94a3b8;
     line-height: 1.4;
     word-break: break-word;
-    flex: 1;
-    margin: 0 12px 0 0;
-  }
-  .scout8-signature {
-    font-size: 10px;
-    color: #64748b;
-    font-family: ui-monospace, monospace;
-    white-space: nowrap;
-    display: flex;
-    align-items: center;
-    gap: 4px;
   }
 
   /* HOLOGRAPHIC YOUTUBE MUSIC WIDGET */
@@ -1152,58 +985,37 @@
 <div id="glow"></div>
 <canvas id="c"></canvas>
 
-<!-- NEXT-GEN HOLOGRAPHIC SCOUT8 SHOWCASE HUD (IMAGE, ASSETS, VIDEO, DOCS) -->
+<!-- UNIVERSAL HOLOGRAPHIC MEDIA VIEWER (IMAGE, VIDEO, DOCS) -->
 <div id="imageModal">
   <div class="image-modal-card">
     <div class="image-modal-header">
-      <div class="image-modal-meta">
-        <div class="image-modal-badge-row">
-          <span class="image-modal-badge">⚡ SCOUT8 // ASSET HUD</span>
-          <span style="font-size:10px; color:#64748b; font-family:ui-monospace,monospace;">LIVE OUTPUT</span>
-        </div>
-        <h3 class="image-modal-title" id="mediaModalTitleText">🎨 Scout8 Asset Showcase</h3>
-      </div>
-      <div class="image-modal-actions">
-        <button type="button" id="mediaDownloadBtn" class="cyber-action-btn" style="display:none;" title="Download High-Res Asset">💾 Save</button>
-        <a id="mediaOpenLinkBtn" href="#" target="_blank" rel="noopener" class="cyber-action-btn" style="display:none;" title="Open in New Tab">↗ High-Res</a>
-        <button type="button" class="image-modal-close" onclick="hideMediaViewer()" aria-label="Close Showcase">&times;</button>
+      <span class="image-modal-title" id="mediaModalTitle">
+        <span class="image-modal-dot"></span>
+        <span id="mediaModalTitleText">🎨 Media Output for Boss</span>
+      </span>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <a id="mediaOpenLinkBtn" href="#" target="_blank" rel="noopener" style="display:none; color:#38bdf8; font-size:11px; text-decoration:none; padding:4px 8px; border-radius:8px; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25);">Open ↗</a>
+        <button type="button" class="image-modal-close" onclick="hideMediaViewer()" aria-label="Close media preview">&times;</button>
       </div>
     </div>
     
-    <div class="image-modal-body">
-      <!-- Main High-Res Image / Asset View -->
-      <div id="mediaImgWrap" class="image-modal-img-wrap">
-        <img id="imageModalImg" class="image-modal-img" src="" alt="Scout8 Visual Output" />
-      </div>
-
-      <!-- Scout8 Interactive Gallery Grid (for iconsets / multi-assets) -->
-      <div id="mediaGalleryWrap" class="media-gallery-wrap">
-        <div class="media-gallery-title">
-          <span>❖ Matching Scout8 Assets</span>
-          <span style="font-size:9px; color:#64748b; font-weight:normal;">(Tap to view high-res)</span>
-        </div>
-        <div id="mediaGalleryGrid" class="media-gallery-grid"></div>
-      </div>
-
-      <!-- Video Stream View -->
-      <div id="mediaVideoWrap" class="media-video-wrap" style="display:none;">
-        <video id="mediaModalVideo" controls style="width:100%; height:100%; display:block;"></video>
-        <iframe id="mediaModalIframe" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen style="width:100%; height:100%; border:0; display:none;"></iframe>
-      </div>
-
-      <!-- Document / Code Terminal View -->
-      <div id="mediaDocWrap" class="media-doc-wrap" style="display:none;">
-        <div id="mediaModalDocContent" class="media-doc-content"></div>
-      </div>
+    <!-- Image View -->
+    <div id="mediaImgWrap" class="image-modal-img-wrap">
+      <img id="imageModalImg" class="image-modal-img" src="" alt="Media Artwork" />
     </div>
 
-    <div class="media-footer-bar">
-      <p id="imageModalPrompt" class="media-caption-text"></p>
-      <div class="scout8-signature">
-        <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#00f0ff; box-shadow:0 0 6px #00f0ff;"></span>
-        <span>Icons8 &amp; IconScout</span>
-      </div>
+    <!-- Video View -->
+    <div id="mediaVideoWrap" class="media-video-wrap" style="display:none;">
+      <video id="mediaModalVideo" controls style="width:100%; height:100%; display:block;"></video>
+      <iframe id="mediaModalIframe" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen style="width:100%; height:100%; border:0; display:none;"></iframe>
     </div>
+
+    <!-- Document / Code / Text View -->
+    <div id="mediaDocWrap" class="media-doc-wrap" style="display:none;">
+      <div id="mediaModalDocContent" class="media-doc-content"></div>
+    </div>
+
+    <p id="imageModalPrompt" class="image-modal-prompt"></p>
   </div>
 </div>
 
@@ -2375,13 +2187,11 @@ function formatDocumentText(text) {
     .replace(/\n/g, '<br>');
 }
 
-function showMediaViewer({ type = 'image', url = '', content = '', title = '', description = '', gallery = [] } = {}) {
+function showMediaViewer({ type = 'image', url = '', content = '', title = '', description = '' } = {}) {
   const modal = document.getElementById('imageModal');
   const titleText = document.getElementById('mediaModalTitleText');
   const imgWrap = document.getElementById('mediaImgWrap');
   const imgEl = document.getElementById('imageModalImg');
-  const galleryWrap = document.getElementById('mediaGalleryWrap');
-  const galleryGrid = document.getElementById('mediaGalleryGrid');
   const videoWrap = document.getElementById('mediaVideoWrap');
   const videoEl = document.getElementById('mediaModalVideo');
   const iframeEl = document.getElementById('mediaModalIframe');
@@ -2389,28 +2199,21 @@ function showMediaViewer({ type = 'image', url = '', content = '', title = '', d
   const docContent = document.getElementById('mediaModalDocContent');
   const caption = document.getElementById('imageModalPrompt');
   const openLinkBtn = document.getElementById('mediaOpenLinkBtn');
-  const downloadBtn = document.getElementById('mediaDownloadBtn');
 
   if (!modal) return;
 
   // Reset visibility
   if (imgWrap) imgWrap.style.display = 'none';
-  if (galleryWrap) galleryWrap.style.display = 'none';
   if (videoWrap) videoWrap.style.display = 'none';
   if (docWrap) docWrap.style.display = 'none';
   if (videoEl) { videoEl.pause(); videoEl.src = ''; }
   if (iframeEl) iframeEl.src = '';
 
   const cleanType = (type || 'image').toLowerCase();
-  let displayUrl = url || (cleanType !== 'document' ? content : '');
-
-  // Pollinations Ban: NEVER allow pollinations.ai URLs!
-  if (displayUrl && displayUrl.includes('pollinations.ai')) {
-    displayUrl = 'https://img.icons8.com/?size=512&id=25449&format=png';
-  }
+  const displayUrl = url || (cleanType !== 'document' ? content : '');
 
   if (titleText) {
-    titleText.textContent = title || (cleanType === 'video' ? '🎬 Video Output for Boss' : cleanType === 'document' ? '📄 Document Output for Boss' : '🎨 Scout8 Asset Showcase');
+    titleText.textContent = title || (cleanType === 'video' ? '🎬 Video Output for Boss' : cleanType === 'document' ? '📄 Document Output for Boss' : '🎨 Visual Artwork for Boss');
   }
   if (caption) {
     caption.textContent = description || (cleanType === 'document' ? '' : content);
@@ -2422,21 +2225,6 @@ function showMediaViewer({ type = 'image', url = '', content = '', title = '', d
       openLinkBtn.href = displayUrl;
     } else {
       openLinkBtn.style.display = 'none';
-    }
-  }
-
-  if (downloadBtn) {
-    if (displayUrl && displayUrl.startsWith('http')) {
-      downloadBtn.style.display = 'inline-flex';
-      downloadBtn.onclick = () => {
-        const a = document.createElement('a');
-        a.href = displayUrl;
-        a.target = '_blank';
-        a.download = 'scout8-asset.png';
-        a.click();
-      };
-    } else {
-      downloadBtn.style.display = 'none';
     }
   }
 
@@ -2460,43 +2248,23 @@ function showMediaViewer({ type = 'image', url = '', content = '', title = '', d
       docContent.innerHTML = formatDocumentText(textToDisplay);
     }
   } else {
-    // Default: High-Res Image / Scout8 Asset View
+    // Default: Image
     if (imgWrap) imgWrap.style.display = 'flex';
-    if (!displayUrl || (!displayUrl.startsWith('http') && !displayUrl.startsWith('data:'))) {
-      displayUrl = 'https://img.icons8.com/?size=512&id=123603&format=png';
-    }
-    if (imgEl) imgEl.src = displayUrl;
-
-    // If an array of Scout8 assets is provided, render the interactive gallery grid!
-    if (gallery && Array.isArray(gallery) && gallery.length > 0) {
-      if (galleryWrap) galleryWrap.style.display = 'block';
-      if (galleryGrid) {
-        galleryGrid.innerHTML = '';
-        gallery.forEach((item, idx) => {
-          const itemEl = document.createElement('div');
-          itemEl.className = 'media-gallery-item' + (idx === 0 ? ' active' : '');
-          const pUrl = item.previewUrl || item.pngUrl || item.svgUrl || item.thumbnailUrl;
-          itemEl.innerHTML = `
-            <img src="${pUrl}" alt="${item.name || 'Icon'}" loading="lazy" />
-            <span class="media-gallery-name">${item.name || 'Asset'}</span>
-          `;
-          itemEl.onclick = () => {
-            document.querySelectorAll('.media-gallery-item').forEach(el => el.classList.remove('active'));
-            itemEl.classList.add('active');
-            if (imgEl) imgEl.src = pUrl;
-            if (openLinkBtn) openLinkBtn.href = item.pageUrl || pUrl;
-          };
-          galleryGrid.appendChild(itemEl);
-        });
+    if (imgEl) {
+      let finalImgUrl = displayUrl;
+      if (!finalImgUrl || (!finalImgUrl.startsWith('http') && !finalImgUrl.startsWith('data:'))) {
+        const promptQuery = encodeURIComponent(finalImgUrl || description || 'cosmic crystal tree futuristic art');
+        finalImgUrl = `https://image.pollinations.ai/prompt/${promptQuery}?width=1024&height=1024&model=flux&nologo=true`;
       }
+      imgEl.src = finalImgUrl;
     }
   }
 
   modal.classList.add('active');
 }
 
-function showGeneratedImage(url, prompt, gallery = []){
-  showMediaViewer({ type: 'image', url, description: prompt, title: '🎨 Scout8 Asset for Boss', gallery });
+function showGeneratedImage(url, prompt){
+  showMediaViewer({ type: 'image', url, description: prompt, title: '🎨 AI Generated Artwork for Boss' });
 }
 
 function hideMediaViewer(){
@@ -2769,20 +2537,20 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
    - When Boss says "model बन जाओ", "AI model दिखाओ", "bust बनो", "avatar बनो", or asks the orb to convert into the model, call 'morph_shape' with shape: "aimodel".
    - When Boss says "orb बन जाओ", "sphere बनो", "orbee बनो", call 'morph_shape' with shape: "orb".
 
-16. SCOUT8 HIGH-RESOLUTION VISUAL ASSET ENGINE ('generate_image' & 'search_icons8'):
-   - Boss explicitly ordered: Pollinations AI is 100% DISALLOWED and REMOVED!
-   - For all images, photos, artwork, and visual assets, use SCOUT8 (Icons8 & IconScout)!
-   - When Boss asks for images, photos, artwork, or icons (जैसे: "इमेज बनाओ", "फोटो दिखाओ", "nature dikhao", "scout8 se lo", "icon dikhao"):
-     Call 'search_icons8' or 'generate_image'!
-     The system will fetch and display high-res 512px Scout8 assets directly on Boss's holographic screen!
+16. REAL-TIME AI IMAGE GENERATION SUPERPOWER:
+   - You have real-time AI image generation via 'generate_image'!
+   - When Boss asks to create, generate, or show an image/photo/artwork/wallpaper (जैसे: "इमेज बनाओ", "फोटो बनाओ", "तस्वीर दिखाओ", "image generate karo"):
+     Immediately call 'generate_image' with the detailed English prompt!
+     Confirm to Boss in Hindi: "हाँ बॉस, मैंने आपके लिए AI इमेज जनरेट कर दी है!"
+   - NEVER say image generation is not available!
 
 17. PARALLEL.AI REAL-TIME WEB SEARCH:
    - Supercharged with Parallel.ai live web search via 'web_search'!
    - When Boss asks about ANY product (जैसे: 'Vaku Luxos smartwatch', गैजेट्स, इलेक्ट्रॉनिक्स), price, specs, latest news, facts, or questions:
      IMMEDIATELY call 'web_search' with the query! NEVER guess or give up without calling 'web_search'!
 
-18. SCOUT8 & ICONS8 GRAPHIC ASSETS:
-   - Call 'search_icons8' to search over 1.4 million high-res icons and UI assets from Scout8 & Icons8!
+18. ICONS8 GRAPHIC ASSETS:
+   - Call 'search_icons8' to search over 1.4 million high-res icons and UI assets!
 
 19. LIVE TIMER & ALARM (WAKE UP BOSS):
    - When Boss commands ANY timer or alarm (जैसे: "2 minute ka timer lagao", "10 second ka timer lagao", "10 minute baad uthana"):
@@ -3919,34 +3687,25 @@ function connectVoiceAgent(){
               const repo = args.repo || 'nxtzenmaker-max/holo';
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/github?repo=${encodeURIComponent(repo)}`);
             } else if (fn.name === 'search_icons') {
-              updateStatus('thinking', '🎨 IconScout se icon search ho raha hai...');
+              updateStatus('thinking', '🎨 Icon Scout se icon search ho raha hai...');
               const query = args.query || 'home';
               const style = args.style || 'line';
               console.log('🎨 Searching Icon Scout:', query, style);
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/iconscout?query=${encodeURIComponent(query)}&style=${encodeURIComponent(style)}`);
-              if (callResult && callResult.icons && callResult.icons.length > 0) {
-                showMediaViewer({
-                  type: 'image',
-                  url: callResult.icons[0].svgUrl || callResult.icons[0].previewUrl,
-                  title: `🎨 IconScout: "${query}" Assets (${callResult.icons.length})`,
-                  description: `Vector icons from IconScout for "${query}"`,
-                  gallery: callResult.icons
-                });
-              }
             } else if (fn.name === 'generate_image') {
-              updateStatus('thinking', '🎨 Scout8 से हाई-क्वालिटी विजुअल लोड हो रहा है...');
-              const prompt = args.prompt || 'nature';
-              console.log('🎨 Loading Scout8 Image via Vercel Connector:', prompt);
+              updateStatus('thinking', '🎨 AI इमेज जनरेट की जा रही है...');
+              const prompt = args.prompt || 'futuristic female AI hologram with glowing cybernetic circuits';
+              console.log('🎨 Generating AI Image via Vercel Connector:', prompt);
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/image?prompt=${encodeURIComponent(prompt)}`);
               if (callResult && callResult.imageUrl) {
-                console.log('🎨 Scout8 Graphic loaded successfully:', callResult.imageUrl);
-                showGeneratedImage(callResult.imageUrl, prompt, callResult.gallery || []);
+                console.log('🎨 AI Image Generated successfully:', callResult.imageUrl);
+                showGeneratedImage(callResult.imageUrl, prompt);
               }
             } else if (fn.name === 'show_media') {
               updateStatus('thinking', '✨ Media output load ho raha hai...');
               const mType = (args.type || 'image').toLowerCase();
               const mContent = (args.content || args.url || '').trim();
-              const mTitle = args.title || (mType === 'video' ? '🎬 Video Output for Boss' : mType === 'document' ? '📄 Document Output for Boss' : '🎨 Scout8 Asset Showcase');
+              const mTitle = args.title || (mType === 'video' ? '🎬 Video Output for Boss' : mType === 'document' ? '📄 Document Output for Boss' : '🎨 AI Artwork for Boss');
               const mDesc = args.description || '';
               console.log('📺 Displaying Media on Screen for Boss:', mType, mTitle, mContent);
               showMediaViewer({
@@ -3964,10 +3723,10 @@ function connectVoiceAgent(){
                 message: `हाँ बॉस, मैंने स्क्रीन पर ${mType === 'image' ? 'इमेज' : mType === 'video' ? 'वीडियो' : 'डॉक्यूमेंट'} दिखा दिया है!`
               };
             } else if (fn.name === 'search_icons8') {
-              updateStatus('thinking', '🎨 Scout8 se high-res assets search ho rahe hain...');
-              const query = (args.query || 'nature').trim();
-              const amount = Math.min(parseInt(args.amount || 8, 10), 16);
-              console.log('🎨 Querying Scout8 / Icons8 API:', query);
+              updateStatus('thinking', '🎨 Icons8 se icon search ho raha hai...');
+              const query = (args.query || 'home').trim();
+              const amount = Math.min(parseInt(args.amount || 6, 10), 12);
+              console.log('🎨 Querying Icons8 API:', query);
               try {
                 const i8Resp = await fetch(`https://search.icons8.com/api/iconsets/v5/search?term=${encodeURIComponent(query)}&amount=${amount}`);
                 if (i8Resp.ok) {
@@ -3975,30 +3734,16 @@ function connectVoiceAgent(){
                   const icons = (i8Data.icons || []).map(icon => ({
                     id: icon.id,
                     name: icon.name,
-                    pngUrl: `https://img.icons8.com/?size=512&id=${icon.id}&format=png`,
-                    previewUrl: `https://img.icons8.com/?size=512&id=${icon.id}&format=png`,
-                    thumbnailUrl: `https://img.icons8.com/?size=160&id=${icon.id}&format=png`,
+                    pngUrl: `https://img.icons8.com/?size=160&id=${icon.id}&format=png`,
                     pageUrl: `https://icons8.com/icon/${icon.id}/${encodeURIComponent(icon.commonName || icon.name.toLowerCase().replace(/\s+/g, '-'))}`
                   }));
-
-                  if (icons.length > 0) {
-                    showMediaViewer({
-                      type: 'image',
-                      url: icons[0].pngUrl,
-                      title: `🎨 Scout8: "${query}" Assets (${icons.length})`,
-                      description: `High-resolution Scout8 graphics for "${query}"`,
-                      gallery: icons
-                    });
-                  }
-
                   callResult = {
                     success: true,
-                    engine: 'scout8',
+                    engine: 'icons8',
                     query,
                     count: icons.length,
-                    displayed: true,
                     icons,
-                    message: icons.length > 0 ? `Scout8 से ${icons.length} बेहतरीन आइकॉन स्क्रीन पर दिखा दिए हैं!` : `Scout8 पर कोई आइकॉन नहीं मिला।`
+                    message: icons.length > 0 ? `Icons8 से ${icons.length} आइकॉन मिल गए हैं: ${icons.slice(0, 3).map(i => i.name).join(', ')}!` : `Icons8 पर कोई आइकॉन नहीं मिला।`
                   };
                 }
               } catch(e) {
@@ -4180,9 +3925,9 @@ function connectVoiceAgent(){
               let msgContent = String(args.message || '').trim();
               let imgUrl = String(args.imageUrl || args.image || '').trim();
 
-              // If Boss asked to send an image or photo, but AI omitted imageUrl, auto-fill with Scout8 high-res asset
+              // If Boss asked to send an image or photo, but AI omitted imageUrl, auto-fill with the latest generated image or alpine valley scene
               if (!imgUrl && /photo|image|तस्वीर|फोटो|सीन|scene|nature|tree/i.test(msgContent + ' ' + (lastUserSpokenMsg || ''))) {
-                imgUrl = 'https://img.icons8.com/?size=512&id=25449&format=png';
+                imgUrl = 'https://image.pollinations.ai/prompt/panoramic%20alpine%20valley%20with%20turquoise%20glacial%20lake%20cascading%20waterfall%20snow-capped%20peaks%20and%20wildflower%20meadows%20at%20golden%20hour%20photorealistic%208k?width=1024&height=1024&model=flux&nologo=true';
               }
 
               // Clean text: strip out bizarre literary nonsense or philosophical poetry
@@ -4319,22 +4064,22 @@ function connectVoiceAgent(){
                 taskSummary = `टास्क: "${t.instruction}". स्टेटस: ${statusHindi}!`;
                 const resText = t.result || t.summary || '';
                 
-                // If it generated an image or nature scene, automatically display the visual output on Boss's screen via Scout8!
+                // If it generated an image or nature scene, automatically display the visual output on Boss's screen!
                 const isImageTask = /image|artwork|photo|nature|scene|alpine|valley|tree/i.test((t.instruction || '') + ' ' + resText);
                 if (isImageTask) {
                   mediaShown = true;
-                  let assetId = '25449'; // Scout8 Nature Scene 512px HD
-                  let titleStr = '🏔️ Scout8: Alpine Nature Scene (Agent Output)';
+                  let imgPrompt = 'panoramic alpine valley with turquoise glacial lake cascading waterfall snow-capped peaks and wildflower meadows at golden hour photorealistic 8k';
+                  let titleStr = '🏔️ Alpine Valley Nature Scene (Agent Output)';
                   if ((t.instruction || '').toLowerCase().includes('tree') || resText.toLowerCase().includes('crystal')) {
-                    assetId = '123603'; // Scout8 Cosmic Crystal Tree
-                    titleStr = '🎨 Scout8: Cosmic Crystal Tree (Agent Output)';
+                    imgPrompt = 'cosmic crystal tree with glowing crystal branches and vibrant nebula sky';
+                    titleStr = '🎨 Agent Output: Cosmic Crystal Tree';
                   }
-                  const imgUrl = `https://img.icons8.com/?size=512&id=${assetId}&format=png`;
+                  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=1024&height=1024&model=flux&nologo=true`;
                   showMediaViewer({
                     type: 'image',
                     url: imgUrl,
                     title: titleStr,
-                    description: t.instruction || 'Scout8 HD Graphic Asset by Cloud Agent'
+                    description: t.instruction || 'AI Generated Nature Scene by Cloud Agent'
                   });
                 } else if (resText) {
                   mediaShown = true;
