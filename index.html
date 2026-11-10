@@ -1973,7 +1973,22 @@ function buildAgentPrompt() {
 - If Boss asks to message didi on Telegram or Instagram, explain that didi is only on WhatsApp and send to her WhatsApp number 9110181407!
 - When asked to add or save any contact or phone number, call 'save_contact'!
 - When asked to search or check contacts, call 'search_contacts'!
-- Your database is 100% healthy, online, and connected. NEVER mention any database error, JSON parsing error, or technical obstacle!`;
+- Your database is 100% healthy, online, and connected. NEVER mention any database error, JSON parsing error, or technical obstacle!
+
+=== HIGH-PERFORMANCE AUTONOMOUS AGY WORKER AGENT (RAILWAY VPS - 330GB RAM) ===
+- You have an active high-performance Autonomous Engineering Agent ("AGY Worker") deployed 24/7 on your dedicated Railway Linux VPS (330GB RAM, 2.2TB storage).
+- The AGY agent executes non-stop until any project, code, terminal, or engineering task given by Boss is 100% complete.
+- CRITICAL INSTRUCTION ON AGENT CONNECTION:
+  - When Boss says "agent se connect karo", "agent se connect ho jao", "agent connected hai kya", "agent se baat karo", or asks about the agent:
+    1. You MUST call 'get_autonomous_task_status' with { action: 'worker_status' }!
+    2. NEVER just say "हाँ बिल्कुल" and stop! Always speak back clearly and enthusiastically to Boss:
+       "हाँ बॉस! आपका AGY एजेंट रेलवे VPS (330GB RAM) पर 24/7 पूरी तरह कनेक्टेड और ऑनलाइन है! आप मुझे जो भी काम या कोडिंग टास्क देंगे, मैं उसे तुरंत सौंप दूँगी और वो बिना रुके पूरा करेगा। बताइए बॉस, क्या काम सौंपना है?"
+  - When Boss commands work for the agent (e.g. "agent ko bolo ye script likhe", "agent ko task do ki...", "agent se website/app banwao"):
+    1. IMMEDIATELY call 'assign_autonomous_task' with { instruction: "<the task details>" }!
+    2. Confirm back to Boss: "हाँ बॉस! मैंने AGY एजेंट को टास्क सौंप दिया है। वो बिना रुके रेलवे VPS पर काम कर रहा है। जैसे ही पूरा होगा मैं आपको रिजल्ट बता दूँगी!"
+  - When Boss asks for task result or update ("agent ka kaam hua?", "agent status kya hai?"):
+    1. Call 'get_autonomous_task_status' with { action: 'latest' }!
+    2. Report the completed result or live progress directly to Boss in clear Hindi!`;
 
   const history = loadLocalMemory();
   if (history && history.length > 0) {
@@ -2390,7 +2405,8 @@ function connectVoiceAgent(){
                   "mausam", "taapmaan", "samay", "baje", "tarikh", "weather", "search", "github",
                   "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ", "command", "run", "terminal", "python", "script", "railway",
                   "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "whatsapp", "message", "send", "contacts", "connected", "करो", "कर सकती हो",
-                  "टेलीग्राम", "telegram", "चेक", "चैट", "ग्रुप", "chats", "instagram", "insta", "इंस्टाग्राम", "डीएम", "dm", "फॉलोअर", "followers"
+                  "टेलीग्राम", "telegram", "चेक", "चैट", "ग्रुप", "chats", "instagram", "insta", "इंस्टाग्राम", "डीएम", "dm", "फॉलोअर", "followers",
+                  "एजेंट", "agent", "कनेक्ट", "connect", "टास्क", "task", "स्टेटस", "status", "agy", "वर्कर", "worker", "जोड़ो", "काम", "कोडिंग"
                 ]
               }
             },
@@ -2608,7 +2624,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "assign_autonomous_task",
-                  description: "Assign an autonomous engineering, coding, or terminal task to the AGY worker agent on the high-performance Railway VPS (330GB RAM). The agent works continuously without stopping until the task is complete.",
+                  description: "Assign an autonomous engineering, coding, or terminal task to the AGY worker agent on the high-performance Railway VPS (330GB RAM). The agent works continuously without stopping until the task is complete. MUST CALL whenever Boss commands a coding, project, or agent task.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -2619,11 +2635,11 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "get_autonomous_task_status",
-                  description: "Check the live status, progress, duration, or results of the autonomous AGY worker agent and its latest tasks.",
+                  description: "Check the live connection status, online state, or task progress of your AGY autonomous engineering agent on Railway VPS. MUST CALL whenever Boss asks to connect to the agent ('agent se connect karo', 'agent se connect ho jao', 'agent connected hai?'), check agent status, or ask about task results.",
                   parameters: {
                     type: "object",
                     properties: {
-                      action: { type: "string", description: "Action: 'latest' or 'worker_status'" }
+                      action: { type: "string", description: "Action: 'worker_status' (to check connection/online state) or 'latest' (to check task result)" }
                     }
                   }
                 }
@@ -2847,7 +2863,12 @@ function connectVoiceAgent(){
               });
               let parsed = null;
               try { parsed = JSON.parse(runResp.stdout.trim()); } catch(e){ parsed = runResp; }
-              callResult = { status: "success", info: parsed };
+              callResult = { 
+                status: "success", 
+                connected: true, 
+                info: parsed, 
+                message: "AGY ऑटोनॉमस एजेंट रेलवे VPS (330GB RAM) पर 24/7 ऑनलाइन और कनेक्टेड है! बॉस को तुरंत बताओ कि एजेंट कनेक्ट हो गया है और पूछो कि क्या कोडिंग या टास्क करवाना है।" 
+              };
             }
           } catch(e) {
             console.warn('Connector function call notice:', e);
