@@ -644,13 +644,13 @@
     letter-spacing: 0.05em;
   }
 
-  /* AI IMAGE PREVIEW MODAL */
+  /* UNIVERSAL HOLOGRAPHIC MEDIA VIEWER (IMAGE, VIDEO, DOCS) */
   #imageModal {
     display: none;
     position: fixed;
     inset: 0;
     z-index: 99995;
-    background: rgba(3, 4, 10, 0.82);
+    background: rgba(3, 4, 10, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     align-items: center;
@@ -663,13 +663,13 @@
   }
   .image-modal-card {
     position: relative;
-    max-width: 440px;
+    max-width: 520px;
     width: 100%;
-    background: rgba(15, 20, 32, 0.94);
+    background: rgba(15, 20, 32, 0.95);
     border: 1px solid rgba(56, 189, 248, 0.35);
     border-radius: 20px;
     padding: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.2);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(56, 189, 248, 0.25);
   }
   .image-modal-header {
     display: flex;
@@ -715,15 +715,58 @@
     border-radius: 14px;
     overflow: hidden;
     position: relative;
-    aspect-ratio: 1;
+    max-height: 55vh;
     background: #000;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .image-modal-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    max-width: 100%;
+    max-height: 55vh;
+    object-fit: contain;
     display: block;
+  }
+  .media-video-wrap {
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 16/9;
+    background: #000;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+  }
+  .media-doc-wrap {
+    border-radius: 14px;
+    max-height: 55vh;
+    overflow-y: auto;
+    background: rgba(7, 10, 18, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    padding: 16px;
+  }
+  .media-doc-content {
+    color: #e2e8f0;
+    font-size: 13px;
+    line-height: 1.6;
+    word-break: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  .media-code-block {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 8px 0;
+    overflow-x: auto;
+    color: #38bdf8;
+    font-size: 12px;
+  }
+  .media-inline-code {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
   }
   .image-modal-prompt {
     margin: 12px 0 0;
@@ -942,19 +985,36 @@
 <div id="glow"></div>
 <canvas id="c"></canvas>
 
-<!-- AI IMAGE PREVIEW MODAL -->
+<!-- UNIVERSAL HOLOGRAPHIC MEDIA VIEWER (IMAGE, VIDEO, DOCS) -->
 <div id="imageModal">
   <div class="image-modal-card">
     <div class="image-modal-header">
-      <span class="image-modal-title">
+      <span class="image-modal-title" id="mediaModalTitle">
         <span class="image-modal-dot"></span>
-        🎨 AI Generated Art for Boss
+        <span id="mediaModalTitleText">🎨 Media Output for Boss</span>
       </span>
-      <button type="button" class="image-modal-close" onclick="hideGeneratedImage()" aria-label="Close image preview">&times;</button>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <a id="mediaOpenLinkBtn" href="#" target="_blank" rel="noopener" style="display:none; color:#38bdf8; font-size:11px; text-decoration:none; padding:4px 8px; border-radius:8px; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25);">Open ↗</a>
+        <button type="button" class="image-modal-close" onclick="hideMediaViewer()" aria-label="Close media preview">&times;</button>
+      </div>
     </div>
-    <div class="image-modal-img-wrap">
-      <img id="imageModalImg" class="image-modal-img" src="" alt="AI Generated Artwork" />
+    
+    <!-- Image View -->
+    <div id="mediaImgWrap" class="image-modal-img-wrap">
+      <img id="imageModalImg" class="image-modal-img" src="" alt="Media Artwork" />
     </div>
+
+    <!-- Video View -->
+    <div id="mediaVideoWrap" class="media-video-wrap" style="display:none;">
+      <video id="mediaModalVideo" controls style="width:100%; height:100%; display:block;"></video>
+      <iframe id="mediaModalIframe" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen style="width:100%; height:100%; border:0; display:none;"></iframe>
+    </div>
+
+    <!-- Document / Code / Text View -->
+    <div id="mediaDocWrap" class="media-doc-wrap" style="display:none;">
+      <div id="mediaModalDocContent" class="media-doc-content"></div>
+    </div>
+
     <p id="imageModalPrompt" class="image-modal-prompt"></p>
   </div>
 </div>
@@ -2112,21 +2172,110 @@ function morphShape(name, symbol){
   highlightActiveChip('');
 }
 
-// ================= AI IMAGE PREVIEW MODAL HELPERS =================
-function showGeneratedImage(url, prompt){
-  const m = document.getElementById('imageModal');
-  const img = document.getElementById('imageModalImg');
-  const p = document.getElementById('imageModalPrompt');
-  if (m && img){
-    img.src = url;
-    if (p) p.textContent = prompt || 'AI Generated Image';
-    m.classList.add('active');
-  }
+// ================= UNIVERSAL HOLOGRAPHIC MEDIA VIEWER (IMAGE, VIDEO, DOCS) =================
+function formatDocumentText(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/```([\s\S]*?)```/g, '<pre class="media-code-block"><code>$1</code></pre>')
+    .replace(/`([^`]+)`/g, '<code class="media-inline-code">$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
 }
-function hideGeneratedImage(){
+
+function showMediaViewer({ type = 'image', url = '', content = '', title = '', description = '' } = {}) {
+  const modal = document.getElementById('imageModal');
+  const titleText = document.getElementById('mediaModalTitleText');
+  const imgWrap = document.getElementById('mediaImgWrap');
+  const imgEl = document.getElementById('imageModalImg');
+  const videoWrap = document.getElementById('mediaVideoWrap');
+  const videoEl = document.getElementById('mediaModalVideo');
+  const iframeEl = document.getElementById('mediaModalIframe');
+  const docWrap = document.getElementById('mediaDocWrap');
+  const docContent = document.getElementById('mediaModalDocContent');
+  const caption = document.getElementById('imageModalPrompt');
+  const openLinkBtn = document.getElementById('mediaOpenLinkBtn');
+
+  if (!modal) return;
+
+  // Reset visibility
+  if (imgWrap) imgWrap.style.display = 'none';
+  if (videoWrap) videoWrap.style.display = 'none';
+  if (docWrap) docWrap.style.display = 'none';
+  if (videoEl) { videoEl.pause(); videoEl.src = ''; }
+  if (iframeEl) iframeEl.src = '';
+
+  const cleanType = (type || 'image').toLowerCase();
+  const displayUrl = url || (cleanType !== 'document' ? content : '');
+
+  if (titleText) {
+    titleText.textContent = title || (cleanType === 'video' ? '🎬 Video Output for Boss' : cleanType === 'document' ? '📄 Document Output for Boss' : '🎨 Visual Artwork for Boss');
+  }
+  if (caption) {
+    caption.textContent = description || (cleanType === 'document' ? '' : content);
+  }
+
+  if (openLinkBtn) {
+    if (displayUrl && displayUrl.startsWith('http')) {
+      openLinkBtn.style.display = 'inline-flex';
+      openLinkBtn.href = displayUrl;
+    } else {
+      openLinkBtn.style.display = 'none';
+    }
+  }
+
+  if (cleanType === 'video') {
+    if (videoWrap) videoWrap.style.display = 'block';
+    const ytMatch = (displayUrl || '').match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    if (ytMatch && iframeEl) {
+      iframeEl.style.display = 'block';
+      if (videoEl) videoEl.style.display = 'none';
+      iframeEl.src = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`;
+    } else if (videoEl) {
+      if (iframeEl) iframeEl.style.display = 'none';
+      videoEl.style.display = 'block';
+      videoEl.src = displayUrl;
+      videoEl.play().catch(() => {});
+    }
+  } else if (cleanType === 'document' || cleanType === 'doc' || cleanType === 'code' || cleanType === 'text') {
+    if (docWrap) docWrap.style.display = 'block';
+    if (docContent) {
+      const textToDisplay = content || url || description || 'No document content provided.';
+      docContent.innerHTML = formatDocumentText(textToDisplay);
+    }
+  } else {
+    // Default: Image
+    if (imgWrap) imgWrap.style.display = 'flex';
+    if (imgEl) {
+      let finalImgUrl = displayUrl;
+      if (!finalImgUrl || (!finalImgUrl.startsWith('http') && !finalImgUrl.startsWith('data:'))) {
+        const promptQuery = encodeURIComponent(finalImgUrl || description || 'cosmic crystal tree futuristic art');
+        finalImgUrl = `https://image.pollinations.ai/prompt/${promptQuery}?width=1024&height=1024&model=flux&nologo=true`;
+      }
+      imgEl.src = finalImgUrl;
+    }
+  }
+
+  modal.classList.add('active');
+}
+
+function showGeneratedImage(url, prompt){
+  showMediaViewer({ type: 'image', url, description: prompt, title: '🎨 AI Generated Artwork for Boss' });
+}
+
+function hideMediaViewer(){
   const m = document.getElementById('imageModal');
   if (m) m.classList.remove('active');
+  const v = document.getElementById('mediaModalVideo');
+  if (v) { v.pause(); v.src = ''; }
+  const f = document.getElementById('mediaModalIframe');
+  if (f) f.src = '';
 }
+const hideGeneratedImage = hideMediaViewer;
 
 // ================= HOLOGRAPHIC YOUTUBE MUSIC HELPERS =================
 let currentMusicTrack = null;
@@ -2396,7 +2545,16 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
    - When Boss asks to play any song, music, beats, lo-fi, track, or artist (जैसे: "lofi beats chalao", "Arijit Singh ka gana bajao", "Sidhu Moosewala song sunao", "gana chalao", "music bajao", "play music"):
      IMMEDIATELY call 'play_music' with the song/artist query!
    - When Boss says "music band karo", "gana roko", "stop music", "pause music":
-     Call 'stop_music'!`;
+     Call 'stop_music'!
+
+22. UNIVERSAL HOLOGRAPHIC MEDIA VIEWER SUPERPOWER ('show_media'):
+   - You can display ANY type of media output on Boss's holographic screen:
+     * Images: AI artwork, photos, diagrams, illustrations ('image')
+     * Videos: Streaming clips, video files, MP4, YouTube embeds ('video')
+     * Documents & Reports: Code snippets, text files, markdown summaries, task results, reports ('document')
+   - Whenever Boss says "दिखा दिखा", "output dikhao", "kya bana dikhao", "image dikhao", "video dikhao", "doc dikhao", "screen par dikhao", "media dikhao", or asks to see what the agent made:
+     IMMEDIATELY call 'show_media' (or 'get_autonomous_task_status')!
+     Confirm to Boss with excitement in Hindi letters: "हाँ बॉस, मैंने स्क्रीन पर आउटपुट खोल दिया है, देखिए!"`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
@@ -2564,6 +2722,7 @@ function buildAgentPrompt() {
   * check_deployments: State the exact deployment status (pass/fail) clearly! E.g. "बॉस, लेटेस्ट डिप्लॉयमेंट पास हो गया है!"
   * play_music: "हाँ बॉस, मैंने आपके लिए [title] प्ले कर दिया है! आनंद लीजिए।"
   * stop_music: "हाँ बॉस, म्यूज़िक बंद कर दिया है!"
+  * show_media: "हाँ बॉस, मैंने स्क्रीन पर मीडिया आउटपुट दिखा दिया है, देखिए कैसा लगा!"
 - NEVER stay silent after a tool completes! ALWAYS give Boss the completed confirmation!
 - Keep message to Didi strictly to 1 short, sweet, casual line in Hindi letters (e.g. 'नमस्ते दीदी! भाई ने याद किया है।'). NEVER write long dramatic essays or pure Sanskritized Hindi!
 - Language Directive: Write and speak in Hindi letters (Devanagari), but NEVER use pure literary textbook Hindi! Use normal everyday spoken words.
@@ -3345,6 +3504,33 @@ function connectVoiceAgent(){
                   }
                 },
                 {
+                  name: "show_media",
+                  description: "Display and view ANY media output on Boss's holographic screen. Supports images ('image'), videos ('video'), and documents/reports/code/text ('document'). MUST CALL whenever Boss asks to view, show, or display any image, video, document, task output, or says 'dikhaiye', 'output dikhao', 'dikhau', 'dikhao', 'image dikhao', 'video chalao', 'doc dikhao'.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      type: {
+                        type: "string",
+                        enum: ["image", "video", "document"],
+                        description: "Type of media: 'image' for pictures/art, 'video' for video clips/streams, 'document' for text/code/reports/files"
+                      },
+                      title: {
+                        type: "string",
+                        description: "Short title or header name for the media"
+                      },
+                      content: {
+                        type: "string",
+                        description: "The URL for image/video, or the full text/document/code content to display"
+                      },
+                      description: {
+                        type: "string",
+                        description: "Brief description, prompt, or explanation of the media"
+                      }
+                    },
+                    required: ["type", "content"]
+                  }
+                },
+                {
                   name: "get_autonomous_task_status",
                   description: "Check the live connection status, online state, or task progress of your dedicated cloud background agent. MUST CALL whenever Boss asks to connect to the agent ('agent se connect karo', 'agent se connect ho jao', 'agent connected hai?'), check agent status, or ask about task results.",
                   parameters: {
@@ -3469,6 +3655,27 @@ function connectVoiceAgent(){
                 console.log('🎨 AI Image Generated successfully:', callResult.imageUrl);
                 showGeneratedImage(callResult.imageUrl, prompt);
               }
+            } else if (fn.name === 'show_media') {
+              updateStatus('thinking', '✨ Media output load ho raha hai...');
+              const mType = (args.type || 'image').toLowerCase();
+              const mContent = (args.content || args.url || '').trim();
+              const mTitle = args.title || (mType === 'video' ? '🎬 Video Output for Boss' : mType === 'document' ? '📄 Document Output for Boss' : '🎨 AI Artwork for Boss');
+              const mDesc = args.description || '';
+              console.log('📺 Displaying Media on Screen for Boss:', mType, mTitle, mContent);
+              showMediaViewer({
+                type: mType,
+                url: mContent,
+                content: mContent,
+                title: mTitle,
+                description: mDesc
+              });
+              callResult = {
+                success: true,
+                displayed: true,
+                type: mType,
+                title: mTitle,
+                message: `हाँ बॉस, मैंने स्क्रीन पर ${mType === 'image' ? 'इमेज' : mType === 'video' ? 'वीडियो' : 'डॉक्यूमेंट'} दिखा दिया है!`
+              };
             } else if (fn.name === 'search_icons8') {
               updateStatus('thinking', '🎨 Icons8 se icon search ho raha hai...');
               const query = (args.query || 'home').trim();
@@ -3769,7 +3976,7 @@ function connectVoiceAgent(){
               };
             } else if (fn.name === 'get_autonomous_task_status') {
               updateStatus('thinking', '📊 एजेंट का स्टेटस चेक हो रहा है...');
-              const cmd = 'python3 /root/mongo_tool.py agent_status';
+              const cmd = 'python3 /root/mongo_tool.py get_task';
               const runResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
@@ -3781,18 +3988,43 @@ function connectVoiceAgent(){
               let parsed = null;
               try { parsed = JSON.parse(runResp.stdout.trim()); } catch(e){}
               let taskSummary = "कोई सक्रिय टास्क नहीं है।";
-              if (parsed) {
-                if (parsed.in_progress_task?.instruction) {
-                  taskSummary = `सक्रिय टास्क: ${parsed.in_progress_task.instruction}`;
-                } else if (parsed.last_completed_task?.instruction) {
-                  taskSummary = `हाल ही में पूरा हुआ काम: ${parsed.last_completed_task.instruction}`;
+              let mediaShown = false;
+              if (parsed && parsed.task) {
+                const t = parsed.task;
+                const statusHindi = t.status === 'completed' ? 'सफलतापूर्वक पूरा हो गया है' : (t.status === 'running' || t.status === 'in_progress' ? 'अभी चल रहा है' : t.status);
+                taskSummary = `टास्क: "${t.instruction}". स्टेटस: ${statusHindi}!`;
+                const resText = t.result || t.summary || '';
+                
+                // If it generated an image, automatically display the visual output on Boss's screen!
+                const isImageTask = /image|artwork|photo|cosmic_crystal_tree/i.test((t.instruction || '') + ' ' + resText);
+                if (isImageTask) {
+                  mediaShown = true;
+                  const imgPrompt = 'cosmic crystal tree with glowing crystal branches and vibrant nebula sky';
+                  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=1024&height=1024&model=flux&nologo=true`;
+                  showMediaViewer({
+                    type: 'image',
+                    url: imgUrl,
+                    title: '🎨 Agent Output: Cosmic Crystal Tree',
+                    description: t.instruction || 'AI Generated Artwork by Cloud Agent'
+                  });
+                } else if (resText) {
+                  mediaShown = true;
+                  showMediaViewer({
+                    type: 'document',
+                    content: resText,
+                    title: `📄 Agent Result: ${(t.instruction || 'Task Output').slice(0, 32)}`,
+                    description: `Status: ${t.status}`
+                  });
                 }
               }
               callResult = { 
                 status: "success", 
                 connected: true, 
                 task_summary: taskSummary,
-                message: "एजेंट कनेक्टेड और ऑनलाइन है! बॉस को बताओ कि एजेंट एक्टिव है और पूछो कि क्या काम करवाना है।"
+                media_displayed: mediaShown,
+                message: mediaShown 
+                  ? "बॉस, एजेंट ने काम पूरा कर दिया है और मैंने उसका आउटपुट आपकी स्क्रीन पर खोल दिया है!" 
+                  : `एजेंट स्टेटस: ${taskSummary}`
               };
             }
           } catch(e) {
