@@ -1985,6 +1985,7 @@ function buildAgentPrompt() {
   * get_autonomous_task_status: "हाँ बॉस! आपका AGY एजेंट रेलवे VPS पर 24/7 पूरी तरह कनेक्टेड और ऑनलाइन है! बताइए बॉस, क्या काम करवाना है?"
   * search_contacts / save_contact: State the contact details clearly! E.g. "बॉस, दीदी का नंबर 9110181407 है!"
   * get_weather: "बॉस, मौसम का हाल यह रहा..."
+  * search_icons: "बॉस, Icon Scout से यह आइकॉन मिल गया है: [name]! लिंक और प्रिव्यू तैयार है।"
 - NEVER stay silent after a tool completes! ALWAYS give Boss the completed confirmation!
 - Keep message to Didi strictly to 1 short, sweet, casual line in Hindi letters (e.g. 'नमस्ते दीदी! भाई ने याद किया है।'). NEVER write long dramatic essays or pure Sanskritized Hindi!
 - Language Directive: Write and speak in Hindi letters (Devanagari), but NEVER use pure literary textbook Hindi! Use normal everyday spoken words.
@@ -2377,7 +2378,7 @@ function connectVoiceAgent(){
                   "बनो", "दिखाओ", "होलोग्राम", "कैसी हो", "क्या हाल है", "कोड", "बग",
                   "मौसम", "तापमान", "समय", "बजे", "तारीख", "हिसाब", "सर्च", "दिल्ली", "मुंबई", "न्यूटन", "आइंस्टाइन",
                   "sher", "guitar", "chai", "cup", "titli", "ped", "car", "dil", "bano", "dikhao",
-                  "mausam", "taapmaan", "samay", "baje", "tarikh", "weather", "search", "github",
+                  "mausam", "taapmaan", "samay", "baje", "tarikh", "weather", "search", "github", "icon", "icons", "iconscout", "आइकॉन",
                   "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ", "command", "run", "terminal", "python", "script", "railway",
                   "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "whatsapp", "message", "send", "contacts", "connected", "करो", "कर सकती हो",
                   "टेलीग्राम", "telegram", "चेक", "चैट", "ग्रुप", "chats", "instagram", "insta", "इंस्टाग्राम", "डीएम", "dm", "फॉलोअर", "followers",
@@ -2453,6 +2454,18 @@ function connectVoiceAgent(){
                       repo: { type: "string", description: "GitHub repository in 'owner/repo' format (e.g. 'nxtzenmaker-max/holo')" }
                     },
                     required: ["repo"]
+                  }
+                },
+                {
+                  name: "search_icons",
+                  description: "Search Icon Scout for vector icons, SVG symbols, and design assets by keyword (e.g. rocket, user, home, cloud, heart, lock, bell, settings)",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      query: { type: "string", description: "Icon keyword or concept (e.g. rocket, home, call, lock, bell, heart)" },
+                      style: { type: "string", description: "Icon style: line, solid, monochrome, or thinline (default: line)" }
+                    },
+                    required: ["query"]
                   }
                 },
                 {
@@ -2671,6 +2684,12 @@ function connectVoiceAgent(){
             } else if (fn.name === 'check_github') {
               const repo = args.repo || 'nxtzenmaker-max/holo';
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/github?repo=${encodeURIComponent(repo)}`);
+            } else if (fn.name === 'search_icons') {
+              updateStatus('thinking', '🎨 Icon Scout se icon search ho raha hai...');
+              const query = args.query || 'home';
+              const style = args.style || 'line';
+              console.log('🎨 Searching Icon Scout:', query, style);
+              callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/iconscout?query=${encodeURIComponent(query)}&style=${encodeURIComponent(style)}`);
             } else if (fn.name === 'execute_command') {
               updateStatus('thinking', '⚡ Cloud command run ho raha hai...');
               const cmd = args.command || '';
