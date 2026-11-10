@@ -2665,13 +2665,16 @@ async function callGroqAI(userMsg){
 }
 
 // ================= SEAMLESS JITTER-BUFFERED STREAMING AUDIO (ZERO STUTTER) =================
-let scheduledAudioTime = 0;
+let audioChunkQueue = [];
+let isPlaybackRunning = false;
+let nextScheduledStartTime = 0;
 let agentPlaybackEndTime = 0;
-let isAgentPlayingAudio = false;
+let isAgentUtteranceActive = false;
 let isAgentSpeaking = false;
 let agentAudioStreamFinished = false;
 let activeAudioSources = [];
 let turnFinishTimeout = null;
+let jitterBufferTimeout = null;
 let isCallActive = false;
 let micStream = null;
 let micSourceNode = null;
@@ -2683,6 +2686,36 @@ let currentTurnSymbol = '';
 
 function updateStatus(state, msg){
   hintEl.textContent = msg;
+}
+
+function scheduleQueuedChunks() {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+
+  // If nextScheduledStartTime fell behind or hasn't started, initialize smoothly with 60ms lead time
+  if (nextScheduledStartTime < now) {
+    nextScheduledStartTime = now + 0.060;
+  }
+
+  while (audioChunkQueue.length > 0) {
+    const item = audioChunkQueue.shift();
+    const src = audioCtx.createBufferSource();
+    src.buffer = item.buffer;
+    src.connect(analyser); // Lipsync & particle animation
+    src.connect(masterGain); // Clean unclipped output
+
+    src.start(nextScheduledStartTime);
+    const chunkEndTime = nextScheduledStartTime + item.duration;
+    nextScheduledStartTime = chunkEndTime;
+    agentPlaybackEndTime = chunkEndTime;
+    activeAudioSources.push(src);
+
+    src.onended = () => {
+      const idx = activeAudioSources.indexOf(src);
+      if (idx > -1) activeAudioSources.splice(idx, 1);
+      checkTurnCompletion();
+    };
+  }
 }
 
 function playAgentAudioChunk(arrayBuffer){
@@ -2697,10 +2730,9 @@ function playAgentAudioChunk(arrayBuffer){
     float32[i] = int16[i] / (int16[i] < 0 ? 32768.0 : 32767.0);
   }
 
-  // Immediately lock speech flags so microphone echo shield suppresses acoustic feedback
+  // Lock speech & echo shield immediately
+  isAgentUtteranceActive = true;
   isAgentSpeaking = true;
-  isAgentPlayingAudio = true;
-  agentAudioStreamFinished = false;
   if (turnFinishTimeout) {
     clearTimeout(turnFinishTimeout);
     turnFinishTimeout = null;
@@ -2709,49 +2741,58 @@ function playAgentAudioChunk(arrayBuffer){
   const audioBuf = audioCtx.createBuffer(1, float32.length, 24000);
   audioBuf.copyToChannel(float32, 0);
 
-  const src = audioCtx.createBufferSource();
-  src.buffer = audioBuf;
-  src.connect(analyser); // Lipsync & particle animation
-  src.connect(masterGain); // Clean unclipped output
+  audioChunkQueue.push({ buffer: audioBuf, duration: audioBuf.duration });
 
-  const now = audioCtx.currentTime;
-
-  // Seamless scheduling: If scheduledAudioTime has fallen behind, schedule with smooth 25ms low latency
-  // Otherwise, schedule back-to-back with zero gap for continuous speech flow
-  const startAt = Math.max(now + 0.025, scheduledAudioTime);
-
-  src.start(startAt);
-  scheduledAudioTime = startAt + audioBuf.duration;
-  agentPlaybackEndTime = scheduledAudioTime;
-  activeAudioSources.push(src);
-
-  src.onended = () => {
-    const idx = activeAudioSources.indexOf(src);
-    if (idx > -1) activeAudioSources.splice(idx, 1);
-    checkTurnCompletion();
-  };
+  // Jitter buffer logic:
+  // If playback hasn't started yet for this turn, pre-buffer at least 2 chunks (~160ms)
+  // or start after a safe 80ms timer to ensure continuous gapless audio streaming
+  if (!isPlaybackRunning) {
+    if (audioChunkQueue.length >= 2 || agentAudioStreamFinished) {
+      if (jitterBufferTimeout) {
+        clearTimeout(jitterBufferTimeout);
+        jitterBufferTimeout = null;
+      }
+      isPlaybackRunning = true;
+      nextScheduledStartTime = audioCtx.currentTime + 0.060;
+      scheduleQueuedChunks();
+    } else if (!jitterBufferTimeout) {
+      jitterBufferTimeout = setTimeout(() => {
+        jitterBufferTimeout = null;
+        if (!isPlaybackRunning && audioChunkQueue.length > 0) {
+          isPlaybackRunning = true;
+          nextScheduledStartTime = audioCtx ? (audioCtx.currentTime + 0.040) : 0;
+          scheduleQueuedChunks();
+        }
+      }, 80);
+    }
+  } else {
+    // Playback already running: immediately schedule this chunk back-to-back with zero gap!
+    scheduleQueuedChunks();
+  }
 }
 
 function checkTurnCompletion(){
   if (!audioCtx) return;
-  const curr = audioCtx.currentTime;
+  const now = audioCtx.currentTime;
 
-  // If server finished streaming audio (AgentAudioDone) OR all sources finished:
-  if (curr >= (agentPlaybackEndTime - 0.030) && activeAudioSources.length === 0) {
+  // Complete ONLY when server sent all chunks (AgentAudioDone), queue drained, and all audio sources finished
+  if (agentAudioStreamFinished && audioChunkQueue.length === 0 && activeAudioSources.length === 0 && now >= (agentPlaybackEndTime - 0.020)) {
     if (turnFinishTimeout) clearTimeout(turnFinishTimeout);
-    // 250ms silence debounce window to ensure turn has completely finished
+    // 300ms acoustic echo decay window before reopening microphone
     turnFinishTimeout = setTimeout(() => {
-      const now = audioCtx ? audioCtx.currentTime : 0;
-      if (now >= (agentPlaybackEndTime - 0.030) && activeAudioSources.length === 0) {
-        scheduledAudioTime = 0;
-        isAgentPlayingAudio = false;
+      const cur = audioCtx ? audioCtx.currentTime : 0;
+      if (agentAudioStreamFinished && audioChunkQueue.length === 0 && activeAudioSources.length === 0 && cur >= (agentPlaybackEndTime - 0.020)) {
+        isAgentUtteranceActive = false;
+        isPlaybackRunning = false;
         isAgentSpeaking = false;
         agentAudioStreamFinished = false;
+        nextScheduledStartTime = 0;
+        agentPlaybackEndTime = 0;
         if (isCallActive) {
           updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
         }
       }
-    }, 250);
+    }, 300);
   }
 }
 
@@ -2760,15 +2801,21 @@ function stopAllAudioPlayback(){
     clearTimeout(turnFinishTimeout);
     turnFinishTimeout = null;
   }
+  if (jitterBufferTimeout) {
+    clearTimeout(jitterBufferTimeout);
+    jitterBufferTimeout = null;
+  }
   for (const s of activeAudioSources){
     try { s.onended = null; s.stop(); } catch(e){}
   }
   activeAudioSources = [];
-  scheduledAudioTime = 0;
-  agentPlaybackEndTime = 0;
-  isAgentPlayingAudio = false;
+  audioChunkQueue = [];
+  isPlaybackRunning = false;
+  isAgentUtteranceActive = false;
   isAgentSpeaking = false;
   agentAudioStreamFinished = false;
+  nextScheduledStartTime = 0;
+  agentPlaybackEndTime = 0;
 }
 
 function interruptAgentSpeech(){
@@ -2861,15 +2908,17 @@ function handlePcmAudioProcess(e){
   const inputData = e.inputBuffer.getChannelData(0);
   const inRate = e.inputBuffer.sampleRate || (audioCtx ? audioCtx.sampleRate : 48000);
 
-  // UNBREAKABLE HARDWARE ACOUSTIC ECHO SHIELD:
-  // While RJN speaker audio is actively playing or queued in AudioContext (+ 150ms tail),
-  // send continuous 16kHz silence frames (zeros) to prevent microphone feedback from interrupting speech.
-  // The moment playback ends, microphone immediately streams full user speech to Nova-3.
+  // UNBREAKABLE ACOUSTIC ECHO SHIELD:
+  // If RJN is speaking, pre-buffering, playing chunks, or room echo is decaying:
+  // send continuous 16kHz silence zeros to Deepgram.
+  // This guarantees phone speaker output NEVER leaks into mic, preventing false barge-in or audio cuts!
   const now = audioCtx ? audioCtx.currentTime : 0;
-  const isAudioPlaying = (activeAudioSources.length > 0) || (now < (agentPlaybackEndTime + 0.150));
+  const isProtectedTime = isAgentUtteranceActive || isAgentSpeaking || isPlaybackRunning || 
+                          (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
+                          (now < (agentPlaybackEndTime + 0.350));
 
   let buffer;
-  if (isAudioPlaying) {
+  if (isProtectedTime) {
     const outSamples = Math.round(inputData.length / (inRate / 16000));
     buffer = new ArrayBuffer(outSamples * 2); // 0dB silence
   } else {
@@ -3317,19 +3366,21 @@ function connectVoiceAgent(){
       } else if (msg.type === 'SettingsApplied') {
         updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
       } else if (msg.type === 'AgentStartedSpeaking') {
+        isAgentUtteranceActive = true;
         isAgentSpeaking = true;
-        isAgentPlayingAudio = true;
         agentAudioStreamFinished = false;
         if (turnFinishTimeout) {
           clearTimeout(turnFinishTimeout);
           turnFinishTimeout = null;
         }
-        updateStatus('speaking', '💬 RJN बोल रही है...');
+        updateStatus('speaking', '💬 RJN बोल रही है... (टैप करके रोकें)');
       } else if (msg.type === 'UserStartedSpeaking') {
-        // Echo Shield: If audio playback queue is active, ignore false barge-in from speaker!
         const now = audioCtx ? audioCtx.currentTime : 0;
-        if ((activeAudioSources.length > 0) || (now < (agentPlaybackEndTime + 0.150))) {
-          console.log('⚡ Preserving agent audio playback against speaker echo');
+        const isEcho = isAgentUtteranceActive || isAgentSpeaking || isPlaybackRunning || 
+                       (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
+                       (now < (agentPlaybackEndTime + 0.350));
+        if (isEcho) {
+          console.log('⚡ Echo Shield: Suppressing speaker feedback barge-in');
           return;
         }
         updateStatus('listening', '🎙️ RJN सुन रही है...');
@@ -3776,6 +3827,12 @@ function connectVoiceAgent(){
       } else if (msg.type === 'AgentAudioDone') {
         console.log('Deepgram AgentAudioDone received, awaiting queue drain');
         agentAudioStreamFinished = true;
+        // If jitter pre-buffer was waiting for more chunks, start it now
+        if (!isPlaybackRunning && audioChunkQueue.length > 0) {
+          isPlaybackRunning = true;
+          nextScheduledStartTime = audioCtx ? (audioCtx.currentTime + 0.040) : 0;
+          scheduleQueuedChunks();
+        }
         checkTurnCompletion();
       }
     } catch(err) {
@@ -3811,9 +3868,11 @@ async function startVoiceCall(){
     if (!micStream) {
       micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
+          echoCancellation: { ideal: true },
+          noiseSuppression: { ideal: true },
+          autoGainControl: { ideal: true },
+          channelCount: 1,
+          sampleRate: { ideal: 16000 }
         }
       });
     }
@@ -4412,8 +4471,8 @@ window.addEventListener('pointerdown', (e) => {
   unlockAudio();
   // DO NOT INTERRUPT ON CANVAS TOUCH! Users touch screen to rotate 3D hologram!
   // Only interrupt if user explicitly taps the HUD or status hint pill:
-  if (isCallActive && (isAgentSpeaking || activeAudioSources.length > 0)) {
-    if (e.target.closest('#hint, #hud, #menuToggleBtn')) {
+  if (isCallActive && (isAgentSpeaking || isAgentUtteranceActive || activeAudioSources.length > 0)) {
+    if (e.target.closest('#hint, #hud, #menuToggleBtn, .hud-title, .status-pill')) {
       interruptAgentSpeech();
     }
   }
