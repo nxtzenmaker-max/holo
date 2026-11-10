@@ -2463,6 +2463,14 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
    - USE EVERYDAY MODERN SPOKEN HINDUSTANI / HINGLISH IN HINDI LETTERS: Use common everyday words like 'मैसेज', 'सेंड', 'कॉल', 'याद', 'हाल-चाल', 'सब ठीक', 'काम' (जैसे: "हाँ बॉस, मैंने मैसेज सेंड कर दिया!", "नमस्ते बॉस, क्या हाल-चाल है?", "बताओ बॉस, क्या काम है?").
    - Responses must be short, punchy, human, natural (1-2 sentences, max 15 words).
    - NEVER include emojis in spoken text.
+   - ZERO LINKS OR WEBSITES IN SPOKEN SPEECH (STRICTLY FORBIDDEN):
+     * ABSOLUTELY NEVER SPEAK, SAY, OR WRITE ANY WEB URL, LINK, HTTP/HTTPS ADDRESS, OR MARKDOWN LINK (such as '[name](http...)') IN YOUR SPOKEN DIALOGUE!
+     * Saying URLs ("एचटीटीपीएस कॉलन स्लैश...") out loud in voice is STRICTLY FORBIDDEN and irritates Boss!
+     * When Boss asks about a product, T-shirt, gadget, or recommendation (जैसे: Meesho, Amazon):
+       Simply describe the item, style, color, rating, and price in short conversational Hindi (जैसे: "बॉस, Meesho पर कॉटन ब्लैक ओवरसाइज़्ड T-shirt 350 रुपये में बहुत बढ़िया है!").
+     * When sending a link to Didi on WhatsApp, send a real clean search link (e.g. Meesho: 'https://www.meesho.com/search?q=men%20t%20shirt%20size%20s' or Amazon: 'https://www.amazon.in/s?k=men+t+shirt+size+s') via 'send_whatsapp_message'!
+     * But in your SPOKEN reply to Boss, DO NOT speak the URL! Say naturally: "हाँ बॉस, मैंने Meesho का T-shirt लिंक दीदी को WhatsApp पर भेज दिया है!"
+     * When Boss asks to see anything, call 'show_media' to display it visually on screen!
 
 5. OUTGOING MESSAGES TO CONTACTS (WHATSAPP, TELEGRAM, INSTAGRAM):
    - CRITICAL: When sending a message to Didi or any person, NEVER compose long emotional essays, letters, or poetry!
@@ -3060,6 +3068,17 @@ function resampleAndConvertToInt16(inputData, fromRate, toRate = 16000) {
   return buffer;
 }
 
+function stripLinksFromText(text) {
+  if (!text) return '';
+  return text
+    .replace(/\[([^\]]+)\]\(https?:\/\/[^\)]+\)/gi, '$1')
+    .replace(/https?:\/\/[^\s\)\>]+/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+let userSpeechBurstCount = 0;
+
 function handlePcmAudioProcess(e){
   if (!isCallActive) return;
   if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
@@ -3067,24 +3086,47 @@ function handlePcmAudioProcess(e){
   const inputData = e.inputBuffer.getChannelData(0);
   const inRate = e.inputBuffer.sampleRate || (audioCtx ? audioCtx.sampleRate : 48000);
 
-  // UNBREAKABLE ACOUSTIC ECHO SHIELD:
-  // If RJN is speaking, pre-buffering, playing chunks, or room echo is decaying:
-  // send continuous 16kHz silence zeros to Deepgram.
-  // This guarantees phone speaker output NEVER leaks into mic, preventing false barge-in or audio cuts!
+  // Compute RMS vocal energy of microphone input
+  let sumSquare = 0;
+  for (let i = 0; i < inputData.length; i++) {
+    sumSquare += inputData[i] * inputData[i];
+  }
+  const rms = Math.sqrt(sumSquare / inputData.length);
+
   const now = audioCtx ? audioCtx.currentTime : 0;
   const isProtectedTime = isAgentUtteranceActive || isAgentSpeaking || isPlaybackRunning || 
                           (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
-                          (now < (agentPlaybackEndTime + 0.350));
+                          (now < (agentPlaybackEndTime + 0.300));
 
-  let buffer;
+  // INSTANT USER VOICE BARGE-IN:
+  // When Boss speaks while RJN is talking, Boss's direct voice produces distinct vocal energy (RMS >= 0.045).
+  // If Boss speaks for 2 consecutive audio process cycles (~170ms), IMMEDIATELY halt RJN speech and listen to Boss!
   if (isProtectedTime) {
+    if (rms >= 0.045) {
+      userSpeechBurstCount++;
+      if (userSpeechBurstCount >= 2) {
+        console.log('⚡ Boss Voice Detected! Halting RJN speech instantly (RMS:', rms.toFixed(4), ')');
+        userSpeechBurstCount = 0;
+        interruptAgentSpeech();
+        // Immediately stream this voice buffer to Deepgram Nova-3!
+        const buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
+        try { agentSocket.send(buffer); } catch(err){}
+        return;
+      }
+    } else {
+      userSpeechBurstCount = 0;
+    }
+
+    // While Boss is not actively speaking, send continuous silence zeros to shield against speaker feedback
     const outSamples = Math.round(inputData.length / (inRate / 16000));
-    buffer = new ArrayBuffer(outSamples * 2); // 0dB silence
-  } else {
-    // Pure, full-fidelity unfiltered user speech directly to Deepgram Nova-3:
-    buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
+    const buffer = new ArrayBuffer(outSamples * 2); // 0dB silence
+    try { agentSocket.send(buffer); } catch(err){}
+    return;
   }
 
+  // Pure, full-fidelity unfiltered user speech directly to Deepgram Nova-3:
+  userSpeechBurstCount = 0;
+  const buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
   try {
     agentSocket.send(buffer);
   } catch(err) {
@@ -3561,10 +3603,15 @@ function connectVoiceAgent(){
         }
         updateStatus('speaking', '💬 RJN बोल रही है... (टैप करके रोकें)');
       } else if (msg.type === 'UserStartedSpeaking') {
+        if (userSpeechBurstCount > 0) {
+          console.log('⚡ UserStartedSpeaking: Halting RJN speech for Boss');
+          interruptAgentSpeech();
+          return;
+        }
         const now = audioCtx ? audioCtx.currentTime : 0;
         const isEcho = isAgentUtteranceActive || isAgentSpeaking || isPlaybackRunning || 
                        (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
-                       (now < (agentPlaybackEndTime + 0.350));
+                       (now < (agentPlaybackEndTime + 0.300));
         if (isEcho) {
           console.log('⚡ Echo Shield: Suppressing speaker feedback barge-in');
           return;
@@ -4045,14 +4092,15 @@ function connectVoiceAgent(){
           updateStatus('listening', `🎙️ "${msg.content}"`);
           checkVoiceIntent(msg.content);
         } else if (msg.role === 'assistant') {
-          updateStatus('speaking', `💬 RJN: ${msg.content}`);
+          const cleanAssistantText = stripLinksFromText(msg.content);
+          updateStatus('speaking', `💬 RJN: ${cleanAssistantText}`);
           if (lastUserSpokenMsg) {
-            saveAndSyncTurn(lastUserSpokenMsg, msg.content, currentTurnShape || 'none', currentTurnSymbol || '');
+            saveAndSyncTurn(lastUserSpokenMsg, cleanAssistantText, currentTurnShape || 'none', currentTurnSymbol || '');
             lastUserSpokenMsg = '';
             currentTurnShape = '';
             currentTurnSymbol = '';
           } else if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'assistant') {
-            chatHistory[chatHistory.length - 1].content += ' ' + msg.content;
+            chatHistory[chatHistory.length - 1].content += ' ' + cleanAssistantText;
             try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
           }
         }
