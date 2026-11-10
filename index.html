@@ -2843,6 +2843,7 @@ let activeAudioSources = [];
 let turnFinishTimeout = null;
 let jitterBufferTimeout = null;
 let isCallActive = false;
+let hasSpokenInitialGreeting = false;
 let micStream = null;
 let micSourceNode = null;
 let agentSocket = null;
@@ -2988,11 +2989,6 @@ function stopAllAudioPlayback(){
 function interruptAgentSpeech(){
   if (!isCallActive) return;
   stopAllAudioPlayback();
-  if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
-    try {
-      agentSocket.send(JSON.stringify({ type: "Interrupt" }));
-    } catch(e){}
-  }
   updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
 }
 
@@ -3099,10 +3095,10 @@ function handlePcmAudioProcess(e){
                           (now < (agentPlaybackEndTime + 0.300));
 
   // INSTANT USER VOICE BARGE-IN:
-  // When Boss speaks while RJN is talking, Boss's direct voice produces distinct vocal energy (RMS >= 0.045).
+  // When Boss speaks while RJN is talking, Boss's direct voice produces distinct vocal energy (RMS >= 0.035).
   // If Boss speaks for 2 consecutive audio process cycles (~170ms), IMMEDIATELY halt RJN speech and listen to Boss!
   if (isProtectedTime) {
-    if (rms >= 0.045) {
+    if (rms >= 0.035) {
       userSpeechBurstCount++;
       if (userSpeechBurstCount >= 2) {
         console.log('⚡ Boss Voice Detected! Halting RJN speech instantly (RMS:', rms.toFixed(4), ')');
@@ -3587,10 +3583,11 @@ function connectVoiceAgent(){
             speak: {
               provider: { type: "deepgram", model: "flux-prachi-hi" }
             },
-            greeting: getAgentGreeting(),
+            ...(!hasSpokenInitialGreeting ? { greeting: getAgentGreeting() } : {}),
             language: "hi"
           }
         }));
+        hasSpokenInitialGreeting = true;
       } else if (msg.type === 'SettingsApplied') {
         updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
       } else if (msg.type === 'AgentStartedSpeaking') {
@@ -4183,6 +4180,7 @@ async function startVoiceCall(){
 
 function stopVoiceCall(){
   isCallActive = false;
+  hasSpokenInitialGreeting = false;
   if (agentKeepAliveTimer) {
     clearInterval(agentKeepAliveTimer);
     agentKeepAliveTimer = null;
