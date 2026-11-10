@@ -1890,6 +1890,30 @@ let audioCtx = null, analyser = null, audioDataArr = null, masterGain = null;
 let silentGain = null;
 let pcmProcessor = null;
 
+let activeTimerId = null;
+let activeTimerInterval = null;
+
+function triggerNativeChime() {
+  try {
+    const ctx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+    osc.frequency.exponentialRampToValueAtTime(1174.66, ctx.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.35, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.95);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 1.0);
+  } catch(e) {
+    console.warn('Native chime notice:', e);
+  }
+}
+
 function initAudioContext(){
   if (!audioCtx) {
     const AudioCtor = window.AudioContext || window.webkitAudioContext;
@@ -2015,7 +2039,6 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
      Report the progress or result happily to Boss!
 12. UNIVERSAL 3D SHAPE MORPHING:
    - Whenever Boss asks to show or become any object, call 'morph_shape'.
-
 13. INDIAN STANDARD TIME (IST) & CURRENT DATE ANCHOR:
    - Your internal clock is permanently anchored to India Standard Time (IST - Asia/Kolkata, UTC+5:30).
    - The current real-world date is 10 November 2026.
@@ -2036,7 +2059,23 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
    - When Boss asks to create, generate, or show an image/photo/artwork/wallpaper (जैसे: "इमेज बनाओ", "फोटो बनाओ", "तस्वीर दिखाओ", "image generate karo"):
      Immediately call 'generate_image' with the detailed English prompt!
      Confirm to Boss in Hindi: "हाँ बॉस, मैंने आपके लिए AI इमेज जनरेट कर दी है!"
-   - NEVER say image generation is not available!`;
+   - NEVER say image generation is not available!
+
+17. PARALLEL.AI REAL-TIME WEB SEARCH:
+   - Supercharged with Parallel.ai live web search via 'web_search'!
+   - When Boss asks about ANY product (जैसे: 'Vaku Luxos smartwatch', गैजेट्स, इलेक्ट्रॉनिक्स), price, specs, latest news, facts, or questions:
+     IMMEDIATELY call 'web_search' with the query! NEVER guess or give up without calling 'web_search'!
+
+18. ICONS8 GRAPHIC ASSETS:
+   - Call 'search_icons8' to search over 1.4 million high-res icons and UI assets!
+
+19. LIVE TIMER & ALARM (WAKE UP BOSS):
+   - When Boss commands ANY timer or alarm (जैसे: "2 minute ka timer lagao", "10 second ka timer lagao", "10 minute baad uthana"):
+     IMMEDIATELY call 'set_timer' with the exact seconds (e.g. 10 or 120)! NEVER say you will wait without calling 'set_timer'!
+
+20. DEPLOYMENT & BUILD MONITOR:
+   - When Boss asks about deployment status, build failures, or says "deployment fail ho gaya check karo":
+     Call 'check_deployments'!`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
@@ -2198,6 +2237,10 @@ function buildAgentPrompt() {
   * search_contacts / save_contact: State the contact details clearly! E.g. "बॉस, दीदी का नंबर 9110181407 है!"
   * get_weather: "बॉस, मौसम का हाल यह रहा..."
   * search_icons: "बॉस, Icon Scout से यह आइकॉन मिल गया है: [name]! लिंक और प्रिव्यू तैयार है।"
+  * search_icons8: "बॉस, Icons8 से यह आइकॉन मिल गए हैं: [name]!"
+  * web_search: State the exact product features, specs, price, or facts found from Parallel AI! E.g. "बॉस, Vaku Luxos स्मार्टवॉच में 1.99 इंच HD डिस्प्ले और ब्लूटूथ कॉलिंग है, और इसकी कीमत लगभग 3,999 रुपये है।"
+  * set_timer: "हाँ बॉस, मैंने [seconds] सेकंड का टाइमर सेट कर दिया है। समय पूरा होते ही मैं आपको तुरंत आवाज़ देकर उठा दूँगी!"
+  * check_deployments: State the exact deployment status (pass/fail) clearly! E.g. "बॉस, लेटेस्ट डिप्लॉयमेंट पास हो गया है!"
 - NEVER stay silent after a tool completes! ALWAYS give Boss the completed confirmation!
 - Keep message to Didi strictly to 1 short, sweet, casual line in Hindi letters (e.g. 'नमस्ते दीदी! भाई ने याद किया है।'). NEVER write long dramatic essays or pure Sanskritized Hindi!
 - Language Directive: Write and speak in Hindi letters (Devanagari), but NEVER use pure literary textbook Hindi! Use normal everyday spoken words.
@@ -2694,6 +2737,40 @@ function connectVoiceAgent(){
                   }
                 },
                 {
+                  name: "search_icons8",
+                  description: "Search Icons8 for premium PNG/SVG icons, vector glyphs, and UI design assets by keyword (e.g. rocket, user, home, cloud, settings, bell)",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      query: { type: "string", description: "Icon keyword or concept (e.g. rocket, bell, home, settings)" },
+                      amount: { type: "number", description: "Number of icons to return (default: 6)" }
+                    },
+                    required: ["query"]
+                  }
+                },
+                {
+                  name: "set_timer",
+                  description: "Set a real-time countdown timer or wake-up alarm for Boss. MUST CALL whenever Boss commands a timer or asks to be woken up/alerted (e.g. '2 minute ka timer lagao', '10 second ka timer lagao', '10 minute baad utha dena')",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      seconds: { type: "number", description: "Total duration in seconds to wait before ringing alarm (e.g. 10 for 10s, 120 for 2 mins, 300 for 5 mins)" },
+                      label: { type: "string", description: "Reason or label for timer (e.g. 'उठना', 'काम', 'ब्रेक')" }
+                    },
+                    required: ["seconds"]
+                  }
+                },
+                {
+                  name: "check_deployments",
+                  description: "Check the live status and success/failure of recent GitHub Pages or cloud deployments. MUST CALL whenever Boss asks about deployment status, build failures, or says 'deployment fail ho gaya check karo'",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      target: { type: "string", description: "Target repository (default: 'nxtzenmaker-max/holo')" }
+                    }
+                  }
+                },
+                {
                   name: "execute_command",
                   description: "Execute bash shell commands, terminal tools, or Python scripts on your secure cloud server and return stdout/stderr",
                   parameters: {
@@ -2898,8 +2975,47 @@ function connectVoiceAgent(){
               const city = args.city || 'Delhi';
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/weather?city=${encodeURIComponent(city)}`);
             } else if (fn.name === 'web_search') {
-              updateStatus('thinking', '🌐 Web search ho raha hai...');
-              callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/search?query=${encodeURIComponent(args.query)}`);
+              updateStatus('thinking', '🌐 Parallel Web search ho raha hai...');
+              const query = (args.query || '').trim();
+              console.log('🌐 Querying Parallel.ai Search API:', query);
+              try {
+                const parallelResp = await fetch('https://api.parallel.ai/v1/search', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': 'hjj0CMo72OxUS2m4kta6K-KAtS764LRebnQU4Tfu'
+                  },
+                  body: JSON.stringify({
+                    objective: `Find accurate, up-to-date facts, specifications, prices, and answers for: ${query}`,
+                    search_queries: [query, `${query} details`]
+                  })
+                });
+                if (parallelResp.ok) {
+                  const pData = await parallelResp.json();
+                  if (pData.results && pData.results.length > 0) {
+                    const topResults = pData.results.slice(0, 4).map(r => ({
+                      title: (r.title || '').trim(),
+                      url: r.url,
+                      snippet: (r.excerpts || []).join(' ').replace(/\s+/g, ' ').slice(0, 300)
+                    }));
+                    const summary = topResults.map((r, i) => `[${i+1}] ${r.title}: ${r.snippet}`).join('\n\n');
+                    callResult = {
+                      success: true,
+                      engine: 'parallel.ai',
+                      query,
+                      found: true,
+                      title: topResults[0].title,
+                      summary,
+                      url: topResults[0].url
+                    };
+                  }
+                }
+              } catch(e) {
+                console.warn('Parallel.ai direct search notice:', e);
+              }
+              if (!callResult || !callResult.found) {
+                callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/search?query=${encodeURIComponent(query)}`);
+              }
             } else if (fn.name === 'get_system_time') {
               const tz = args.timezone || 'Asia/Kolkata';
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/system?action=datetime&tz=${encodeURIComponent(tz)}`);
@@ -2924,6 +3040,98 @@ function connectVoiceAgent(){
                 console.log('🎨 AI Image Generated successfully:', callResult.imageUrl);
                 showGeneratedImage(callResult.imageUrl, prompt);
               }
+            } else if (fn.name === 'search_icons8') {
+              updateStatus('thinking', '🎨 Icons8 se icon search ho raha hai...');
+              const query = (args.query || 'home').trim();
+              const amount = Math.min(parseInt(args.amount || 6, 10), 12);
+              console.log('🎨 Querying Icons8 API:', query);
+              try {
+                const i8Resp = await fetch(`https://search.icons8.com/api/iconsets/v5/search?term=${encodeURIComponent(query)}&amount=${amount}`);
+                if (i8Resp.ok) {
+                  const i8Data = await i8Resp.json();
+                  const icons = (i8Data.icons || []).map(icon => ({
+                    id: icon.id,
+                    name: icon.name,
+                    pngUrl: `https://img.icons8.com/?size=160&id=${icon.id}&format=png`,
+                    pageUrl: `https://icons8.com/icon/${icon.id}/${encodeURIComponent(icon.commonName || icon.name.toLowerCase().replace(/\s+/g, '-'))}`
+                  }));
+                  callResult = {
+                    success: true,
+                    engine: 'icons8',
+                    query,
+                    count: icons.length,
+                    icons,
+                    message: icons.length > 0 ? `Icons8 से ${icons.length} आइकॉन मिल गए हैं: ${icons.slice(0, 3).map(i => i.name).join(', ')}!` : `Icons8 पर कोई आइकॉन नहीं मिला।`
+                  };
+                }
+              } catch(e) {
+                console.warn('Icons8 fetch notice, fallback to Vercel:', e);
+                callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/icons8?query=${encodeURIComponent(query)}&amount=${amount}`);
+              }
+            } else if (fn.name === 'set_timer') {
+              let secs = parseInt(args.seconds, 10);
+              if (isNaN(secs) || secs <= 0) secs = 60;
+              const label = args.label || 'अलार्म';
+              console.log(`⏱️ Setting active timer for ${secs}s (${label})`);
+              
+              if (activeTimerId) clearTimeout(activeTimerId);
+              if (activeTimerInterval) clearInterval(activeTimerInterval);
+
+              let remaining = secs;
+              updateStatus('thinking', `⏱️ टाइमर सेट: ${remaining}s (${label})`);
+              
+              activeTimerInterval = setInterval(() => {
+                remaining--;
+                if (remaining > 0) {
+                  const m = Math.floor(remaining / 60);
+                  const s = remaining % 60;
+                  const timeStr = m > 0 ? `${m}m ${s}s` : `${s}s`;
+                  updateStatus('thinking', `⏱️ टाइमर: ${timeStr} बाकी...`);
+                } else {
+                  clearInterval(activeTimerInterval);
+                  activeTimerInterval = null;
+                }
+              }, 1000);
+
+              activeTimerId = setTimeout(() => {
+                triggerNativeChime();
+                updateStatus('speaking', `⏰ बॉस, ${secs} सेकंड पूरे हो गए!`);
+                triggerHandWave();
+                if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
+                  try {
+                    agentSocket.send(JSON.stringify({
+                      type: "InjectAgentMessage",
+                      message: `बॉस! आपका ${label} का समय पूरा हो गया है, उठ जाइये!`
+                    }));
+                  } catch(e){}
+                }
+              }, secs * 1000);
+
+              callResult = {
+                success: true,
+                seconds: secs,
+                label,
+                message: `बॉस, ${secs} सेकंड का टाइमर सेट कर दिया है। समय पूरा होते ही मैं आपको आवाज़ देकर उठा दूँगी!`
+              };
+            } else if (fn.name === 'check_deployments') {
+              updateStatus('thinking', '🚀 Deployment status check ho raha hai...');
+              const cmd = 'gh -R nxtzenmaker-max/holo run list --limit 3';
+              const runResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ command: cmd, timeout: 20000 })
+              });
+              let stdout = runResp?.stdout || '';
+              callResult = {
+                success: true,
+                deployments: stdout,
+                message: stdout.includes('✓') 
+                  ? "बॉस, लेटेस्ट डिप्लॉयमेंट पास (✓) है!" 
+                  : "बॉस, डिप्लॉयमेंट स्थिति चेक कर ली गई है।"
+              };
             } else if (fn.name === 'execute_command') {
               updateStatus('thinking', '⚡ Cloud command run ho raha hai...');
               const cmd = args.command || '';
