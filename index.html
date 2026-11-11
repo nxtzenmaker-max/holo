@@ -3825,7 +3825,7 @@ function connectVoiceAgent(){
       const msg = JSON.parse(event.data);
 
       if (msg.type === 'Welcome') {
-        console.log('Handshake: Sending Voice Agent Settings with Nova-3 Hindi & GPT-4o...');
+        console.log('Handshake: Sending Voice Agent Settings with Nova-3 Hindi & Anthropic Claude Sonnet 4.5...');
         agentSocket.send(JSON.stringify({
           type: "Settings",
           audio: {
@@ -3854,7 +3854,7 @@ function connectVoiceAgent(){
               }
             },
             think: {
-              provider: { type: "open_ai", model: "gpt-4o" },
+              provider: { type: "anthropic", model: "claude-sonnet-4-5" },
               prompt: buildAgentPrompt(),
               functions: [
                 {
