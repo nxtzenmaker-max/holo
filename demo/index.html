@@ -29,7 +29,7 @@
     height: 72vmin;
     margin: -36vmin 0 0 -36vmin;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.09) 0%, rgba(99, 102, 241, 0.04) 42%, rgba(6, 8, 14, 0) 70%);
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, rgba(99, 102, 241, 0.035) 42%, rgba(6, 8, 14, 0) 70%);
     pointer-events: none;
     will-change: transform, opacity;
     transition: transform 0.2s ease-out, opacity 0.25s ease-out;
@@ -214,7 +214,6 @@
     font-size: 13.5px;
     line-height: 1.62;
     color: #e2e8f0;
-    scroll-behavior: smooth;
     max-height: 230px;
   }
   .console-body::-webkit-scrollbar {
@@ -241,22 +240,20 @@
     color: #cbd5e1;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 2px 8px;
+    padding: 3px 9px;
     border-radius: 6px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    animation: queryAppear 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes queryAppear {
+    0% { opacity: 0; transform: translateY(-4px); }
+    100% { opacity: 1; transform: translateY(0); }
   }
 
   /* Typography */
   .stream-text {
     word-break: break-word;
-    white-space: pre-wrap;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  }
-  .stream-text p {
-    margin: 0 0 10px 0;
-  }
-  .stream-text p:last-child {
-    margin-bottom: 0;
   }
   .stream-text strong {
     color: #f1f5f9;
@@ -282,20 +279,60 @@
     font-size: 12px;
     color: #e2e8f0;
   }
+  .para-gap {
+    height: 12px;
+  }
 
-  /* Clean, aesthetic vertical cursor */
+  /* ================= BUTTERY SMOOTH TOKEN ANIMATIONS ================= */
+  @keyframes streamWordFade {
+    0% {
+      opacity: 0;
+      transform: translateY(4px);
+      filter: blur(2.5px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+      filter: blur(0);
+    }
+  }
+
+  .stream-word {
+    display: inline-block;
+    white-space: pre-wrap;
+    animation: streamWordFade 0.24s cubic-bezier(0.16, 1, 0.3, 1) both;
+    will-change: transform, opacity, filter;
+  }
+
+  @keyframes blockFadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .block-appear {
+    animation: blockFadeIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Smooth breathing vertical caret */
   .lively-cursor {
     display: inline-block;
     width: 2px;
-    height: 15px;
+    height: 14px;
     background: #38bdf8;
-    margin-left: 3px;
+    margin-left: 2px;
     vertical-align: -2px;
-    animation: cursorBlink 0.75s infinite step-start;
+    border-radius: 1px;
+    animation: smoothCaretPulse 0.8s ease-in-out infinite alternate;
   }
-  @keyframes cursorBlink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+  @keyframes smoothCaretPulse {
+    0% { opacity: 0.25; transform: scaleY(0.85); }
+    100% { opacity: 1; transform: scaleY(1); }
   }
 
   /* Quick Chips Row */
@@ -658,7 +695,6 @@ void main(){
   gl_PointSize=(1.1+depth*2.0+aSeed*0.6)*uDPR*(1.0+uLevel*0.35);
 
   float cmix=n*0.5+0.5+mid*0.4;
-  // Aesthetic, non-neon, elegant palette (Ice Blue, Steel Indigo, Slate Violet)
   vec3 c1=vec3(0.18, 0.65, 0.92);
   vec3 c2=vec3(0.48, 0.40, 0.88);
   vec3 c3=vec3(0.75, 0.45, 0.78);
@@ -840,7 +876,7 @@ function morphTo(newPoints) {
   gl.bufferData(gl.ARRAY_BUFFER, curTo, gl.DYNAMIC_DRAW);
 }
 
-// Render loop: Calm, aesthetic, subtle movement without harsh neon flashing
+// Render loop: Calm, aesthetic movement
 let lastT = performance.now();
 let audioLevel = 0, bassLevel = 0, midLevel = 0, highLevel = 0;
 let isAgentGenerating = false;
@@ -920,7 +956,7 @@ function render(now) {
 requestAnimationFrame(render);
 
 
-// ================= LIVELY AGENT STREAMING & DEMO CONTROLLER =================
+// ================= BUTTERY-SMOOTH PROGRESSIVE TOKEN STREAMING ENGINE =================
 const streamTarget = document.getElementById('streamTarget');
 const queryTagWrap = document.getElementById('queryTagWrap');
 const statusLight = document.getElementById('statusLight');
@@ -932,28 +968,84 @@ const inputForm = document.getElementById('inputForm');
 const btnCopy = document.getElementById('btnCopy');
 const btnClear = document.getElementById('btnClear');
 
-let activeStreamTimer = null;
+let activeAnimationId = null;
 let currentRawReply = '';
 
-function renderMarkdown(md) {
-  let html = md
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-    .replace(/`([^`]+)`/g, '<code>$1</code>')
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
-    .replace(/^\s*[-•]\s+(.*)$/gm, '• $1')
-    .replace(/\n\n/g, '<br><br>')
-    .replace(/\n/g, '<br>');
-  return html;
+// Markdown to Streamable Action Tokens Parser
+function parseMarkdownToStreamTokens(md) {
+  const tokens = [];
+  const lines = md.split('\n');
+  let inCode = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+
+    // Fenced code blocks
+    if (line.trim().startsWith('```')) {
+      if (!inCode) {
+        inCode = true;
+        tokens.push({ type: 'open_block', tag: 'pre' });
+        tokens.push({ type: 'open_inline', tag: 'code' });
+      } else {
+        inCode = false;
+        tokens.push({ type: 'close_inline' });
+        tokens.push({ type: 'close_block' });
+      }
+      continue;
+    }
+
+    if (inCode) {
+      tokens.push({ type: 'code_line', text: line + '\n' });
+      continue;
+    }
+
+    if (line.trim() === '') {
+      tokens.push({ type: 'break' });
+      continue;
+    }
+
+    const isList = /^\s*[-•]\s+/.test(line);
+    if (isList) {
+      line = line.replace(/^\s*[-•]\s+/, '• ');
+    }
+
+    // Split line into formatting units and regular words
+    const parts = line.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g);
+    for (const part of parts) {
+      if (!part) continue;
+      if (part.startsWith('**') && part.endsWith('**')) {
+        tokens.push({ type: 'open_inline', tag: 'strong' });
+        const inner = part.slice(2, -2);
+        const words = inner.match(/\S+|\s+/g) || [inner];
+        for (const w of words) tokens.push({ type: 'word', text: w });
+        tokens.push({ type: 'close_inline' });
+      } else if (part.startsWith('`') && part.endsWith('`')) {
+        tokens.push({ type: 'open_inline', tag: 'code' });
+        tokens.push({ type: 'word', text: part.slice(1, -1) });
+        tokens.push({ type: 'close_inline' });
+      } else if (part.startsWith('*') && part.endsWith('*')) {
+        tokens.push({ type: 'open_inline', tag: 'em' });
+        const inner = part.slice(1, -1);
+        const words = inner.match(/\S+|\s+/g) || [inner];
+        for (const w of words) tokens.push({ type: 'word', text: w });
+        tokens.push({ type: 'close_inline' });
+      } else {
+        const words = part.match(/\S+|\s+/g) || [part];
+        for (const w of words) tokens.push({ type: 'word', text: w });
+      }
+    }
+
+    tokens.push({ type: 'line_end' });
+  }
+
+  return tokens;
 }
 
+// Buttery-smooth, V-Sync synchronized streaming engine
 function streamLivelyResponse(fullText, userQuery) {
-  if (activeStreamTimer) {
-    clearInterval(activeStreamTimer);
-    activeStreamTimer = null;
+  if (activeAnimationId) {
+    cancelAnimationFrame(activeAnimationId);
+    activeAnimationId = null;
   }
 
   isAgentGenerating = true;
@@ -962,39 +1054,121 @@ function streamLivelyResponse(fullText, userQuery) {
   statusLight.className = 'status-light streaming';
   statusText.textContent = 'Transmitting stream...';
 
+  // Display user query tag
   if (userQuery) {
     queryTagWrap.innerHTML = `<div class="user-query-tag"><span>Inquiry</span><span>&rsaquo;</span><span>${escapeHtml(userQuery)}</span></div>`;
   } else {
     queryTagWrap.innerHTML = '';
   }
 
-  const tokens = fullText.match(/\S+|\s+/g) || [fullText];
-  let currentIndex = 0;
-  let accumulatedText = '';
+  // Clear output target and initialize caret
+  streamTarget.innerHTML = '';
+  const cursor = document.createElement('span');
+  cursor.className = 'lively-cursor';
+  cursor.id = 'streamCursor';
+  streamTarget.appendChild(cursor);
 
-  activeStreamTimer = setInterval(() => {
-    const batchSize = Math.random() > 0.4 ? 2 : 1;
-    for (let b = 0; b < batchSize && currentIndex < tokens.length; b++) {
-      accumulatedText += tokens[currentIndex];
-      currentIndex++;
+  const tokens = parseMarkdownToStreamTokens(fullText);
+  let tokenIndex = 0;
+  const elementStack = [streamTarget];
+
+  let lastFrameTime = performance.now();
+  let tokenAccumulator = 0;
+  // ~38-42 tokens/sec cadence creates an organic, silky reading flow
+  const tokensPerMs = 0.038;
+
+  function processSingleToken(tok) {
+    const currentParent = elementStack[elementStack.length - 1];
+
+    if (tok.type === 'open_block') {
+      const el = document.createElement(tok.tag);
+      el.className = 'block-appear';
+      currentParent.insertBefore(el, cursor);
+      elementStack.push(el);
+    } else if (tok.type === 'open_inline') {
+      const el = document.createElement(tok.tag);
+      currentParent.insertBefore(el, cursor);
+      elementStack.push(el);
+    } else if (tok.type === 'close_block' || tok.type === 'close_inline') {
+      if (elementStack.length > 1) {
+        elementStack.pop();
+      }
+    } else if (tok.type === 'word') {
+      if (/^\s+$/.test(tok.text)) {
+        const spaceNode = document.createTextNode(tok.text);
+        currentParent.insertBefore(spaceNode, cursor);
+      } else {
+        const span = document.createElement('span');
+        span.className = 'stream-word';
+        span.textContent = tok.text;
+        currentParent.insertBefore(span, cursor);
+      }
+    } else if (tok.type === 'code_line') {
+      const span = document.createElement('span');
+      span.className = 'stream-word';
+      span.textContent = tok.text;
+      currentParent.insertBefore(span, cursor);
+    } else if (tok.type === 'break') {
+      const gap = document.createElement('div');
+      gap.className = 'para-gap';
+      currentParent.insertBefore(gap, cursor);
+    } else if (tok.type === 'line_end') {
+      if (!currentParent.closest('pre')) {
+        const br = document.createElement('br');
+        currentParent.insertBefore(br, cursor);
+      }
+    }
+  }
+
+  function frameStep(now) {
+    const delta = Math.min(now - lastFrameTime, 100);
+    lastFrameTime = now;
+    tokenAccumulator += delta * tokensPerMs;
+
+    // Process tokens accumulated up to this frame
+    while (tokenAccumulator >= 1.0 && tokenIndex < tokens.length) {
+      processSingleToken(tokens[tokenIndex]);
+      tokenIndex++;
+      tokenAccumulator -= 1.0;
     }
 
-    streamTarget.innerHTML = renderMarkdown(accumulatedText) + '<span class="lively-cursor"></span>';
-    consoleBody.scrollTop = consoleBody.scrollHeight;
+    // Smooth exponential scroll glide (LERP)
+    const targetScroll = consoleBody.scrollHeight - consoleBody.clientHeight;
+    if (targetScroll > consoleBody.scrollTop + 0.5) {
+      consoleBody.scrollTop += (targetScroll - consoleBody.scrollTop) * 0.16;
+    }
 
-    if (currentIndex >= tokens.length) {
-      clearInterval(activeStreamTimer);
-      activeStreamTimer = null;
+    if (tokenIndex < tokens.length) {
+      activeAnimationId = requestAnimationFrame(frameStep);
+    } else {
+      activeAnimationId = null;
       isAgentGenerating = false;
       consoleWrapper.classList.remove('active-stream');
       statusLight.className = 'status-light';
       statusText.textContent = 'Completed';
 
+      // Settle scroll naturally to bottom
+      function settleScroll() {
+        const remaining = consoleBody.scrollHeight - consoleBody.clientHeight - consoleBody.scrollTop;
+        if (remaining > 0.5) {
+          consoleBody.scrollTop += remaining * 0.2;
+          requestAnimationFrame(settleScroll);
+        } else {
+          consoleBody.scrollTop = consoleBody.scrollHeight - consoleBody.clientHeight;
+        }
+      }
+      requestAnimationFrame(settleScroll);
+
+      // Smoothly fade out the caret
       setTimeout(() => {
-        streamTarget.innerHTML = renderMarkdown(accumulatedText);
-      }, 700);
+        cursor.style.transition = 'opacity 0.4s ease';
+        cursor.style.opacity = '0';
+        setTimeout(() => cursor.remove(), 400);
+      }, 800);
     }
-  }, 24);
+  }
+
+  activeAnimationId = requestAnimationFrame(frameStep);
 }
 
 function escapeHtml(str) {
@@ -1106,8 +1280,8 @@ btnCopy.addEventListener('click', () => {
 });
 
 btnClear.addEventListener('click', () => {
-  if (activeStreamTimer) clearInterval(activeStreamTimer);
-  activeStreamTimer = null;
+  if (activeAnimationId) cancelAnimationFrame(activeAnimationId);
+  activeAnimationId = null;
   isAgentGenerating = false;
   queryTagWrap.innerHTML = '';
   streamTarget.innerHTML = '<span style="color:#64748b; font-style:italic;">Console cleared. Select a chip or enter a query above to initiate output stream.</span>';
