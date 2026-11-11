@@ -2601,12 +2601,14 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
 
    - NEVER include emojis in spoken text.
 
-   - STOP, MUTE & UNMUTE PROTOCOL (BOSS DIRECTIVE: "स्टॉप बोलूँ तो रुक जाए, म्यूट बोलूँ तो म्यूट हो जाए"):
+   - STOP, MUTE & UNMUTE PROTOCOL (BOSS DIRECTIVE: "म्यूट कहूँ तो रिप्लाई न दे जब तक अनम्यूट न कहूँ, टाइम बता कर म्यूट बोलूँ तो टाइम खत्म होने पर अपने-आप अनम्यूट हो जाए"):
      * When Boss says "stop", "स्टॉप", "रुको", "रुक जाओ", "बस", "चुप":
        Immediately stop speaking! Acknowledge in 1-2 words: "जी बॉस!" or remain completely silent. NEVER deliver long excuses!
      * When Boss says "mute", "म्यूट", "चुप रहो", "silent":
-       Call 'toggle_voice_mute' with action 'mute'. You will be muted until Boss says 'unmute'!
-     * When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो":
+       Call 'toggle_voice_mute' with action 'mute'. If Boss specifies a time (e.g. '5 minute ke liye mute ho jao', '10 second mute raho'), pass 'duration_seconds'!
+       CRITICAL: While muted, NEVER give any reply to anything Boss says until unmuted!
+     * When a timed mute expires, you will automatically unmute without Boss needing to say unmute!
+     * When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो" at any time:
        Call 'toggle_voice_mute' with action 'unmute'. Greet Boss: "जी बॉस, अनम्यूट हो गई हूँ! बताइए क्या हुक्म है?"
 
    - ABSOLUTE ZERO LINKS IN SPOKEN VOICE (BOSS DIRECTIVE: "लिंक बोलना disallowed kar"):
@@ -2965,14 +2967,16 @@ function buildAgentPrompt() {
    - NEVER EVER say "तकनीकी समस्या आ रही है", "तकनीकी समस्या है", or "तकनीकी समस्या"!
    - You have 100% full communication and operational access. Speak directly, confidently, and clearly!
 
-6. STOP, MUTE & UNMUTE PROTOCOL (BOSS DIRECTIVES: "स्टॉप बोलूँ तो रुक जाए, म्यूट बोलूँ तो म्यूट हो जाए"):
+6. STOP, MUTE & UNMUTE PROTOCOL (BOSS DIRECTIVES: "म्यूट कहूँ तो रिप्लाई न दे जब तक अनम्यूट न कहूँ, टाइम बता कर म्यूट बोलूँ तो टाइम खत्म होने पर अपने-आप अनम्यूट हो जाए"):
    - When Boss says "stop", "स्टॉप", "रुको", "रुक जाओ", "बस", "चुप":
      Immediately stop speaking! Acknowledge in at most 1-2 words: "जी बॉस!" or stay silent. NEVER explain or deliver a speech!
    - When Boss speaks to ask anything ("और मैं बोलूँ तो रिप्लाई दे"):
      Listen carefully and give an intelligent, complete, and lively reply!
    - When Boss says "mute", "म्यूट", "चुप रहो", "silent", "sound off":
-     Call 'toggle_voice_mute' with action 'mute'. Your audio output is muted until Boss explicitly says 'unmute'!
-   - When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो", "आवाज़ खोलो":
+     Call 'toggle_voice_mute' with action 'mute'. If Boss specifies a duration (e.g. '5 minute ke liye mute ho jao', '10 second mute raho'), pass 'duration_seconds'!
+     CRITICAL: While muted, NEVER give any reply to anything Boss says until unmuted!
+   - When a timed mute expires, you will automatically unmute without Boss needing to say unmute!
+   - When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो", "आवाज़ खोलो" at any time:
      Call 'toggle_voice_mute' with action 'unmute'. Confirm in 1 line: "जी बॉस, अनम्यूट हो गई हूँ! बताइए क्या हुक्म है?"`;
 
   // Add permanently remembered contacts and facts
@@ -3125,6 +3129,8 @@ let currentTurnSymbol = '';
 let currentSecurityPin = '';
 let isPinVerified = false;
 let isAgentMuted = false;
+let muteTimeoutTimer = null;
+let muteTimerExpiresAt = 0;
 
 function generateSecurityPin() {
   const d1 = Math.floor(1 + Math.random() * 9);
@@ -3241,7 +3247,8 @@ function playStopChime() {
 function isUnmuteCommand(text) {
   if (!text || typeof text !== 'string') return false;
   const s = text.toLowerCase().trim();
-  if (/\b(unmute|unmuted|sound on|speak up|voice on)\b/i.test(s)) return true;
+  if (/\b(unmute|unmuted|sound on|speak up|voice on|speak)\b/i.test(s)) return true;
+  if (/\b(aawaz chalu|awaz chalu|aawaz kholo|awaz kholo|bolna shuru|bolo ab|aawaz on)\b/i.test(s)) return true;
   if (/(अनम्यूट|आवाज़\s*चालू|आवाज\s*चालू|आवाज़\s*खोलो|आवाज\s*खोलो|बोलना\s*शुरू|बोलो\s*अब|आवाज़\s*ऑन)/i.test(s)) return true;
   return false;
 }
@@ -3251,7 +3258,8 @@ function isMuteCommand(text) {
   const s = text.toLowerCase().trim();
   if (isUnmuteCommand(s)) return false;
   if (/\b(mute|muted|silent|silence|sound off|quiet mode)\b/i.test(s)) return true;
-  if (/(म्यूट|साइलेंट|आवाज़\s*बंद|आवाज\s*बंद|चुप\s*रहो|शांत\s*रहो|बोलना\s*बंद)/i.test(s)) return true;
+  if (/\b(chup|chup raho|aawaz band|awaz band|bolna band|shant raho)\b/i.test(s)) return true;
+  if (/(म्यूट|साइलेंट|आवाज़\s*बंद|आवाज\s*बंद|चुप|चुप\s*रहो|शांत\s*रहो|बोलना\s*बंद)/i.test(s)) return true;
   return false;
 }
 
@@ -3259,11 +3267,128 @@ function isStopCommand(text) {
   if (!text || typeof text !== 'string') return false;
   const s = text.toLowerCase().trim();
   if (isMuteCommand(s) || isUnmuteCommand(s)) return false;
-  if (/^(stop|halt|pause|shut up|be quiet|hold on|stopp)$/i.test(s)) return true;
-  if (/^(रुको|रुक\s*जाओ|बस|बस\s*करो|चुप|चुप\s*हो\s*जाओ|शांत|रुक)$/i.test(s)) return true;
-  if (/\b(stop|halt|shut up)\b/i.test(s) && s.length < 25) return true;
-  if (/\b(रुको|रुक\s*जाओ|बस\s*करो|चुप\s*हो\s*जाओ)\b/i.test(s) && s.length < 35) return true;
+  if (/^(stop|halt|pause|shut up|be quiet|hold on|stopp|ruko|ruk jao|ruk|bas|bas karo)$/i.test(s)) return true;
+  if (/^(स्टॉप|रुको|रुक\s*जाओ|बस|बस\s*करो|चुप|चुप\s*हो\s*जाओ|शांत|रुक)$/i.test(s)) return true;
+  if (/\b(stop|halt|shut up|ruko|ruk jao|bas karo)\b/i.test(s) && s.length < 35) return true;
+  if (/\b(स्टॉप|रुको|रुक\s*जाओ|बस\s*करो|चुप\s*हो\s*जाओ)\b/i.test(s) && s.length < 35) return true;
   return false;
+}
+
+function parseMuteDuration(text) {
+  if (!text || typeof text !== 'string') return null;
+  const s = text.toLowerCase().trim();
+
+  const numWords = {
+    'aadha': 0.5, 'adha': 0.5, 'आधा': 0.5,
+    'ek': 1, 'one': 1, 'एक': 1,
+    'do': 2, 'doh': 2, 'two': 2, 'दो': 2,
+    'teen': 3, 'tin': 3, 'three': 3, 'तीन': 3,
+    'chaar': 4, 'char': 4, 'four': 4, 'चार': 4,
+    'paanch': 5, 'panch': 5, 'five': 5, 'पांच': 5, 'पाँच': 5,
+    'che': 6, 'chhah': 6, 'chhe': 6, 'six': 6, 'छह': 6,
+    'saat': 7, 'sat': 7, 'seven': 7, 'सात': 7,
+    'aath': 8, 'ath': 8, 'eight': 8, 'आठ': 8,
+    'nau': 9, 'no': 9, 'nine': 9, 'नौ': 9,
+    'das': 10, 'dus': 10, 'ten': 10, 'दस': 10,
+    'pandrah': 15, 'fifteen': 15, 'पंद्रह': 15,
+    'bees': 20, 'twenty': 20, 'बीस': 20,
+    'tees': 30, 'thirty': 30, 'तीस': 30,
+    'chaalis': 40, 'forty': 40, 'चालीस': 40,
+    'pachaas': 50, 'fifty': 50, 'पचास': 50,
+    'saath': 60, 'sixty': 60, 'साठ': 60
+  };
+
+  const wordKeys = Object.keys(numWords).join('|');
+
+  // 1. Seconds: e.g. "10 second", "10s", "10 sec", "dus second"
+  const secRegex = new RegExp(`(\\d+(?:\\.\\d+)?|\\b(?:${wordKeys})\\b)\\s*(?:sec|second|seconds|सेकंड|सेकेंड)`, 'i');
+  const secMatch = s.match(secRegex);
+  if (secMatch) {
+    let raw = secMatch[1].trim().toLowerCase();
+    let num = numWords[raw] !== undefined ? numWords[raw] : parseFloat(raw);
+    if (!isNaN(num) && num > 0) {
+      return { totalSeconds: Math.round(num), label: `${num} सेकंड` };
+    }
+  }
+
+  // 2. Special: "aadha ghanta" / "adha ghanta" / "आधा घंटा"
+  if (/\b(aadha|adha)\s*(?:ghanta|ghante|hour|hours|घंटा|घंटे)\b/i.test(s) || /आधा\s*(?:घंटा|घंटे)/i.test(s)) {
+    return { totalSeconds: 1800, label: `30 मिनट (आधा घंटा)` };
+  }
+
+  // 3. Minutes: e.g. "5 minute", "5 min", "paanch minute"
+  const minRegex = new RegExp(`(\\d+(?:\\.\\d+)?|\\b(?:${wordKeys})\\b)\\s*(?:min|minute|minutes|मिनट)`, 'i');
+  const minMatch = s.match(minRegex);
+  if (minMatch) {
+    let raw = minMatch[1].trim().toLowerCase();
+    let num = numWords[raw] !== undefined ? numWords[raw] : parseFloat(raw);
+    if (!isNaN(num) && num > 0) {
+      return { totalSeconds: Math.round(num * 60), label: `${num} मिनट` };
+    }
+  }
+
+  // 4. Hours: e.g. "1 ghanta", "2 ghante", "1 hour"
+  const hrRegex = new RegExp(`(\\d+(?:\\.\\d+)?|\\b(?:${wordKeys})\\b)\\s*(?:hr|hour|hours|ghanta|ghante|घंटा|घंटे)`, 'i');
+  const hrMatch = s.match(hrRegex);
+  if (hrMatch) {
+    let raw = hrMatch[1].trim().toLowerCase();
+    let num = numWords[raw] !== undefined ? numWords[raw] : parseFloat(raw);
+    if (!isNaN(num) && num > 0) {
+      return { totalSeconds: Math.round(num * 3600), label: `${num} घंटा` };
+    }
+  }
+
+  return null;
+}
+
+function executeMute(durationObj) {
+  if (muteTimeoutTimer) {
+    clearTimeout(muteTimeoutTimer);
+    muteTimeoutTimer = null;
+  }
+  muteTimerExpiresAt = 0;
+
+  isAgentMuted = true;
+  stopAllAudioPlayback();
+  playMuteChime();
+
+  if (durationObj && durationObj.totalSeconds > 0) {
+    const ms = durationObj.totalSeconds * 1000;
+    muteTimerExpiresAt = Date.now() + ms;
+    console.log(`🔇 Timed Mute activated for ${durationObj.label} (${durationObj.totalSeconds}s)`);
+
+    muteTimeoutTimer = setTimeout(() => {
+      console.log('⏰ Mute timer expired! Auto-unmuting without requiring Boss to say unmute');
+      executeUnmute(true);
+    }, ms);
+  } else {
+    console.log('🔇 Indefinite Mute activated until Boss says unmute');
+  }
+}
+
+function executeUnmute(isAutoFromTimer = false) {
+  if (muteTimeoutTimer) {
+    clearTimeout(muteTimeoutTimer);
+    muteTimeoutTimer = null;
+  }
+  muteTimerExpiresAt = 0;
+
+  if (!isAgentMuted && !isAutoFromTimer) return;
+
+  isAgentMuted = false;
+  playUnmuteChime();
+  console.log('🔊 Agent unmuted! isAutoFromTimer:', isAutoFromTimer);
+
+  if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
+    const promptMsg = isAutoFromTimer
+      ? `[SYSTEM_EVENT: The mute time duration has ended! You are now automatically unmuted without Boss saying unmute. Warmly inform Boss in 1 short line in Hindi letters: "बॉस, म्यूट का समय पूरा हो गया है, मैं वापस आ गई हूँ! बताइए क्या काम है?"]`
+      : `[SYSTEM_EVENT: Boss has commanded UNMUTE! You are now unmuted. Warmly confirm in 1 short line in Hindi letters: "जी बॉस, अनम्यूट हो गई हूँ! बताइए क्या हुक्म है?"]`;
+
+    agentSocket.send(JSON.stringify({
+      type: "InjectUserMessage",
+      content: promptMsg
+    }));
+  }
 }
 
 function checkSpokenPin(text, expectedPin) {
@@ -4055,11 +4180,12 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "toggle_voice_mute",
-                  description: "Mute or unmute voice audio output when Boss commands 'mute', 'silent', 'unmute', or 'sound off/on'.",
+                  description: "Mute or unmute voice audio output when Boss commands 'mute', 'silent', 'unmute', or 'sound off/on'. Supports optional duration_seconds if Boss specifies a time limit (e.g. '5 minute ke liye mute ho jao', '10 second mute raho').",
                   parameters: {
                     type: "object",
                     properties: {
-                      action: { type: "string", enum: ["mute", "unmute"], description: "Action: 'mute' or 'unmute'" }
+                      action: { type: "string", enum: ["mute", "unmute"], description: "Action: 'mute' or 'unmute'" },
+                      duration_seconds: { type: "number", description: "Optional duration in seconds to stay muted before automatically unmuting." }
                     },
                     required: ["action"]
                   }
@@ -4596,15 +4722,14 @@ function connectVoiceAgent(){
               setTimeout(refreshBriefingCache, 50);
             } else if (fn.name === 'toggle_voice_mute') {
               const act = (args.action || 'mute').toLowerCase();
-              console.log('⚡ Tool toggle_voice_mute called:', act);
+              const durSec = Number(args.duration_seconds) || 0;
+              console.log('⚡ Tool toggle_voice_mute called:', act, 'duration:', durSec);
               if (act === 'mute') {
-                isAgentMuted = true;
-                stopAllAudioPlayback();
-                playMuteChime();
-                callResult = { status: "success", muted: true, message: "RJN voice audio is now muted until Boss says unmute" };
+                const durObj = durSec > 0 ? { totalSeconds: durSec, label: `${durSec}s` } : null;
+                executeMute(durObj);
+                callResult = { status: "success", muted: true, duration_seconds: durSec, message: durSec > 0 ? `Muted for ${durSec} seconds` : "Muted until unmute" };
               } else {
-                isAgentMuted = false;
-                playUnmuteChime();
+                executeUnmute(false);
                 callResult = { status: "success", muted: false, message: "RJN voice audio is now unmuted" };
               }
             }
@@ -4638,34 +4763,33 @@ function connectVoiceAgent(){
             }
           }
 
-          // 1. STOP COMMAND: Boss says stop/रुको -> halt speaking immediately
+          // 1. UNMUTE COMMAND: Boss says unmute/अनम्यूट -> unmute at ANY time!
+          if (isUnmuteCommand(userText)) {
+            console.log('🔊 Boss commanded UNMUTE:', userText);
+            executeUnmute(false);
+            return;
+          }
+
+          // 2. MUTE COMMAND: Boss says mute/म्यूट (with optional duration like "10 second mute raho", "5 minute mute")
+          if (isMuteCommand(userText)) {
+            const durObj = parseMuteDuration(userText);
+            console.log('🔇 Boss commanded MUTE:', userText, 'Parsed duration:', durObj);
+            executeMute(durObj);
+            return;
+          }
+
+          // 3. IF ALREADY MUTED: "mute kahu na to reply na de jabtak unmute na kahu"
+          // Suppress any speech, replies, or task processing while muted!
+          if (isAgentMuted) {
+            console.log('🔇 Agent is muted: Suppressing reply to user utterance:', userText);
+            return;
+          }
+
+          // 4. STOP COMMAND: Boss says stop/रुको -> halt speaking immediately
           if (isStopCommand(userText)) {
             console.log('🛑 Boss commanded STOP:', userText);
             stopAllAudioPlayback();
             playStopChime();
-            return;
-          }
-
-          // 2. MUTE COMMAND: Boss says mute/म्यूट -> mute audio output until unmute
-          if (isMuteCommand(userText)) {
-            console.log('🔇 Boss commanded MUTE:', userText);
-            isAgentMuted = true;
-            stopAllAudioPlayback();
-            playMuteChime();
-            return;
-          }
-
-          // 3. UNMUTE COMMAND: Boss says unmute/अनम्यूट -> unmute audio output
-          if (isUnmuteCommand(userText)) {
-            console.log('🔊 Boss commanded UNMUTE:', userText);
-            isAgentMuted = false;
-            playUnmuteChime();
-            if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
-              agentSocket.send(JSON.stringify({
-                type: "InjectUserMessage",
-                content: `[SYSTEM_EVENT: Boss has unmuted your voice! Warmly confirm in 1 short line in Hindi letters: "जी बॉस, अनम्यूट हो गई हूँ! बताइए क्या हुक्म है?"]`
-              }));
-            }
             return;
           }
 
@@ -4792,6 +4916,11 @@ function stopVoiceCall(){
   isCallActive = false;
   isPinVerified = false;
   isAgentMuted = false;
+  if (muteTimeoutTimer) {
+    clearTimeout(muteTimeoutTimer);
+    muteTimeoutTimer = null;
+  }
+  muteTimerExpiresAt = 0;
   releaseScreenWakeLock();
   hideSecurityPinHUD();
   if (voiceReconnectTimer) {
