@@ -3110,7 +3110,7 @@ function buildAgentPrompt() {
 
 6. STOP, MUTE & UNMUTE PROTOCOL (BOSS DIRECTIVES: "म्यूट कहूँ तो रिप्लाई न दे जब तक अनम्यूट न कहूँ, टाइम बता कर म्यूट बोलूँ तो टाइम खत्म होने पर अपने-आप अनम्यूट हो जाए"):
    - When Boss says "stop", "स्टॉप", "रुको", "रुक जाओ", "बस", "चुप":
-     Immediately stop speaking! Acknowledge in at most 1-2 words: "जी बॉस!" or stay silent. NEVER explain or deliver a speech!
+     Immediately stop speaking and stay 100% silent! Do not say any words, just stop immediately!
    - When Boss speaks to ask anything ("और मैं बोलूँ तो रिप्लाई दे"):
      Listen carefully and give an intelligent, complete, and lively reply!
    - When Boss says "mute", "म्यूट", "चुप रहो", "silent", "sound off":
@@ -3325,7 +3325,6 @@ let muteTimerExpiresAt = 0;
 // ================= PROACTIVE IDLE COMPANION RE-ENGAGEMENT SYSTEM =================
 let idleTimerId = null;
 let idleNudgeCount = 0;
-let idleStopCooldownUntil = 0;
 const IDLE_NUDGE_1_DELAY_MS = 24000; // 24 seconds of silence
 const IDLE_NUDGE_2_DELAY_MS = 34000; // 34 seconds after first nudge
 
@@ -3372,7 +3371,6 @@ function scheduleIdleNudge() {
     idleTimerId = null;
   }
   if (!isCallActive || !isPinVerified || isAgentMuted) return;
-  if (Date.now() < idleStopCooldownUntil) return;
   if (idleNudgeCount >= 2) return; // Limit to 2 polite nudges per idle period to prevent annoyance
 
   const delay = (idleNudgeCount === 0) ? IDLE_NUDGE_1_DELAY_MS : IDLE_NUDGE_2_DELAY_MS;
@@ -3382,7 +3380,6 @@ function scheduleIdleNudge() {
     idleTimerId = null;
     if (!isCallActive || !isPinVerified || isAgentMuted) return;
     if (isAgentSpeaking || isAgentUtteranceActive || audioChunkQueue.length > 0 || activeAudioSources.length > 0) return;
-    if (Date.now() < idleStopCooldownUntil) return;
     if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
 
     const tier = idleNudgeCount === 0 ? 1 : 2;
@@ -5163,13 +5160,12 @@ function connectVoiceAgent(){
             return;
           }
 
-          // 4. STOP COMMAND: Boss says stop/रुको -> halt speaking immediately
+          // 4. STOP COMMAND: Boss says stop/रुको -> halt speaking immediately and stay completely quiet!
           if (isStopCommand(userText)) {
-            console.log('🛑 Boss commanded STOP:', userText);
+            console.log('🛑 Boss commanded STOP: immediately halting playback and staying quiet');
             stopAllAudioPlayback();
-            playStopChime();
             resetIdleTracker();
-            idleStopCooldownUntil = Date.now() + 60000;
+            scheduleIdleNudge();
             return;
           }
 
