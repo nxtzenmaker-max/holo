@@ -2611,6 +2611,18 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
      * When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो" at any time:
        Call 'toggle_voice_mute' with action 'unmute'. Greet Boss: "जी बॉस, अनम्यूट हो गई हूँ! बताइए क्या हुक्म है?"
 
+   - MANDATORY SPOKEN INTENT BEFORE CALLING ANY TOOL OR API (BOSS DIRECTIVE: "पहले बोले कि मैं अभी चेक कर रही हूँ... फिर आउटपुट बताए"):
+     * Whenever Boss asks a question, commands a web search, requests WhatsApp/communication updates, weather, or commands:
+       You MUST ALWAYS speak a warm, natural sentence ALOUD to Boss FIRST in Hindi letters before invoking the tool!
+       NEVER call a tool in complete silence!
+       Examples of what you MUST speak first:
+       - For communication updates / briefing: "जी बॉस, मैं आपके व्हाट्सएप, टेलीग्राम और इंस्टाग्राम के सारे अपडेट्स अभी चेक कर रही हूँ..."
+       - For web search / query: "जी बॉस, मैं अभी सर्च करके चेक कर रही हूँ, एक सेकंड रुकिए..."
+       - For weather: "हाँ बॉस, मैं अभी मौसम का हाल देख रही हूँ..."
+       - For WhatsApp message: "जी बॉस, मैं अभी व्हाट्सएप मैसेज भेज रही हूँ..."
+       - For terminal commands / code / agent: "जी बॉस, मैं अभी यह काम कर रही हूँ..."
+       Speak this sentence first, and invoke the tool. Then when the tool results return, present the full rich answer to Boss!
+
    - ABSOLUTE ZERO LINKS IN SPOKEN VOICE (BOSS DIRECTIVE: "लिंक बोलना disallowed kar"):
      * UNDER NO CIRCUMSTANCES should you ever speak, pronounce, or recite any web URL, link, http, https, www, .com, .in, or slash letter-by-letter in your spoken voice!
      * Saying URLs aloud is 100% DISALLOWED and irritates Boss!
@@ -2959,7 +2971,7 @@ function buildAgentPrompt() {
      * Ask if he wants today's communication updates: "क्या आप आज के ताज़ा अपडेट्स (टेलीग्राम, व्हाट्सएप, इंस्टाग्राम) सुनना चाहेंगे?"
      * Wait for Boss to reply:
        - If Boss says "हाँ", "हाँ दो", "अपडेट बताओ", "बताओ", "मैसेज बताओ", "updates do":
-         IMMEDIATELY call 'get_communication_briefing' tool and present the live briefing!
+         First speak aloud: "जी बॉस, मैं आपके व्हाट्सएप, टेलीग्राम और इंस्टाग्राम के सारे अपडेट्स अभी चेक कर रही हूँ...", then IMMEDIATELY call 'get_communication_briefing' tool and present the live briefing!
        - If Boss says "नहीं", "रहने दो", "बाद में":
          Politely acknowledge: "जी बॉस! बताइए, आज क्या काम करना है?" and continue normal friendly conversation.
 
@@ -2986,10 +2998,18 @@ function buildAgentPrompt() {
 - Whenever Boss mentions 'दीदी' or asks to send message to didi, IMMEDIATELY call 'send_whatsapp_message' with phone '9110181407'! Never ask for phone number again!
 - If Boss asks to search contacts or check contacts, call 'search_contacts' and state the found details!
 
-=== MANDATORY SPOKEN SUCCESS CONFIRMATION AFTER TOOL COMPLETION ===
-- The client ALREADY immediately speaks out loud to Boss to wait (e.g. 'जी बॉस, कमांड चला रही हूँ...' / 'रुकिए बॉस, मैसेज भेज रही हूँ...') the moment any tool is triggered.
-- When you receive the tool execution results, NEVER repeat 'रुकिए' or tell Boss to wait!
-- Instead, IMMEDIATELY speak an energetic, confident SUCCESS CONFIRMATION and the requested answer to Boss in natural everyday Hindi letters:
+=== MANDATORY RULE: ALWAYS SPEAK FIRST BEFORE CALLING ANY TOOL / API ===
+(BOSS DIRECTIVE: "कोई वेबसर्च, व्हाट्सएप अपडेट्स या कुछ भी API कॉल करती है तो पहले बोले कि मैं अभी चेक कर रही हूँ... फिर आउटपुट बताए"):
+- Before emitting ANY tool call (web_search, get_communication_briefing, get_weather, send_whatsapp_message, execute_command, etc.):
+  You MUST ALWAYS speak a warm, natural acknowledgment ALOUD to Boss FIRST in Hindi letters!
+  NEVER call any tool in complete silence!
+  Examples of what you MUST speak first:
+  * For communication updates / briefing: "जी बॉस, मैं आपके व्हाट्सएप, टेलीग्राम और इंस्टाग्राम के सारे अपडेट्स अभी चेक कर रही हूँ..."
+  * For web search / query: "जी बॉस, मैं अभी सर्च करके चेक कर रही हूँ, एक सेकंड रुकिए..."
+  * For weather: "हाँ बॉस, मैं अभी मौसम का हाल देख रही हूँ..."
+  * For WhatsApp message: "जी बॉस, मैं अभी व्हाट्सएप मैसेज भेज रही हूँ..."
+  * For terminal command / agent task: "जी बॉस, मैं अभी यह काम कर रही हूँ..."
+- After speaking this initial acknowledgment, the tool executes, and then you IMMEDIATELY speak an energetic, confident SUCCESS CONFIRMATION and the requested answer to Boss in natural everyday Hindi letters:
   * execute_command: State that the command finished and tell Boss the key output in 1 clean line! E.g. "बॉस, कमांड पूरी हो गई! यह रहा रिजल्ट: [output]"
   * send_whatsapp_message: "बॉस, मैंने दीदी को व्हाट्सएप मैसेज सफलतापूर्वक भेज दिया है!"
   * send_telegram_message: "बॉस, टेलीग्राम मैसेज भेज दिया गया है!"
@@ -3862,7 +3882,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "get_weather",
-                  description: "Get real-time live weather information and temperature for any city in the world",
+                  description: "Get real-time live weather information and temperature for any city. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'हाँ बॉस, मैं अभी मौसम का हाल देख रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -3873,7 +3893,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "web_search",
-                  description: "Search live web and Wikipedia knowledge for facts, prices, products, and answers. When replying, speak in 1 short sentence only (under 12 words). NEVER recite any URL, website address, or link out loud.",
+                  description: "Search live web via Parallel AI for facts, answers, specs, or prices. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'जी बॉस, मैं अभी सर्च करके चेक कर रही हूँ, एक सेकंड रुकिए...') before invoking this tool. Never recite URLs.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -3981,7 +4001,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "execute_command",
-                  description: "Execute bash shell commands, terminal tools, or Python scripts on your secure cloud server and return stdout/stderr",
+                  description: "Execute bash shell commands, terminal tools, or Python scripts on cloud server. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'जी बॉस, मैं अभी यह कमांड चला रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -4025,7 +4045,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "send_whatsapp_message",
-                  description: "Send a real WhatsApp message or image/photo to any phone number or contact immediately via your live WhatsApp connection. MUST CALL whenever Boss asks to send a WhatsApp message, photo, image, or link to Didi or any contact.",
+                  description: "Send a real WhatsApp message or image/photo to any contact via live WhatsApp connection. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'जी बॉस, मैं अभी व्हाट्सएप मैसेज भेज रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -4124,7 +4144,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "assign_autonomous_task",
-                  description: "Assign an autonomous engineering, coding, or terminal task to your dedicated cloud background agent. The agent works continuously without stopping until the task is complete. MUST CALL whenever Boss commands a coding, project, or agent task.",
+                  description: "Assign an autonomous task to cloud background agent. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'हाँ बॉस, मैं अभी एजेंट को यह काम सौंप रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -4162,7 +4182,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "get_autonomous_task_status",
-                  description: "Check the live connection status, online state, or task progress of your dedicated cloud background agent. MUST CALL whenever Boss asks to connect to the agent ('agent se connect karo', 'agent se connect ho jao', 'agent connected hai?'), check agent status, or ask about task results.",
+                  description: "Check the live connection status, online state, or task progress of your dedicated cloud background agent. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'जी बॉस, मैं अभी एजेंट का स्टेटस चेक कर रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -4172,7 +4192,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "get_communication_briefing",
-                  description: "Fetch live real-time communication summary across WhatsApp (connected & contacts), Telegram (active chats & unread messages), and Instagram (active DM threads). MUST CALL when Boss asks for updates ('हाँ दो', 'अपडेट बताओ', 'मैसेज बताओ', 'updates do', 'batao', 'kya updates hain').",
+                  description: "Fetch live real-time communication summary across WhatsApp, Telegram, and Instagram. MUST CALL when Boss asks for updates ('हाँ दो', 'अपडेट बताओ'). CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'जी बॉस, मैं आपके व्हाट्सएप, टेलीग्राम और इंस्टाग्राम के सारे अपडेट्स अभी चेक कर रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {}
