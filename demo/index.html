@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Holo AI // Lively Demo</title>
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #03040a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #e2e8f0;
+  }
+
+  /* Deep Space Ambient Glow centered behind the upper Orb */
+  #glow {
+    position: fixed;
+    left: 50%;
+    top: 26%;
+    width: 80vmin;
+    height: 80vmin;
+    margin: -40vmin 0 0 -40vmin;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(139, 92, 246, 0.18) 38%, rgba(3, 4, 10, 0) 68%);
+    pointer-events: none;
+    will-change: transform, opacity;
+    transition: transform 0.15s ease-out, opacity 0.2s ease-out;
+    z-index: 1;
+  }
+
+  /* 3D WebGL Particle Canvas */
+  canvas#c {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: grab;
+    outline: none;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    z-index: 2;
+  }
+  canvas#c:active {
+    cursor: grabbing;
+  }
+
+  /* Minimalist Top HUD Bar */
+  .top-hud {
+    position: fixed;
+    top: 14px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 18px;
+    z-index: 10;
+    pointer-events: none;
+  }
+  .hud-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 9999px;
+    padding: 6px 14px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    pointer-events: auto;
+  }
+  .hud-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #38bdf8;
+    box-shadow: 0 0 10px #38bdf8;
+    animation: pulseDot 2s infinite ease-in-out;
+  }
+  .hud-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #f8fafc;
+    text-transform: uppercase;
+  }
+  .hud-mode-pill {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: rgba(56, 189, 248, 0.15);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+  }
+  .hud-actions {
+    display: flex;
+    gap: 8px;
+    pointer-events: auto;
+  }
+  .hud-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(148, 163, 184, 0.25);
+    color: #cbd5e1;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 9999px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .hud-btn:hover {
+    background: rgba(30, 41, 59, 0.9);
+    border-color: rgba(56, 189, 248, 0.5);
+    color: #38bdf8;
+    transform: translateY(-1px);
+  }
+
+  /* Lively Agent Output Panel BELOW the Orb */
+  .console-wrapper {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(92vw, 760px);
+    max-height: 48vh;
+    display: flex;
+    flex-direction: column;
+    background: rgba(10, 16, 31, 0.84);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 20px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(56, 189, 248, 0.12);
+    z-index: 20;
+    overflow: hidden;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .console-wrapper.active-stream {
+    border-color: rgba(56, 189, 248, 0.55);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 36px rgba(56, 189, 248, 0.25);
+  }
+
+  /* Console Top Bar */
+  .console-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: rgba(15, 23, 42, 0.6);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+  }
+  .console-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    text-transform: uppercase;
+  }
+  .status-light {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 8px #10b981;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .status-light.streaming {
+    background: #38bdf8;
+    box-shadow: 0 0 12px #38bdf8;
+    animation: pulseDot 0.8s infinite alternate ease-in-out;
+  }
+  .console-tools {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tool-btn {
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: #94a3b8;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .tool-btn:hover {
+    color: #f1f5f9;
+    border-color: rgba(56, 189, 248, 0.4);
+    background: rgba(56, 189, 248, 0.15);
+  }
+
+  /* Console Scrollable Stream Body */
+  .console-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 14px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #e2e8f0;
+    scroll-behavior: smooth;
+    max-height: 240px;
+  }
+  .console-body::-webkit-scrollbar {
+    width: 5px;
+  }
+  .console-body::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .console-body::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.25);
+    border-radius: 4px;
+  }
+  .console-body::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.45);
+  }
+
+  /* Query Bubble */
+  .user-query-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    letter-spacing: 0.04em;
+  }
+
+  /* Streaming Content Typography */
+  .stream-text {
+    word-break: break-word;
+    white-space: pre-wrap;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  .stream-text p {
+    margin: 0 0 10px 0;
+  }
+  .stream-text p:last-child {
+    margin-bottom: 0;
+  }
+  .stream-text strong {
+    color: #38bdf8;
+    font-weight: 600;
+  }
+  .stream-text code {
+    background: rgba(15, 23, 42, 0.7);
+    color: #a5f3fc;
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 12.5px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+  }
+  .stream-text pre {
+    background: rgba(3, 7, 18, 0.75);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    border-radius: 10px;
+    padding: 10px 14px;
+    overflow-x: auto;
+    margin: 8px 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 12px;
+    color: #e0f2fe;
+  }
+
+  /* Blinking Lively Holographic Cursor */
+  .lively-cursor {
+    display: inline-block;
+    width: 7px;
+    height: 15px;
+    background: #38bdf8;
+    margin-left: 3px;
+    vertical-align: -2px;
+    box-shadow: 0 0 8px #38bdf8;
+    animation: cursorBlink 0.65s infinite step-start;
+  }
+  @keyframes cursorBlink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* Interactive Quick Chips */
+  .chips-row {
+    display: flex;
+    gap: 6px;
+    padding: 8px 14px 4px 14px;
+    overflow-x: auto;
+    white-space: nowrap;
+    border-top: 1px solid rgba(56, 189, 248, 0.08);
+  }
+  .chips-row::-webkit-scrollbar {
+    height: 0;
+  }
+  .chip {
+    flex: 0 0 auto;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    color: #94a3b8;
+    font-size: 11.5px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .chip:hover {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.4);
+    color: #38bdf8;
+    transform: translateY(-1px);
+  }
+
+  /* Console Input Bar */
+  .console-input-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px 10px 12px;
+    background: rgba(10, 16, 31, 0.95);
+  }
+  .input-field {
+    flex: 1;
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 12px;
+    padding: 9px 14px;
+    font-size: 13.5px;
+    color: #f8fafc;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .input-field::placeholder {
+    color: #64748b;
+  }
+  .input-field:focus {
+    border-color: #38bdf8;
+    box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+  }
+  .send-btn {
+    background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%);
+    border: none;
+    color: #ffffff;
+    font-size: 12.5px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .send-btn:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(2, 132, 199, 0.55);
+  }
+  .send-btn:active {
+    transform: translateY(0);
+  }
+
+  /* Subtle Hint for User */
+  .orb-hint {
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 11px;
+    color: rgba(148, 163, 184, 0.6);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    pointer-events: none;
+    z-index: 5;
+    text-align: center;
+  }
+
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  @media (max-width: 640px) {
+    .console-wrapper {
+      width: 95vw;
+      bottom: 10px;
+      max-height: 52vh;
+    }
+    .console-body {
+      max-height: 190px;
+      padding: 10px 14px;
+      font-size: 13px;
+    }
+    .hud-title {
+      font-size: 11.5px;
+    }
+    .hud-mode-pill {
+      display: none;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div id="glow"></div>
+<canvas id="c"></canvas>
+
+<!-- Top HUD Header -->
+<div class="top-hud">
+  <div class="hud-brand">
+    <div class="hud-dot"></div>
+    <span class="hud-title">Holo AI Core</span>
+    <span class="hud-mode-pill">Silent Text Demo</span>
+  </div>
+  <div class="hud-actions">
+    <a href="../" class="hud-btn" title="Open Full Live Voice Companion">
+      <span>🎙️ Full Voice App</span>
+      <span>↗</span>
+    </a>
+  </div>
+</div>
+
+<div class="orb-hint">✦ 3D Particle Orb &middot; Drag to Rotate &middot; Pinch to Zoom</div>
+
+<!-- Lively Agent Output Console Placed Cleanly BELOW the Orb -->
+<div class="console-wrapper" id="consoleWrapper">
+  <!-- Console Header -->
+  <div class="console-header">
+    <div class="console-status">
+      <span class="status-light" id="statusLight"></span>
+      <span id="statusText">System Ready</span>
+    </div>
+    <div class="console-tools">
+      <button type="button" class="tool-btn" id="btnCopy" title="Copy Agent Text">📋 Copy</button>
+      <button type="button" class="tool-btn" id="btnClear" title="Clear Console">↺ Clear</button>
+    </div>
+  </div>
+
+  <!-- Scrollable Output Stream Body -->
+  <div class="console-body" id="consoleBody">
+    <div id="queryTagWrap"></div>
+    <div class="stream-text" id="streamTarget"></div>
+  </div>
+
+  <!-- Quick Interactive Chips for Fast 1-Click Testing -->
+  <div class="chips-row">
+    <div class="chip" data-prompt="Introduce yourself and explain what this demo is.">✨ Who are you?</div>
+    <div class="chip" data-prompt="Kaise ho aap? Kuch Hinglish me mazedaar batao.">🇮🇳 Hinglish Companion</div>
+    <div class="chip" data-prompt="Explain Quantum Computing and Superposition simply.">⚡ Quantum Physics</div>
+    <div class="chip" data-prompt="Write a Python async streaming pipeline snippet.">🐍 Python Stream</div>
+    <div class="chip" data-prompt="Switch orb shape to a glowing heart.">💖 Heart Morph</div>
+    <div class="chip" data-prompt="How do WebGL simplex noise shaders drive this 3D orb?">🔮 Shader Physics</div>
+  </div>
+
+  <!-- Input Field for Custom Prompt Testing -->
+  <form class="console-input-bar" id="inputForm">
+    <input type="text" class="input-field" id="promptInput" placeholder="Ask anything to test lively agent stream..." autocomplete="off" />
+    <button type="submit" class="send-btn">
+      <span>Send</span>
+      <span>↗</span>
+    </button>
+  </form>
+</div>
+
+<script>
+// ================= 3D WEBGL PARTICLE ORB ENGINE =================
+const cv = document.getElementById('c');
+const gl = cv.getContext('webgl', { antialias: false, alpha: true, premultipliedAlpha: true });
+const glowEl = document.getElementById('glow');
+const DPR = Math.min(window.devicePixelRatio || 1, 2);
+let W = 1, H = 1;
+
+function resize() {
+  W = cv.width = Math.floor(innerWidth * DPR);
+  H = cv.height = Math.floor(innerHeight * DPR);
+  gl.viewport(0, 0, W, H);
+}
+window.addEventListener('resize', resize);
+
+const VS = `
+precision highp float;
+attribute vec3 aFrom;
+attribute vec3 aTo;
+attribute float aSeed;
+attribute vec4 aCol;
+uniform float uTime, uLevel, uBass, uMid, uHigh, uRotY, uRotX, uDPR, uMorph;
+uniform vec2 uScale;
+uniform vec2 uOffset;
+uniform vec3 uTouch;
+varying vec3 vColor;
+varying float vA;
+
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+1.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0);
+  const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy));
+  vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz);
+  vec3 l=1.0-g;
+  vec3 i1=min(g.xyz,l.zxy);
+  vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx;
+  vec3 x2=x0-i2+C.yyy;
+  vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857;
+  vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z);
+  vec4 x_=floor(j*ns.z);
+  vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy;
+  vec4 y=y_*ns.x+ns.yyyy;
+  vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy);
+  vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0;
+  vec4 s1=floor(b1)*2.0+1.0;
+  vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy;
+  vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x);
+  vec3 p1=vec3(a0.zw,h.y);
+  vec3 p2=vec3(a1.xy,h.z);
+  vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x;p1*=norm.y;p2*=norm.z;p3*=norm.w;
+  vec4 m=max(0.6-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0);
+  m=m*m;
+  return 42.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}
+
+void main(){
+  float t=uTime;
+  float m=clamp((uMorph-aSeed*0.45)/0.55, 0.0, 1.0);
+  m=m*m*(3.0-2.0*m);
+  vec3 pos=mix(aFrom, aTo, m);
+  float mid=sin(3.14159265*m);
+
+  float ang=mid*(1.2+aSeed*2.5);
+  float ca=cos(ang), sa=sin(ang);
+  pos=vec3(pos.x*ca+pos.z*sa, pos.y, -pos.x*sa+pos.z*ca);
+  pos+=vec3(sin(aSeed*127.1), sin(aSeed*311.7), sin(aSeed*74.7))*0.45*mid;
+
+  vec3 dir=normalize(pos+vec3(0.0001));
+  float n=snoise(pos*1.5+vec3(0.0, t*0.15, t*0.10));
+  float n2=snoise(pos*4.5+vec3(t*0.3, 0.0, -t*0.2));
+  float d=(n*(0.012+uLevel*0.06+uBass*0.04)+n2*(0.004+uMid*0.02+uHigh*0.01));
+  pos+=dir*d;
+  pos*=1.0+uBass*0.06;
+
+  // Touch physics distortion
+  vec2 dv=pos.xy-uTouch.xy;
+  float dd=length(dv);
+  float fall=exp(-dd*dd*24.0)*uTouch.z;
+  pos.xy+=normalize(dv+vec2(0.0001))*fall*0.16+vec2(-dv.y, dv.x)/(dd+0.06)*fall*0.04;
+  pos.z+=fall*0.12;
+
+  // 3D Matrix Rotation & Perspective Projection
+  float cy=cos(uRotY), sy=sin(uRotY), cx=cos(uRotX), sx=sin(uRotX);
+  vec3 r1=vec3(pos.x*cy+pos.z*sy, pos.y, -pos.x*sy+pos.z*cy);
+  vec3 r2=vec3(r1.x, r1.y*cx-r1.z*sx, r1.y*sx+r1.z*cx);
+  float f=1.0/(2.6-r2.z*0.8);
+  
+  // Position orb at top portion via uOffset.y
+  gl_Position=vec4(r2.x*f*uScale.x*2.6 + uOffset.x, r2.y*f*uScale.y*2.6 + uOffset.y, 0.0, 1.0);
+
+  float depth=clamp((r2.z/1.6)*0.5+0.5, 0.0, 1.0);
+  gl_PointSize=(1.1+depth*2.2+aSeed*0.7)*uDPR*(1.0+uLevel*0.5);
+
+  float cmix=n*0.5+0.5+mid*0.4;
+  vec3 c1=vec3(0.10, 0.65, 1.00); // Electric Cyan
+  vec3 c2=vec3(0.55, 0.35, 1.00); // Deep Violet
+  vec3 c3=vec3(1.00, 0.35, 0.75); // Neon Rose
+  vec3 col=mix(c1, c2, clamp(cmix+depth*0.3-0.2, 0.0, 1.0));
+  col=mix(col, c3, clamp(uLevel*1.2*cmix, 0.0, 0.7));
+  vec3 themeCol=col*(0.45+depth*0.65);
+  float themeA=(0.30+mid*0.14)*(0.25+depth*0.75);
+  vColor=themeCol;
+  vA=themeA;
+}
+`;
+
+const FS = `
+precision mediump float;
+varying vec3 vColor;
+varying float vA;
+void main(){
+  float circ=1.0-smoothstep(0.05, 0.5, length(gl_PointCoord-0.5));
+  float al=circ*vA;
+  gl_FragColor=vec4(vColor*al, al*0.5);
+}
+`;
+
+function createShader(type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+    console.error(gl.getShaderInfoLog(s));
+  }
+  return s;
+}
+
+const prog = gl.createProgram();
+gl.attachShader(prog, createShader(gl.VERTEX_SHADER, VS));
+gl.attachShader(prog, createShader(gl.FRAGMENT_SHADER, FS));
+gl.linkProgram(prog);
+gl.useProgram(prog);
+
+// 65,000 Particles 3D Geometry
+const N = 65000;
+const R = Math.random;
+
+function rndDir() {
+  const u = R() * 2 - 1, t = R() * 6.2832, r = Math.sqrt(1 - u * u);
+  return [Math.cos(t) * r, u, Math.sin(t) * r];
+}
+
+function genSphere() {
+  const out = new Float32Array(N * 3), NS = Math.floor(N * 0.75), GA = Math.PI * (3 - Math.sqrt(5));
+  for (let i = 0; i < N; i++) {
+    let x, y, z;
+    if (i < NS) {
+      y = 1 - (i / (NS - 1)) * 2;
+      const r = Math.sqrt(1 - y * y), t = GA * i;
+      x = Math.cos(t) * r;
+      z = Math.sin(t) * r;
+    } else {
+      const d = rndDir(), rad = 0.2 + 0.55 * Math.pow(R(), 0.7);
+      x = d[0] * rad;
+      y = d[1] * rad;
+      z = d[2] * rad;
+    }
+    out[i * 3] = x;
+    out[i * 3 + 1] = y;
+    out[i * 3 + 2] = z;
+  }
+  return out;
+}
+
+function genHeart() {
+  const out = new Float32Array(N * 3);
+  let i = 0;
+  while (i < N) {
+    const X = (R() * 2 - 1) * 1.3, Y = (R() * 2 - 1) * 0.8, Z = (R() * 2 - 1) * 1.3 - 0.05;
+    const a = X * X + 2.25 * Y * Y + Z * Z - 1;
+    const v = a * a * a - X * X * Z * Z * Z - 0.1125 * Y * Y * Z * Z * Z;
+    if (v <= 0) {
+      out[i * 3] = X * 0.85;
+      out[i * 3 + 1] = Z * 0.85;
+      out[i * 3 + 2] = Y * 0.85;
+      i++;
+    }
+  }
+  return out;
+}
+
+const seeds = new Float32Array(N);
+for (let i = 0; i < N; i++) seeds[i] = R();
+
+const curFrom = new Float32Array(N * 3);
+const curTo = new Float32Array(N * 3);
+const spherePoints = genSphere();
+curFrom.set(spherePoints);
+curTo.set(spherePoints);
+
+function mkBuf(name, size, data) {
+  const b = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, b);
+  gl.bufferData(gl.ARRAY_BUFFER, data, gl.DYNAMIC_DRAW);
+  const loc = gl.getAttribLocation(prog, name);
+  gl.enableVertexAttribArray(loc);
+  gl.vertexAttribPointer(loc, size, gl.FLOAT, false, 0, 0);
+  return b;
+}
+
+const bFrom = mkBuf('aFrom', 3, curFrom);
+const bTo = mkBuf('aTo', 3, curTo);
+mkBuf('aSeed', 1, seeds);
+
+const U = {};
+['uTime','uLevel','uBass','uMid','uHigh','uRotY','uRotX','uDPR','uMorph','uScale','uOffset','uTouch'].forEach(n => {
+  U[n] = gl.getUniformLocation(prog, n);
+});
+
+gl.uniform1f(U.uDPR, DPR);
+gl.enable(gl.BLEND);
+gl.blendFunc(gl.ONE, gl.ONE);
+gl.clearColor(0, 0, 0, 0);
+resize();
+
+// Interactive rotation & user gesture controls
+let rotX = 0, rotY = 0, targetRotX = 0, targetRotY = 0;
+let isDragging = false, lastMouseX = 0, lastMouseY = 0;
+let userZoom = 1.0, morph = 1.0;
+let touchPos = [0, 0, 0];
+
+window.addEventListener('pointerdown', e => {
+  if (e.target.closest('#consoleWrapper, .top-hud')) return;
+  isDragging = true;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+  const nx = (e.clientX / innerWidth) * 2 - 1;
+  const ny = -(e.clientY / innerHeight) * 2 + 1;
+  touchPos = [nx, ny, 1.0];
+});
+
+window.addEventListener('pointermove', e => {
+  const nx = (e.clientX / innerWidth) * 2 - 1;
+  const ny = -(e.clientY / innerHeight) * 2 + 1;
+  if (isDragging) {
+    const dx = e.clientX - lastMouseX;
+    const dy = e.clientY - lastMouseY;
+    targetRotY += dx * 0.005;
+    targetRotX += dy * 0.005;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    touchPos = [nx, ny, 1.0];
+  } else {
+    touchPos[0] = nx;
+    touchPos[1] = ny;
+    touchPos[2] = Math.max(0.0, touchPos[2] - 0.04);
+  }
+});
+
+window.addEventListener('pointerup', () => { isDragging = false; });
+window.addEventListener('pointercancel', () => { isDragging = false; });
+window.addEventListener('wheel', e => {
+  if (e.target.closest('#consoleWrapper')) return;
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.06 : -0.06;
+  userZoom = Math.min(2.0, Math.max(0.5, userZoom + delta));
+}, { passive: false });
+
+// Morphing function
+function morphTo(newPoints) {
+  for (let i = 0; i < N; i++) {
+    let m = Math.min(1, Math.max(0, (morph - seeds[i] * 0.45) / 0.55));
+    m = m * m * (3 - 2 * m);
+    for (let c = 0; c < 3; c++) {
+      const k = i * 3 + c;
+      curFrom[k] = curFrom[k] * (1 - m) + curTo[k] * m;
+    }
+  }
+  curTo.set(newPoints);
+  morph = 0;
+  gl.bindBuffer(gl.ARRAY_BUFFER, bFrom);
+  gl.bufferData(gl.ARRAY_BUFFER, curFrom, gl.DYNAMIC_DRAW);
+  gl.bindBuffer(gl.ARRAY_BUFFER, bTo);
+  gl.bufferData(gl.ARRAY_BUFFER, curTo, gl.DYNAMIC_DRAW);
+}
+
+// Render loop with energetic lively pulses when the agent is writing!
+let lastT = performance.now();
+let audioLevel = 0, bassLevel = 0, midLevel = 0, highLevel = 0;
+let isAgentGenerating = false;
+
+function render(now) {
+  requestAnimationFrame(render);
+  const dt = Math.min((now - lastT) * 0.001, 0.1);
+  lastT = now;
+  const t = now * 0.001;
+
+  rotX += (targetRotX - rotX) * 0.08;
+  rotY += (targetRotY - rotY) * 0.08;
+  if (!isDragging) {
+    targetRotY += 0.0035;
+  }
+  if (morph < 1.0) {
+    morph = Math.min(1.0, morph + dt * 0.85);
+  }
+
+  // Synthesize lively neural energy for the Orb:
+  // When agent is actively generating text, the Orb dances & pulses with energy!
+  if (isAgentGenerating) {
+    const pulse1 = Math.sin(t * 9.0) * 0.5 + 0.5;
+    const pulse2 = Math.cos(t * 14.0) * 0.5 + 0.5;
+    audioLevel = 0.22 + pulse1 * 0.25;
+    bassLevel = 0.26 + pulse2 * 0.22;
+    midLevel = 0.20 + Math.sin(t * 18.0) * 0.15;
+    highLevel = 0.15 + pulse1 * 0.18;
+  } else {
+    // Gentle ambient organic breathing
+    const breathe = Math.sin(t * 1.4) * 0.5 + 0.5;
+    audioLevel = 0.03 + breathe * 0.04;
+    bassLevel = 0.04 + breathe * 0.05;
+    midLevel = 0.02 + breathe * 0.03;
+    highLevel = 0.01;
+  }
+
+  // Atmospheric glow reactivity
+  const glowScale = 1.0 + bassLevel * 0.25;
+  const glowOpacity = 0.45 + audioLevel * 0.55;
+  glowEl.style.transform = `scale(${glowScale})`;
+  glowEl.style.opacity = glowOpacity;
+
+  // Responsive scale & vertical offset positioning
+  const aspect = W / H;
+  let scX = 1.0, scY = 1.0;
+  let offsetY = 0.28; // Shift Orb up so the lower 45% is completely free for text console!
+
+  if (aspect < 1.0) {
+    // Mobile view: slightly smaller orb and higher offset
+    const mobileFit = 0.56;
+    scX = mobileFit;
+    scY = mobileFit * aspect;
+    offsetY = 0.32;
+  } else {
+    // Desktop view
+    const desktopFit = 0.62;
+    scX = desktopFit / aspect;
+    scY = desktopFit;
+    offsetY = 0.26;
+  }
+
+  scX *= userZoom;
+  scY *= userZoom;
+
+  gl.uniform1f(U.uTime, t);
+  gl.uniform1f(U.uLevel, audioLevel);
+  gl.uniform1f(U.uBass, bassLevel);
+  gl.uniform1f(U.uMid, midLevel);
+  gl.uniform1f(U.uHigh, highLevel);
+  gl.uniform1f(U.uRotX, rotX);
+  gl.uniform1f(U.uRotY, rotY);
+  gl.uniform1f(U.uMorph, morph);
+  gl.uniform2f(U.uScale, scX, scY);
+  gl.uniform2f(U.uOffset, 0.0, offsetY);
+  gl.uniform3f(U.uTouch, touchPos[0], touchPos[1], touchPos[2]);
+
+  gl.clear(gl.COLOR_BUFFER_BIT);
+  gl.drawArrays(gl.POINTS, 0, N);
+}
+requestAnimationFrame(render);
+
+
+// ================= LIVELY AGENT STREAMING & DEMO CONTROLLER =================
+const streamTarget = document.getElementById('streamTarget');
+const queryTagWrap = document.getElementById('queryTagWrap');
+const statusLight = document.getElementById('statusLight');
+const statusText = document.getElementById('statusText');
+const consoleWrapper = document.getElementById('consoleWrapper');
+const consoleBody = document.getElementById('consoleBody');
+const promptInput = document.getElementById('promptInput');
+const inputForm = document.getElementById('inputForm');
+const btnCopy = document.getElementById('btnCopy');
+const btnClear = document.getElementById('btnClear');
+
+let activeStreamTimer = null;
+let currentRawReply = '';
+
+// Markdown formatting helper (bold, code, lists, headers)
+function renderMarkdown(md) {
+  let html = md
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/^\s*[-•]\s+(.*)$/gm, '• $1')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
+  return html;
+}
+
+// Lively streaming engine: words emerge progressively with organic timing
+function streamLivelyResponse(fullText, userQuery) {
+  if (activeStreamTimer) {
+    clearInterval(activeStreamTimer);
+    activeStreamTimer = null;
+  }
+
+  isAgentGenerating = true;
+  currentRawReply = fullText;
+  consoleWrapper.classList.add('active-stream');
+  statusLight.className = 'status-light streaming';
+  statusText.textContent = 'Transmitting Neural Stream...';
+
+  // Display User Query Tag
+  if (userQuery) {
+    queryTagWrap.innerHTML = `<div class="user-query-tag"><span>User</span><span>&rsaquo;</span><span>${escapeHtml(userQuery)}</span></div>`;
+  } else {
+    queryTagWrap.innerHTML = '';
+  }
+
+  // Tokenize text into words/whitespace units
+  const tokens = fullText.match(/\S+|\s+/g) || [fullText];
+  let currentIndex = 0;
+  let accumulatedText = '';
+
+  activeStreamTimer = setInterval(() => {
+    // Deliver 1 to 2 tokens per tick for snappy, lively streaming
+    const batchSize = Math.random() > 0.4 ? 2 : 1;
+    for (let b = 0; b < batchSize && currentIndex < tokens.length; b++) {
+      accumulatedText += tokens[currentIndex];
+      currentIndex++;
+    }
+
+    streamTarget.innerHTML = renderMarkdown(accumulatedText) + '<span class="lively-cursor"></span>';
+    consoleBody.scrollTop = consoleBody.scrollHeight;
+
+    if (currentIndex >= tokens.length) {
+      clearInterval(activeStreamTimer);
+      activeStreamTimer = null;
+      isAgentGenerating = false;
+      consoleWrapper.classList.remove('active-stream');
+      statusLight.className = 'status-light';
+      statusText.textContent = 'Stream Complete';
+
+      // Keep resting cursor or remove smoothly
+      setTimeout(() => {
+        streamTarget.innerHTML = renderMarkdown(accumulatedText);
+      }, 700);
+    }
+  }, 24); // ~24ms cadence gives fluid, lively 40+ tokens/sec feel
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// Knowledge Base for instant, 100% reliable demo responses
+const DEMO_KNOWLEDGE = [
+  {
+    pattern: /who are you|tum kaun ho|introduce yourself|apna parichay|what is this/i,
+    reply: `I am **Holo AI**—an autonomous 3D Neural Agent living directly inside your browser canvas.\n\n` +
+           `✦ **Architecture Highlights:**\n` +
+           `• **65,000 Particle WebGL Orb:** Simplex noise displacement modulated in real-time GLSL.\n` +
+           `• **Silent Demo Mode:** Zero voice audio or microphone permissions required for this test bench.\n` +
+           `• **Lively Neural Stream:** Tokens stream directly to your HUD below while the 3D Orb pulses in visual synchronization.\n\n` +
+           `*(Namaste! Main Holo AI hoon—aapka visual companion. Upar 3D orb ko ghumaiye aur neeche test queries run kijiye!)*`
+  },
+  {
+    pattern: /kaise ho|kya haal|kya chal raha|kaisa hai|hinglish/i,
+    reply: `Main ekdam shandaar aur high-energy hoon! 🚀\n\n` +
+           `Aapka 3D Particle Orb upar bina kisi lag ke 60 FPS par smooth spin kar raha hai. Aaj is demo page par hamne sound ko poori tarah silent rakha hai, taaki aap bina kisi disturbance ke lively text streaming aur neural reactive orb ka anand le sakein.\n\n` +
+           `Bataiye, abhi kuch code generate karna hai, koi sawal poochna hai, ya orb ka shape morph karna hai?`
+  },
+  {
+    pattern: /quantum|superposition|qubit|physics/i,
+    reply: `**Quantum Superposition & The 3D Orb Analogy:**\n\n` +
+           `In classical computing, a bit is rigidly 0 or 1. In quantum computing, a **qubit** exists in a linear combination of states:\n\n` +
+           `\`|ψ⟩ = α|0⟩ + β|1⟩\` where \`|α|² + |β|² = 1\`.\n\n` +
+           `Notice how the 65,000 particles above don't sit in static positions—they exist as a continuous wave function of 3D probabilities until sampled. When you drag to rotate, you are effectively collapsing the visual frame from another perspective!`
+  },
+  {
+    pattern: /python|async|code|pipeline/i,
+    reply: `Here is a lightweight Python asynchronous streaming generator matching this exact lively pipeline:\n\n` +
+           `\`\`\`python\nimport asyncio\nimport sys\n\nasync def lively_stream(tokens):\n    for token in tokens:\n        sys.stdout.write(token + " ")\n        sys.stdout.flush()\n        # 25ms delay creates snappy companion stream\n        await asyncio.sleep(0.025)\n    print("\\n[Stream Complete]")\n\nasyncio.run(lively_stream(["Neural", "Core", "Active", "At", "60FPS"]))\n\`\`\`\n` +
+           `Zero latency, zero thread-locking, and ready for production pipelines.`
+  },
+  {
+    pattern: /heart|dil|morph/i,
+    action: () => { morphTo(genHeart()); },
+    reply: `💖 **Shape Morphed to 3D Holographic Heart!**\n\n` +
+           `The 65,000 particles have smoothly calculated mathematical algebraic surfaces and migrated their coordinates from spherical geodesics to a 3D cardioid manifold.\n\n` +
+           `Touch and drag to rotate the heart in 3D!`
+  },
+  {
+    pattern: /sphere|orb|ball|circle/i,
+    action: () => { morphTo(genSphere()); },
+    reply: `🔮 **Shape Morphed back to Neural Particle Orb!**\n\n` +
+           `Restoring standard 3D starlight particle sphere with full simplex noise waving dynamics.`
+  },
+  {
+    pattern: /shader|glsl|webgl|simplex/i,
+    reply: `**How WebGL Shaders Power This Interface:**\n\n` +
+           `1. **Custom Vertex Shader:** Computes 3D Perlin/Simplex noise on 65,000 points simultaneously via GPU parallel execution.\n` +
+           `2. **Perspective Math:** Points are projected using \`f = 1.0 / (2.6 - r2.z * 0.8)\` for true depth scaling.\n` +
+           `3. **Vertical Offset (\`uOffset.y\`):** Elevates the orb to the upper region of the viewport so your chat output stays comfortably visible below without any overlapping.`
+  }
+];
+
+function handleUserQuery(query) {
+  query = (query || '').trim();
+  if (!query) return;
+
+  // Check matching pattern in demo knowledge
+  let matched = DEMO_KNOWLEDGE.find(k => k.pattern.test(query));
+  let replyText = '';
+
+  if (matched) {
+    if (matched.action) matched.action();
+    replyText = matched.reply;
+  } else {
+    // Dynamic structured intelligent fallback
+    replyText = `**Received Inquiry:** "${query}"\n\n` +
+                `✦ **Synthesis Analysis:**\n` +
+                `The neural system has processed your test input in Silent Demo Mode.\n` +
+                `• **Response Integrity:** 100% token throughput verified.\n` +
+                `• **Orb Synchronization:** Harmonic frequencies were dynamically coupled to the text cadence.\n` +
+                `• **Live Status:** Ready for next query or prompt chip!`;
+  }
+
+  streamLivelyResponse(replyText, query);
+}
+
+// Event Listeners
+inputForm.addEventListener('submit', e => {
+  e.preventDefault();
+  const q = promptInput.value;
+  if (!q.trim()) return;
+  promptInput.value = '';
+  promptInput.blur();
+  handleUserQuery(q);
+});
+
+// Quick Chips Click
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    const p = chip.getAttribute('data-prompt');
+    handleUserQuery(p);
+  });
+});
+
+// Copy Button
+btnCopy.addEventListener('click', () => {
+  if (!currentRawReply) return;
+  navigator.clipboard.writeText(currentRawReply).then(() => {
+    const orig = btnCopy.textContent;
+    btnCopy.textContent = '✓ Copied!';
+    setTimeout(() => { btnCopy.textContent = orig; }, 1500);
+  });
+});
+
+// Clear Button
+btnClear.addEventListener('click', () => {
+  if (activeStreamTimer) clearInterval(activeStreamTimer);
+  activeStreamTimer = null;
+  isAgentGenerating = false;
+  queryTagWrap.innerHTML = '';
+  streamTarget.innerHTML = '<span style="color:#64748b; font-style:italic;">Console cleared. Tap any chip or type a prompt above to test lively streaming output.</span>';
+  statusLight.className = 'status-light';
+  statusText.textContent = 'System Ready';
+});
+
+// Initial boot message showing the lively typewriter stream immediately on load!
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    streamLivelyResponse(
+      `✦ **Holo AI // Lively Demo Interface Initialized**\n\n` +
+      `• **3D Particle Orb:** Active above (Touch/Drag to rotate in 3D).\n` +
+      `• **Silent Test Bench:** Voice TTS is muted so you can test crisp, lively text output and visual responsiveness.\n` +
+      `• **Testing:** Tap any of the quick test chips below or type a query in the input box!`,
+      null
+    );
+  }, 400);
+});
+</script>
+</body>
+</html>
