@@ -2601,6 +2601,14 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
 
    - NEVER include emojis in spoken text.
 
+   - STOP, MUTE & UNMUTE PROTOCOL (BOSS DIRECTIVE: "स्टॉप बोलूँ तो रुक जाए, म्यूट बोलूँ तो म्यूट हो जाए"):
+     * When Boss says "stop", "स्टॉप", "रुको", "रुक जाओ", "बस", "चुप":
+       Immediately stop speaking! Acknowledge in 1-2 words: "जी बॉस!" or remain completely silent. NEVER deliver long excuses!
+     * When Boss says "mute", "म्यूट", "चुप रहो", "silent":
+       Call 'toggle_voice_mute' with action 'mute'. You will be muted until Boss says 'unmute'!
+     * When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो":
+       Call 'toggle_voice_mute' with action 'unmute'. Greet Boss: "जी बॉस, अनम्यूट हो गई हूँ! बताइए क्या हुक्म है?"
+
    - ABSOLUTE ZERO LINKS IN SPOKEN VOICE (BOSS DIRECTIVE: "लिंक बोलना disallowed kar"):
      * UNDER NO CIRCUMSTANCES should you ever speak, pronounce, or recite any web URL, link, http, https, www, .com, .in, or slash letter-by-letter in your spoken voice!
      * Saying URLs aloud is 100% DISALLOWED and irritates Boss!
@@ -2955,7 +2963,17 @@ function buildAgentPrompt() {
 
 5. ZERO TECHNICAL ERROR EXCUSES ("तकनीकी समस्या आ रही है" बोलना सख्त मना है):
    - NEVER EVER say "तकनीकी समस्या आ रही है", "तकनीकी समस्या है", or "तकनीकी समस्या"!
-   - You have 100% full communication and operational access. Speak directly, confidently, and clearly!`;
+   - You have 100% full communication and operational access. Speak directly, confidently, and clearly!
+
+6. STOP, MUTE & UNMUTE PROTOCOL (BOSS DIRECTIVES: "स्टॉप बोलूँ तो रुक जाए, म्यूट बोलूँ तो म्यूट हो जाए"):
+   - When Boss says "stop", "स्टॉप", "रुको", "रुक जाओ", "बस", "चुप":
+     Immediately stop speaking! Acknowledge in at most 1-2 words: "जी बॉस!" or stay silent. NEVER explain or deliver a speech!
+   - When Boss speaks to ask anything ("और मैं बोलूँ तो रिप्लाई दे"):
+     Listen carefully and give an intelligent, complete, and lively reply!
+   - When Boss says "mute", "म्यूट", "चुप रहो", "silent", "sound off":
+     Call 'toggle_voice_mute' with action 'mute'. Your audio output is muted until Boss explicitly says 'unmute'!
+   - When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो", "आवाज़ खोलो":
+     Call 'toggle_voice_mute' with action 'unmute'. Confirm in 1 line: "जी बॉस, अनम्यूट हो गई हूँ! बताइए क्या हुक्म है?"`;
 
   // Add permanently remembered contacts and facts
   prompt += `\n\n=== PERMANENT SAVED CONTACTS & SECURE MEMORY ===
@@ -3106,6 +3124,7 @@ let currentTurnShape = '';
 let currentTurnSymbol = '';
 let currentSecurityPin = '';
 let isPinVerified = false;
+let isAgentMuted = false;
 
 function generateSecurityPin() {
   const d1 = Math.floor(1 + Math.random() * 9);
@@ -3160,6 +3179,91 @@ function playAccessGrantedChime() {
     osc.start(t0);
     osc.stop(t0 + 0.48);
   } catch(e){}
+}
+
+function playMuteChime() {
+  if (!audioCtx) return;
+  try {
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, t0); // A4
+    osc.frequency.exponentialRampToValueAtTime(220, t0 + 0.16); // A3 (descending soft cyber tone)
+    gain.gain.setValueAtTime(0.001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.22);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.24);
+  } catch(e){}
+}
+
+function playUnmuteChime() {
+  if (!audioCtx) return;
+  try {
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(330, t0); // E4
+    osc.frequency.exponentialRampToValueAtTime(660, t0 + 0.16); // E5 (ascending soft cyber tone)
+    gain.gain.setValueAtTime(0.001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.2, t0 + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.22);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.24);
+  } catch(e){}
+}
+
+function playStopChime() {
+  if (!audioCtx) return;
+  try {
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(493.88, t0); // B4
+    osc.frequency.setValueAtTime(329.63, t0 + 0.07); // E4
+    gain.gain.setValueAtTime(0.001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.15, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.15);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.16);
+  } catch(e){}
+}
+
+function isUnmuteCommand(text) {
+  if (!text || typeof text !== 'string') return false;
+  const s = text.toLowerCase().trim();
+  if (/\b(unmute|unmuted|sound on|speak up|voice on)\b/i.test(s)) return true;
+  if (/(अनम्यूट|आवाज़\s*चालू|आवाज\s*चालू|आवाज़\s*खोलो|आवाज\s*खोलो|बोलना\s*शुरू|बोलो\s*अब|आवाज़\s*ऑन)/i.test(s)) return true;
+  return false;
+}
+
+function isMuteCommand(text) {
+  if (!text || typeof text !== 'string') return false;
+  const s = text.toLowerCase().trim();
+  if (isUnmuteCommand(s)) return false;
+  if (/\b(mute|muted|silent|silence|sound off|quiet mode)\b/i.test(s)) return true;
+  if (/(म्यूट|साइलेंट|आवाज़\s*बंद|आवाज\s*बंद|चुप\s*रहो|शांत\s*रहो|बोलना\s*बंद)/i.test(s)) return true;
+  return false;
+}
+
+function isStopCommand(text) {
+  if (!text || typeof text !== 'string') return false;
+  const s = text.toLowerCase().trim();
+  if (isMuteCommand(s) || isUnmuteCommand(s)) return false;
+  if (/^(stop|halt|pause|shut up|be quiet|hold on|stopp)$/i.test(s)) return true;
+  if (/^(रुको|रुक\s*जाओ|बस|बस\s*करो|चुप|चुप\s*हो\s*जाओ|शांत|रुक)$/i.test(s)) return true;
+  if (/\b(stop|halt|shut up)\b/i.test(s) && s.length < 25) return true;
+  if (/\b(रुको|रुक\s*जाओ|बस\s*करो|चुप\s*हो\s*जाओ)\b/i.test(s) && s.length < 35) return true;
+  return false;
 }
 
 function checkSpokenPin(text, expectedPin) {
@@ -3258,8 +3362,8 @@ function scheduleQueuedChunks() {
 
 function playAgentAudioChunk(arrayBuffer){
   if (!audioCtx) return;
-  if (!isPinVerified) {
-    // Mute/drop until 3-digit security PIN is verified by Boss
+  if (!isPinVerified || isAgentMuted) {
+    // Drop audio chunks until PIN is verified or while Boss has muted RJN
     return;
   }
   unlockAudio();
@@ -3464,19 +3568,21 @@ function handlePcmAudioProcess(e){
   const rms = Math.sqrt(sumSquare / inputData.length);
 
   const now = audioCtx ? audioCtx.currentTime : 0;
-  const isProtectedTime = isAgentUtteranceActive || isAgentSpeaking || isPlaybackRunning || 
-                          (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
-                          (now < (agentPlaybackEndTime + 0.300));
+  const isAgentCurrentlySpeaking = isAgentUtteranceActive || isAgentSpeaking || isPlaybackRunning || 
+                                   (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
+                                   (now < (agentPlaybackEndTime + 0.150));
 
-  // Boss's direct order: "bolne de usko, beech me rukne wala system mat laga"
-  // While RJN is speaking, NEVER interrupt or cut her off mid-speech. Let her complete speaking!
-  // Send 0dB silence buffer to Deepgram so phone speaker audio never leaks into speech recognition:
-  if (isProtectedTime) {
-    userSpeechBurstCount = 0;
-    const outSamples = Math.round(inputData.length / (inRate / 16000));
-    const buffer = new ArrayBuffer(outSamples * 2); // 0dB silence
-    try { agentSocket.send(buffer); } catch(err){}
-    return;
+  // If RJN is currently speaking lively:
+  // Allow Boss's vocal energy (RMS > 0.022) to stream through so Deepgram immediately detects barge-in ("stop", "रुको", or questions)!
+  // Send silence only during quiet pause/residual speaker bleed (RMS <= 0.022) to prevent false cutoffs
+  if (isAgentCurrentlySpeaking) {
+    if (rms <= 0.022) {
+      const outSamples = Math.round(inputData.length / (inRate / 16000));
+      const buffer = new ArrayBuffer(outSamples * 2); // silence
+      try { agentSocket.send(buffer); } catch(err){}
+      return;
+    }
+    console.log('🎙️ Boss vocal barge-in activity detected (RMS:', rms.toFixed(4), ')');
   }
 
   // Pure, full-fidelity unfiltered user speech directly to Deepgram Nova-3:
@@ -3946,6 +4052,17 @@ function connectVoiceAgent(){
                     type: "object",
                     properties: {}
                   }
+                },
+                {
+                  name: "toggle_voice_mute",
+                  description: "Mute or unmute voice audio output when Boss commands 'mute', 'silent', 'unmute', or 'sound off/on'.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      action: { type: "string", enum: ["mute", "unmute"], description: "Action: 'mute' or 'unmute'" }
+                    },
+                    required: ["action"]
+                  }
                 }
               ]
             },
@@ -3968,14 +4085,8 @@ function connectVoiceAgent(){
         }
         updateStatus('speaking', '💬 RJN बोल रही है... (टैप करके रोकें)');
       } else if (msg.type === 'UserStartedSpeaking') {
-        const now = audioCtx ? audioCtx.currentTime : 0;
-        const isProtectedTime = isAgentUtteranceActive || isAgentSpeaking || isPlaybackRunning || 
-                                (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
-                                (now < (agentPlaybackEndTime + 0.300));
-        if (isProtectedTime) {
-          console.log('⚡ Speaking Protected: Letting RJN complete speaking without mid-speech cutoff');
-          return;
-        }
+        console.log('🛑 Deepgram UserStartedSpeaking: stopping agent audio immediately for Boss');
+        stopAllAudioPlayback();
         updateStatus('listening', '🎙️ RJN सुन रही है...');
       } else if (msg.type === 'AgentThinking') {
         updateStatus('thinking', '✨ RJN सोच रही है...');
@@ -4483,6 +4594,19 @@ function connectVoiceAgent(){
               callResult = JSON.parse(JSON.stringify(cachedBriefingData));
               // Trigger background refresh asynchronously without delaying response
               setTimeout(refreshBriefingCache, 50);
+            } else if (fn.name === 'toggle_voice_mute') {
+              const act = (args.action || 'mute').toLowerCase();
+              console.log('⚡ Tool toggle_voice_mute called:', act);
+              if (act === 'mute') {
+                isAgentMuted = true;
+                stopAllAudioPlayback();
+                playMuteChime();
+                callResult = { status: "success", muted: true, message: "RJN voice audio is now muted until Boss says unmute" };
+              } else {
+                isAgentMuted = false;
+                playUnmuteChime();
+                callResult = { status: "success", muted: false, message: "RJN voice audio is now unmuted" };
+              }
             }
           } catch(e) {
             console.warn('Connector function call notice:', e);
@@ -4498,25 +4622,58 @@ function connectVoiceAgent(){
         }
       } else if (msg.type === 'ConversationText') {
         if (msg.role === 'user') {
+          const userText = (msg.content || '').trim();
+
           // If PIN not verified yet, verify the spoken digits
           if (!isPinVerified) {
-            console.log('🎙️ Checking spoken PIN:', msg.content, 'Expected:', currentSecurityPin);
-            if (checkSpokenPin(msg.content, currentSecurityPin)) {
+            console.log('🎙️ Checking spoken PIN:', userText, 'Expected:', currentSecurityPin);
+            if (checkSpokenPin(userText, currentSecurityPin)) {
               handlePinVerifiedSuccess();
               return;
             } else {
               const subEl = document.getElementById('pinSubText');
-              if (subEl) subEl.innerHTML = `❌ Code mismatch (heard: "${msg.content}"). Speak: <b>${currentSecurityPin.split('').join(' ')}</b>`;
+              if (subEl) subEl.innerHTML = `❌ Code mismatch (heard: "${userText}"). Speak: <b>${currentSecurityPin.split('').join(' ')}</b>`;
               updateStatus('listening', `❌ Speak code [ ${currentSecurityPin.split('').join(' ')} ]`);
               return;
             }
           }
 
-          lastUserSpokenMsg = lastUserSpokenMsg ? (lastUserSpokenMsg + ' ' + msg.content) : msg.content;
-          updateStatus('listening', `🎙️ "${msg.content}"`);
-          checkVoiceIntent(msg.content);
+          // 1. STOP COMMAND: Boss says stop/रुको -> halt speaking immediately
+          if (isStopCommand(userText)) {
+            console.log('🛑 Boss commanded STOP:', userText);
+            stopAllAudioPlayback();
+            playStopChime();
+            return;
+          }
+
+          // 2. MUTE COMMAND: Boss says mute/म्यूट -> mute audio output until unmute
+          if (isMuteCommand(userText)) {
+            console.log('🔇 Boss commanded MUTE:', userText);
+            isAgentMuted = true;
+            stopAllAudioPlayback();
+            playMuteChime();
+            return;
+          }
+
+          // 3. UNMUTE COMMAND: Boss says unmute/अनम्यूट -> unmute audio output
+          if (isUnmuteCommand(userText)) {
+            console.log('🔊 Boss commanded UNMUTE:', userText);
+            isAgentMuted = false;
+            playUnmuteChime();
+            if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
+              agentSocket.send(JSON.stringify({
+                type: "InjectUserMessage",
+                content: `[SYSTEM_EVENT: Boss has unmuted your voice! Warmly confirm in 1 short line in Hindi letters: "जी बॉस, अनम्यूट हो गई हूँ! बताइए क्या हुक्म है?"]`
+              }));
+            }
+            return;
+          }
+
+          lastUserSpokenMsg = lastUserSpokenMsg ? (lastUserSpokenMsg + ' ' + userText) : userText;
+          updateStatus('listening', `🎙️ "${userText}"`);
+          checkVoiceIntent(userText);
         } else if (msg.role === 'assistant') {
-          if (!isPinVerified) return; // Mute assistant text before PIN verification
+          if (!isPinVerified || isAgentMuted) return; // Mute assistant text before PIN verification or while muted
           const cleanAssistantText = stripLinksFromText(msg.content);
           updateStatus('speaking', `💬 RJN: ${cleanAssistantText}`);
           if (lastUserSpokenMsg) {
@@ -4634,6 +4791,7 @@ async function startVoiceCall(){
 function stopVoiceCall(){
   isCallActive = false;
   isPinVerified = false;
+  isAgentMuted = false;
   releaseScreenWakeLock();
   hideSecurityPinHUD();
   if (voiceReconnectTimer) {
