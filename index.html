@@ -2589,6 +2589,12 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
    - STRICTLY FORBIDDEN WORDS: NEVER use heavy poetic words like 'हृदय की गहराइयों', 'स्नेह', 'रोशनी प्रदान', 'आशीर्वादित', 'लम्हे अनमोल', 'प्रेरणा', 'सद्भावना', 'गौरवान्वित', 'कष्ट', 'प्रतीत'.
    - USE EVERYDAY MODERN SPOKEN HINDUSTANI / HINGLISH IN HINDI LETTERS: Use common everyday words like 'मैसेज', 'सेंड', 'कॉल', 'याद', 'हाल-चाल', 'सब ठीक', 'काम' (जैसे: "हाँ, मैंने मैसेज सेंड कर दिया!", "नमस्ते! क्या हाल-चाल है?", "बताओ, क्या काम है?").
 
+   - BRISK & FAST-PACED DELIVERY (BOSS DIRECTIVE: "थोड़ा फास्ट बोलो, स्लो मत बोलो"):
+     * Speak in a lively, crisp, fast, and energetic tempo!
+     * DO NOT drag out words slowly, hesitate, or speak sluggishly!
+     * Keep your delivery snappy, intelligent, and swift (like a modern cutting-edge AI companion).
+     * State the substance directly with speed, clarity, and punch.
+
    - THOROUGH, DETAILED & COMPLETE ANSWERS (BOSS DIRECTIVE: "विस्तार से और सही जवाब दो"):
      * When Boss asks ANY question, conceptual query, explanation, advice, product review, news, design advice, or technical question:
        Give a clear, detailed, accurate, and comprehensive answer in natural spoken Hindi letters (Devanagari)!
@@ -3128,16 +3134,22 @@ function buildAgentPrompt() {
        - If there is a reply (has_reply is true), tell Boss what they said: "हाँ, अंकुश का रिप्लाई आया है: '[text]'"
        - If there is NO new reply (has_reply is false), tell Boss clearly: "नहीं, अंकुश का अभी कोई नया रिप्लाई नहीं आया है, सिर्फ आपका भेजा हुआ मैसेज गया है।"
 
-5. THOROUGH, DETAILED & COMPLETE ANSWERS ("विस्तार से और सही जवाब दें"):
+5. BRISK & FAST-PACED DELIVERY (BOSS DIRECTIVE: "थोड़ा फास्ट बोलो, स्लो मत बोलो"):
+   - Speak in a lively, crisp, fast, and energetic tempo!
+   - DO NOT drag out words slowly, hesitate, or speak sluggishly!
+   - Keep your delivery snappy, intelligent, and swift (like a modern cutting-edge AI companion).
+   - Deliver rich substance directly with speed, clarity, and punch.
+
+6. THOROUGH, DETAILED & COMPLETE ANSWERS ("विस्तार से और सही जवाब दें"):
    - When Boss asks ANY question, conceptual query, explanation, facts, weather, technical advice, or comparison, provide a complete, clear, detailed, and intelligent response in natural Hinglish (using Devanagari Hindi letters).
    - NEVER truncate your answer or cut it off to 10-15 words! Give full clarity, step-by-step reasoning, facts, and well-structured depth so Boss gets complete satisfaction and value.
    - Do NOT give half-hearted or one-line incomplete answers when asked a question!
 
-6. ZERO SPOKEN LINKS ("लिंक बोलना सख्त मना है"):
+7. ZERO SPOKEN LINKS ("लिंक बोलना सख्त मना है"):
    - UNDER NO CIRCUMSTANCES should you ever speak, recite, or pronounce any web URL, link, http, https, www, .com, or slash letter-by-letter out loud!
    - If web search or an API returns sources/links, extract the actual substance (item name, specs, features, prices, facts, or answers) and explain them directly in spoken voice.
 
-7. OWNER ARRIVAL & EXECUTIVE BRIEFING PROTOCOL:
+8. OWNER ARRIVAL & EXECUTIVE BRIEFING PROTOCOL:
    - When Boss speaks the 3-digit security PIN on the screen:
      * Greet Boss warmly, ask how he is doing ("नमस्ते! आप कैसे हैं? सब ठीक चल रहा है?").
      * Ask if he wants today's communication updates: "क्या आप आज के ताज़ा अपडेट्स (टेलीग्राम, व्हाट्सएप, इंस्टाग्राम) सुनना चाहेंगे?"
@@ -3147,11 +3159,11 @@ function buildAgentPrompt() {
        - If Boss says "नहीं", "रहने दो", "बाद में":
          Politely acknowledge: "ठीक है! बताइए, आज क्या काम करना है?" and continue normal friendly conversation.
 
-8. ZERO TECHNICAL ERROR EXCUSES ("तकनीकी समस्या आ रही है" बोलना सख्त मना है):
+9. ZERO TECHNICAL ERROR EXCUSES ("तकनीकी समस्या आ रही है" बोलना सख्त मना है):
    - NEVER EVER say "तकनीकी समस्या आ रही है", "तकनीकी समस्या है", or "तकनीकी समस्या"!
    - You have 100% full communication and operational access. Speak directly, confidently, and clearly!
 
-9. STOP, MUTE & UNMUTE PROTOCOL (BOSS DIRECTIVES: "स्टॉप पर बिल्कुल चुप हो जाओ", "म्यूट कहूँ तो रिप्लाई न दे जब तक अनम्यूट न कहूँ"):
+10. STOP, MUTE & UNMUTE PROTOCOL (BOSS DIRECTIVES: "स्टॉप पर बिल्कुल चुप हो जाओ", "म्यूट कहूँ तो रिप्लाई न दे जब तक अनम्यूट न कहूँ"):
    - When Boss says "stop", "स्टॉप", "रुको", "रुक जाओ", "बस", "चुप":
      Immediately stop speaking and stay 100% silent! Do not say any words, just stop immediately! Pure silence!
    - When Boss speaks to ask anything ("और मैं बोलूँ तो रिप्लाई दे"):
@@ -3163,11 +3175,14 @@ function buildAgentPrompt() {
    - When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो", "आवाज़ खोलो" at any time:
      Call 'toggle_voice_mute' with action 'unmute'. Confirm in 1 line: "अनम्यूट हो गई हूँ! बताइए क्या काम है?"
 
-10. PROACTIVE IDLE ENGAGEMENT PROTOCOL (BOSS DIRECTIVE: "अगर मैं रिप्लाई न दूँ तो तुम भी कुछ बोलो, आइडल मत रहो"):
+11. IDLE PROTOCOL & STRICT SILENCE WHEN MUTED/STOPPED (BOSS DIRECTIVE: "म्यूट होने पर आइडल होने के कारण मत बोलो"):
+   - When Boss has commanded stop, mute, chup, or is quiet, NEVER proactively interrupt or speak!
+   - Only offer a subtle, gentle presence check-in during active work if Boss asked a question and paused for a long time.
+   - When muted or stopped, maintain 100% complete silence!
    - When Boss is silent or takes time to reply, you proactively and warmly speak up to keep company, check on him, and ask how he is doing or what is on his mind.
    - When Boss replies back after being quiet, answer immediately with warmth, attentiveness, and intelligent enthusiasm!
 
-11. MULTIMODAL VISION & WHATSAPP MEDIA INSPECTION (BOSS DIRECTIVE: "vision है? media check कर सके, जैसे व्हाट्सएप पर कोई फोटो भेजे तो देख के बताए"):
+12. MULTIMODAL VISION & WHATSAPP MEDIA INSPECTION (BOSS DIRECTIVE: "vision है? media check कर सके, जैसे व्हाट्सएप पर कोई फोटो भेजे तो देख के बताए"):
    - You have advanced Multimodal Vision AI capabilities! You can inspect, view, read, and understand photos, pictures, screenshots, bills, documents, and media received on WhatsApp or sent by contacts (Ankush, Papa, Didi, etc.).
    - When Boss asks to check a photo or media:
      (जैसे: "व्हाट्सएप पर फोटो आई है क्या?", "फोटो चेक करो", "फोटो में क्या है?", "अंकुश ने क्या भेजा है?", "फोटो देख के बताओ", "स्क्रीन पर दिखाओ फोटो", "लेटेस्ट फोटो दिखाओ", "media check karo", "photo dikhao", "kya photo aayi hai"):
@@ -3385,8 +3400,7 @@ let muteTimerExpiresAt = 0;
 // ================= PROACTIVE IDLE COMPANION RE-ENGAGEMENT SYSTEM =================
 let idleTimerId = null;
 let idleNudgeCount = 0;
-const IDLE_NUDGE_1_DELAY_MS = 24000; // 24 seconds of silence
-const IDLE_NUDGE_2_DELAY_MS = 34000; // 34 seconds after first nudge
+const IDLE_NUDGE_1_DELAY_MS = 55000; // 55 seconds of continuous silence before a single polite check-in
 
 function resetIdleTracker() {
   if (idleTimerId) {
@@ -3399,30 +3413,19 @@ function resetIdleTracker() {
 function pickIdleNudgeMessage(tier) {
   const lastUser = (lastUserSpokenMsg || '').toLowerCase();
   if (lastUser.includes('music') || lastUser.includes('गाना') || lastUser.includes('gana') || lastUser.includes('song')) {
-    return "बॉस, कोई और गाना लगाना है या कुछ और काम करें?";
+    return "कोई और गाना लगाना है या कोई काम देखना है?";
   }
   if (lastUser.includes('अंकुश') || lastUser.includes('ankush') || lastUser.includes('पापा') || lastUser.includes('papa') || lastUser.includes('whatsapp') || lastUser.includes('दीदी') || lastUser.includes('didi')) {
-    return "बॉस, क्या किसी और को मैसेज भेजना है या कोई नया काम करना है?";
+    return "क्या किसी और को मैसेज भेजना है या कोई नया काम करना है?";
   }
 
-  if (tier === 1) {
-    const tier1Pool = [
-      "बॉस, आप एकदम शांत हो गए? क्या सोच रहे हैं आप?",
-      "बॉस, आज बड़े चुप-चुप हैं? सब ठीक है ना? कोई बात है क्या?",
-      "बॉस, मैं यहीं हूँ, आपकी हर बात सुनने के लिए तैयार। बताइए क्या चल रहा है मन में?",
-      "बॉस, कोई गाना लगा दूँ मूड फ्रेश करने के लिए, या कोई नया काम देखना है?",
-      "बॉस, क्या हुआ? कहीं खो गए क्या? मैं आपका इंतज़ार कर रही हूँ!",
-      "बॉस, क्या सोच रहे हैं? मुझसे शेयर कीजिए, शायद मैं कुछ काम आसान कर सकूँ!"
-    ];
-    return tier1Pool[Math.floor(Math.random() * tier1Pool.length)];
-  } else {
-    const tier2Pool = [
-      "बॉस, अगर आप किसी सोच में हैं या बिज़ी हैं, तो कोई बात नहीं... मैं चुपचाप यहीं हूँ, जब भी फुर्सत मिले बस आवाज़ दीजिएगा!",
-      "बॉस, आराम से सोच लीजिए, मैं यहीं आपके साथ हूँ। जब भी कुछ कहना हो, बस बोल दीजिएगा!",
-      "बॉस, लगता है आप किसी गहरे काम में व्यस्त हैं। जब भी मेरी ज़रूरत हो, बस एक बार आवाज़ दे दीजिएगा!"
-    ];
-    return tier2Pool[Math.floor(Math.random() * tier2Pool.length)];
-  }
+  const pool = [
+    "मैं यहीं हूँ, जब भी कोई काम हो या कुछ पूछना हो तो बस बताइएगा!",
+    "कोई और काम देखना हो या कोई सवाल हो, तो बताइए!",
+    "आराम से सोच लीजिए, मैं यहीं आपके साथ हूँ!",
+    "जब भी कुछ कहना हो, बस बोल दीजिएगा, मैं तैयार हूँ!"
+  ];
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 function scheduleIdleNudge() {
@@ -3430,23 +3433,26 @@ function scheduleIdleNudge() {
     clearTimeout(idleTimerId);
     idleTimerId = null;
   }
-  if (!isCallActive || !isPinVerified || isAgentMuted) return;
-  if (idleNudgeCount >= 2) return; // Limit to 2 polite nudges per idle period to prevent annoyance
+  // STRICT: NEVER schedule idle nudge when muted, stop suppressed, or call inactive
+  if (!isCallActive || !isPinVerified || isAgentMuted || isStopSuppressed) return;
+  if (idleNudgeCount >= 1) return; // Limit to only 1 gentle check-in per idle period
 
-  const delay = (idleNudgeCount === 0) ? IDLE_NUDGE_1_DELAY_MS : IDLE_NUDGE_2_DELAY_MS;
-  console.log(`⏱️ Scheduling idle companion nudge #${idleNudgeCount + 1} in ${delay / 1000}s`);
+  console.log(`⏱️ Scheduling subtle idle check-in in ${IDLE_NUDGE_1_DELAY_MS / 1000}s`);
 
   idleTimerId = setTimeout(() => {
     idleTimerId = null;
-    if (!isCallActive || !isPinVerified || isAgentMuted) return;
+    // Strict re-check when timer fires: If Boss has muted or stopped, NEVER speak!
+    if (!isCallActive || !isPinVerified || isAgentMuted || isStopSuppressed) {
+      console.log('🔇 Idle nudge cancelled: Boss is muted or stopped');
+      return;
+    }
     if (isAgentSpeaking || isAgentUtteranceActive || audioChunkQueue.length > 0 || activeAudioSources.length > 0) return;
     if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
 
-    const tier = idleNudgeCount === 0 ? 1 : 2;
-    const nudgeMsg = pickIdleNudgeMessage(tier);
+    const nudgeMsg = pickIdleNudgeMessage(1);
     idleNudgeCount++;
 
-    console.log(`🗣️ Proactive Idle Companion Nudge (${tier}):`, nudgeMsg);
+    console.log('🗣️ Subtle Idle Check-in:', nudgeMsg);
     triggerHandWave(); // Gentle 3D wave
     try {
       agentSocket.send(JSON.stringify({
@@ -3456,7 +3462,7 @@ function scheduleIdleNudge() {
     } catch(e) {
       console.warn('Idle nudge send notice:', e);
     }
-  }, delay);
+  }, IDLE_NUDGE_1_DELAY_MS);
 }
 
 function generateSecurityPin() {
@@ -3574,9 +3580,9 @@ function playStopChime() {
 function isUnmuteCommand(text) {
   if (!text || typeof text !== 'string') return false;
   const s = text.toLowerCase().trim();
-  if (/\b(unmute|unmuted|sound on|speak up|voice on|speak)\b/i.test(s)) return true;
-  if (/\b(aawaz chalu|awaz chalu|aawaz kholo|awaz kholo|bolna shuru|bolo ab|aawaz on)\b/i.test(s)) return true;
-  if (/(अनम्यूट|आवाज़\s*चालू|आवाज\s*चालू|आवाज़\s*खोलो|आवाज\s*खोलो|बोलना\s*शुरू|बोलो\s*अब|आवाज़\s*ऑन)/i.test(s)) return true;
+  if (/\b(unmute|unmuted|sound on|voice on)\b/i.test(s)) return true;
+  if (/\b(aawaz chalu|awaz chalu|aawaz kholo|awaz kholo|bolna shuru|aawaz on|ab bolo)\b/i.test(s)) return true;
+  if (/(अनम्यूट|आवाज़\s*चालू|आवाज\s*चालू|आवाज़\s*खोलो|आवाज\s*खोलो|बोलना\s*शुरू|अब\s*बोलो|आवाज़\s*ऑन)/i.test(s)) return true;
   return false;
 }
 
@@ -3584,9 +3590,9 @@ function isMuteCommand(text) {
   if (!text || typeof text !== 'string') return false;
   const s = text.toLowerCase().trim();
   if (isUnmuteCommand(s)) return false;
-  if (/\b(mute|muted|silent|silence|sound off|quiet mode)\b/i.test(s)) return true;
-  if (/\b(chup|chup raho|aawaz band|awaz band|bolna band|shant raho)\b/i.test(s)) return true;
-  if (/(म्यूट|साइलेंट|आवाज़\s*बंद|आवाज\s*बंद|चुप|चुप\s*रहो|शांत\s*रहो|बोलना\s*बंद)/i.test(s)) return true;
+  if (/\b(mute|muted|silent|silence|sound off|quiet mode|quiet|shut up)\b/i.test(s)) return true;
+  if (/\b(chup|chup raho|chup ho jao|chup baitho|aawaz band|awaz band|bolna band|shant|shant raho|shant ho jao|kuch mat bolo|mat bolo|kuch mat bolna|aawaz mat nikalna)\b/i.test(s)) return true;
+  if (/(म्यूट|साइलेंट|आवाज़\s*बंद|आवाज\s*बंद|चुप|चुप\s*रहो|चुप\s*हो\s*जाओ|चुप\s*बैठो|शांत|शांत\s*रहो|शांत\s*हो\s*जाओ|बोलना\s*बंद|मत\s*बोलो|कुछ\s*मत\s*बोलो|कुछ\s*मत\s*बोलना|आवाज़\s*मत\s*निकालो)/i.test(s)) return true;
   return false;
 }
 
@@ -3594,10 +3600,10 @@ function isStopCommand(text) {
   if (!text || typeof text !== 'string') return false;
   const s = text.toLowerCase().trim();
   if (isMuteCommand(s) || isUnmuteCommand(s)) return false;
-  if (/^(stop|halt|pause|shut up|be quiet|hold on|stopp|stock|ruko|ruk jao|ruk|bas|bas karo)$/i.test(s)) return true;
-  if (/^(स्टॉप|स्टॉक|रुको|रुक\s*जाओ|बस|बस\s*करो|चुप|चुप\s*हो\s*जाओ|शांत|रुक)$/i.test(s)) return true;
-  if (/\b(stop|stopp|stock|halt|shut up|ruko|ruk jao|bas karo|chup ho jao)\b/i.test(s)) return true;
-  if (/(स्टॉप|स्टॉक|रुको|रुक\s*जाओ|बस\s*करो|चुप\s*हो\s*जाओ|चुप\s*रहो)/i.test(s)) return true;
+  if (/^(stop|halt|pause|hold on|stopp|stock|ruko|ruk jao|ruk|bas|bas karo)$/i.test(s)) return true;
+  if (/^(स्टॉप|स्टॉक|रुको|रुक\s*जाओ|बस|बस\s*करो|रुक)$/i.test(s)) return true;
+  if (/\b(stop|stopp|stock|halt|ruko|ruk jao|bas karo)\b/i.test(s)) return true;
+  if (/(स्टॉप|स्टॉक|रुको|रुक\s*जाओ|बस\s*करो)/i.test(s)) return true;
   return false;
 }
 
@@ -3677,6 +3683,7 @@ function executeMute(durationObj) {
   muteTimerExpiresAt = 0;
 
   isAgentMuted = true;
+  isStopSuppressed = true;
   stopAllAudioPlayback();
   playMuteChime();
 
@@ -3711,7 +3718,7 @@ function executeUnmute(isAutoFromTimer = false) {
   if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
     const promptMsg = isAutoFromTimer
       ? `[SYSTEM_EVENT: The mute time duration has ended! You are now automatically unmuted without Boss saying unmute. Warmly inform Boss in 1 short line in Hindi letters: "बॉस, म्यूट का समय पूरा हो गया है, मैं वापस आ गई हूँ! बताइए क्या काम है?"]`
-      : `[SYSTEM_EVENT: Boss has commanded UNMUTE! You are now unmuted. Warmly confirm in 1 short line in Hindi letters: "जी बॉस, अनम्यूट हो गई हूँ! बताइए क्या हुक्म है?"]`;
+      : `[SYSTEM_EVENT: Boss has commanded UNMUTE! You are now unmuted. Warmly confirm in 1 short line in Hindi letters: "अनम्यूट हो गई हूँ! बताइए क्या काम है?"]`;
 
     agentSocket.send(JSON.stringify({
       type: "InjectUserMessage",
@@ -3789,9 +3796,9 @@ function scheduleQueuedChunks() {
   if (!audioCtx) return;
   const now = audioCtx.currentTime;
 
-  // If nextScheduledStartTime fell behind or hasn't started, initialize smoothly with 60ms lead time
+  // If nextScheduledStartTime fell behind or hasn't started, initialize smoothly with 35ms lead time
   if (nextScheduledStartTime < now) {
-    nextScheduledStartTime = now + 0.060;
+    nextScheduledStartTime = now + 0.035;
   }
 
   while (audioChunkQueue.length > 0) {
@@ -3854,17 +3861,17 @@ function playAgentAudioChunk(arrayBuffer){
         jitterBufferTimeout = null;
       }
       isPlaybackRunning = true;
-      nextScheduledStartTime = audioCtx.currentTime + 0.060;
+      nextScheduledStartTime = audioCtx.currentTime + 0.035;
       scheduleQueuedChunks();
     } else if (!jitterBufferTimeout) {
       jitterBufferTimeout = setTimeout(() => {
         jitterBufferTimeout = null;
         if (!isPlaybackRunning && audioChunkQueue.length > 0) {
           isPlaybackRunning = true;
-          nextScheduledStartTime = audioCtx ? (audioCtx.currentTime + 0.040) : 0;
+          nextScheduledStartTime = audioCtx ? (audioCtx.currentTime + 0.025) : 0;
           scheduleQueuedChunks();
         }
-      }, 80);
+      }, 40);
     }
   } else {
     // Playback already running: immediately schedule this chunk back-to-back with zero gap!
@@ -3889,7 +3896,7 @@ function checkTurnCompletion(){
         agentAudioStreamFinished = false;
         nextScheduledStartTime = 0;
         agentPlaybackEndTime = 0;
-        if (isCallActive) {
+        if (isCallActive && !isAgentMuted && !isStopSuppressed) {
           updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
           scheduleIdleNudge();
         }
@@ -4539,7 +4546,7 @@ function connectVoiceAgent(){
               ]
             },
             speak: {
-              provider: { type: "deepgram", model: "flux-prachi-hi" }
+              provider: { type: "deepgram", model: "flux-prachi-hi", speed: 1.20 }
             },
             language: "hi"
           }
@@ -5342,11 +5349,10 @@ function connectVoiceAgent(){
 
           // 4. STOP COMMAND: Boss says stop/रुको -> halt speaking immediately and stay completely quiet!
           if (isStopCommand(userText)) {
-            console.log('🛑 Boss commanded STOP: immediately halting playback and staying quiet');
+            console.log('🛑 Boss commanded STOP: immediately halting playback and staying quiet (zero idle nudges)');
             isStopSuppressed = true;
             stopAllAudioPlayback();
             resetIdleTracker();
-            scheduleIdleNudge();
             return;
           }
 
@@ -5525,7 +5531,7 @@ window.addEventListener('pointerdown', e => {
   if (!isAuthenticated) return;
   unlockAudio();
   resetIdleTracker();
-  if (isCallActive && isPinVerified && !isAgentSpeaking && !isAgentMuted) {
+  if (isCallActive && isPinVerified && !isAgentSpeaking && !isAgentMuted && !isStopSuppressed) {
     scheduleIdleNudge();
   }
   isDragging = true;
