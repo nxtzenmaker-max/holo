@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sovereign AI Systems Architecture · 7-Layer Autonomous Ecosystem</title>
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    margin: 0;
+    padding: 0;
+    background: #06080e;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: #e2e8f0;
+    line-height: 1.6;
+    overflow-x: hidden;
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    background-size: 36px 36px;
+    background-position: center top;
+  }
+
+  /* Monospace typography for technical HUD elements */
+  .mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+
+  /* Fixed Top Navigation Bar */
+  .navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: rgba(6, 8, 14, 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 24px;
+    z-index: 100;
+  }
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .status-pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 6px #10b981;
+  }
+  .nav-title {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #f1f5f9;
+  }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .nav-link {
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 12px;
+    transition: color 0.15s ease;
+    letter-spacing: 0.03em;
+  }
+  .nav-link:hover {
+    color: #38bdf8;
+  }
+  .dispatch-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #0284c7;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+  .dispatch-btn:hover {
+    background: #0369a1;
+  }
+
+  /* Main Container */
+  .container {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 88px 24px 64px 24px;
+  }
+
+  /* Hero Section */
+  .hero-tagline {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    color: #38bdf8;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+  }
+  .hero-headline {
+    font-size: clamp(28px, 4.2vw, 46px);
+    font-weight: 700;
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    color: #f8fafc;
+    margin: 0 0 18px 0;
+  }
+  .hero-headline span {
+    color: #38bdf8;
+  }
+
+  /* Architectural Manifesto Quote Card */
+  .manifesto-card {
+    background: rgba(13, 18, 28, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 3px solid #38bdf8;
+    border-radius: 12px;
+    padding: 22px 26px;
+    margin-bottom: 36px;
+    backdrop-filter: blur(16px);
+  }
+  .manifesto-quote {
+    font-size: clamp(15px, 2vw, 19px);
+    font-weight: 400;
+    color: #cbd5e1;
+    margin: 0 0 14px 0;
+    line-height: 1.55;
+    font-style: italic;
+  }
+  .manifesto-quote strong {
+    color: #f8fafc;
+    font-weight: 600;
+    font-style: normal;
+  }
+  .manifesto-sub {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+  .manifesto-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Metric Badges Strip */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 14px;
+    margin-bottom: 48px;
+  }
+  .metric-card {
+    background: rgba(12, 16, 25, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 18px 20px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  .metric-card:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    transform: translateY(-2px);
+  }
+  .metric-label {
+    font-size: 11px;
+    color: #64748b;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .metric-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f1f5f9;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+  }
+  .metric-sub {
+    font-size: 11.5px;
+    color: #94a3b8;
+  }
+
+  /* Section Header */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 12px;
+  }
+  .section-title-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .section-index {
+    font-size: 11px;
+    color: #38bdf8;
+    letter-spacing: 0.08em;
+  }
+  .section-heading {
+    font-size: 20px;
+    font-weight: 600;
+    color: #f8fafc;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+
+  /* 7-Layer Constitutional Stack */
+  .stack-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 56px;
+  }
+  .stack-layer {
+    background: rgba(12, 16, 25, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .stack-layer:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    background: rgba(15, 21, 33, 0.95);
+  }
+  .stack-layer.active {
+    border-color: #0284c7;
+    background: rgba(15, 23, 38, 0.98);
+  }
+  .layer-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 20px;
+    user-select: none;
+  }
+  .layer-id-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .layer-badge {
+    font-size: 11px;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.25);
+    padding: 3px 8px;
+    border-radius: 5px;
+    letter-spacing: 0.04em;
+  }
+  .layer-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1f5f9;
+  }
+  .layer-sub {
+    font-size: 12px;
+    color: #94a3b8;
+  }
+  .layer-toggle {
+    font-size: 13px;
+    color: #64748b;
+    transition: transform 0.2s ease;
+  }
+  .stack-layer.active .layer-toggle {
+    transform: rotate(180deg);
+    color: #38bdf8;
+  }
+  .layer-details {
+    display: none;
+    padding: 0 20px 18px 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: 2px;
+  }
+  .stack-layer.active .layer-details {
+    display: block;
+    animation: detailsFade 0.25s ease;
+  }
+  @keyframes detailsFade {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .layer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 14px;
+  }
+  .layer-info-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+  .info-title {
+    font-size: 11px;
+    color: #64748b;
+    letter-spacing: 0.04em;
+    margin-bottom: 4px;
+  }
+  .info-desc {
+    font-size: 12.5px;
+    color: #cbd5e1;
+  }
+
+  /* Production Showcase Cards */
+  .showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+    gap: 18px;
+    margin-bottom: 60px;
+  }
+  .showcase-card {
+    background: rgba(12, 16, 25, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.2s ease;
+  }
+  .showcase-card:hover {
+    border-color: rgba(56, 189, 248, 0.35);
+    transform: translateY(-2px);
+  }
+  .card-top {
+    margin-bottom: 16px;
+  }
+  .card-tag {
+    font-size: 11px;
+    color: #38bdf8;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .card-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #f8fafc;
+    margin: 0 0 8px 0;
+  }
+  .card-desc {
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.55;
+    margin: 0;
+  }
+  .spec-list {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0 0;
+    font-size: 12px;
+    color: #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .spec-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .spec-item::before {
+    content: "•";
+    color: #38bdf8;
+    font-size: 14px;
+  }
+
+  /* Dispatch / Contact Section */
+  .dispatch-section {
+    background: rgba(13, 18, 28, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 36px 30px;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .dispatch-heading {
+    font-size: clamp(22px, 3vw, 30px);
+    font-weight: 600;
+    color: #f8fafc;
+    margin: 0 0 10px 0;
+  }
+  .dispatch-p {
+    font-size: 14px;
+    color: #94a3b8;
+    max-width: 580px;
+    margin: 0 auto 24px auto;
+  }
+  .dispatch-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .action-btn-primary {
+    background: #0284c7;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  .action-btn-primary:hover {
+    background: #0369a1;
+  }
+  .action-btn-secondary {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .action-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: #f8fafc;
+  }
+
+  /* Footer */
+  .footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #64748b;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  @media (max-width: 640px) {
+    .navbar {
+      padding: 0 16px;
+    }
+    .container {
+      padding: 76px 16px 40px 16px;
+    }
+    .nav-links {
+      display: none;
+    }
+    .layer-head {
+      padding: 12px 14px;
+    }
+    .layer-details {
+      padding: 0 14px 14px 14px;
+    }
+    .dispatch-section {
+      padding: 26px 18px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Fixed Technical Top Bar -->
+<header class="navbar">
+  <div class="nav-brand">
+    <div class="status-indicator mono">
+      <span class="status-pulse"></span>
+      <span>24/7 ONLINE</span>
+    </div>
+    <span class="nav-title mono">SAAI // ARCHITECT</span>
+  </div>
+  <nav class="nav-links mono">
+    <a href="#about" class="nav-link">About</a>
+    <a href="#stack" class="nav-link">Stack</a>
+    <a href="#production" class="nav-link">Engines</a>
+    <a href="../demo" class="nav-link" style="color: #38bdf8;">3D Orb Demo ↗</a>
+  </nav>
+  <a href="#dispatch" class="dispatch-btn mono">
+    <span>INITIATE DISPATCH</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </a>
+</header>
+
+<main class="container">
+  <!-- Hero / Profile Headline -->
+  <section id="about">
+    <div class="hero-tagline mono">
+      <span>[01/05] SEC_ABOUT INDEX</span>
+      <span>&middot;</span>
+      <span>OVERVIEW PROFILE</span>
+    </div>
+    <h1 class="hero-headline">
+      Autonomous AI Systems Architect.<br>
+      <span>Built from first principles.</span>
+    </h1>
+
+    <!-- Manifesto Card Matching the Reel -->
+    <div class="manifesto-card">
+      <p class="manifesto-quote">
+        "I design and deploy <strong>autonomous AI systems that operate 24/7</strong> with persistent memory and continuous self-evolution &mdash; built from first principles without startup frameworks."
+      </p>
+      <div class="manifesto-sub mono">
+        <span class="manifesto-tag">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>24/7 Silicon Runtime</span>
+        </span>
+        <span class="manifesto-tag">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect><rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect><line x1="6" y1="6" x2="6.01" y2="6"></line><line x1="6" y1="18" x2="6.01" y2="18"></line></svg>
+          <span>Sovereign Compute</span>
+        </span>
+        <span class="manifesto-tag">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+          <span>Axiomatic Verification</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Metrics Badges Grid -->
+    <div class="metrics-grid">
+      <div class="metric-card">
+        <div class="metric-label mono">Ecosystem Tools</div>
+        <div class="metric-value mono">478</div>
+        <div class="metric-sub">Custom validated MCP tools</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label mono">Tool Servers</div>
+        <div class="metric-value mono">14</div>
+        <div class="metric-sub">Isolated microservice servers</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label mono">Constitutional Stack</div>
+        <div class="metric-value mono">7-Layer</div>
+        <div class="metric-sub">Zero-framework architecture</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-label mono">Memory Architecture</div>
+        <div class="metric-value mono">4-Tier</div>
+        <div class="metric-sub">Persistent graph & vector state</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7-Layer Constitutional Stack -->
+  <section id="stack">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <span class="section-index mono">[02/05] CONSTITUTIONAL STACK</span>
+        <h2 class="section-heading">7-Layer Autonomous AI Stack</h2>
+      </div>
+      <span class="mono" style="font-size: 11px; color: #64748b;">Click layer to inspect specs</span>
+    </div>
+
+    <div class="stack-list">
+      <!-- Layer 01 -->
+      <div class="stack-layer active" onclick="toggleLayer(this)">
+        <div class="layer-head">
+          <div class="layer-id-title">
+            <span class="layer-badge mono">LAYER 01</span>
+            <div>
+              <div class="layer-title">Cognitive Core &middot; Sovereign Foundation</div>
+              <div class="layer-sub">Uncensored local model inference running natively on dedicated GPU silicon</div>
+            </div>
+          </div>
+          <span class="layer-toggle">&darr;</span>
+        </div>
+        <div class="layer-details">
+          <div class="layer-grid">
+            <div class="layer-info-box">
+              <div class="info-title mono">COMPUTE TARGET</div>
+              <div class="info-desc">Local RTX 4070 GPU workstation &middot; 128k context quantization</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">INFERENCE LATENCY</div>
+              <div class="info-desc">sub-18ms time-to-first-token &middot; zero external API dependency</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">SOVEREIGNTY PROTOCOL</div>
+              <div class="info-desc">Complete cryptographic containment with self-hosted weights</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 02 -->
+      <div class="stack-layer" onclick="toggleLayer(this)">
+        <div class="layer-head">
+          <div class="layer-id-title">
+            <span class="layer-badge mono">LAYER 02</span>
+            <div>
+              <div class="layer-title">Tool Orchestration &middot; 478 MCP Capabilities</div>
+              <div class="layer-sub">Real-time function invocation across 14 sandboxed Model Context Protocol servers</div>
+            </div>
+          </div>
+          <span class="layer-toggle">&darr;</span>
+        </div>
+        <div class="layer-details">
+          <div class="layer-grid">
+            <div class="layer-info-box">
+              <div class="info-title mono">TOOL REGISTRY</div>
+              <div class="info-desc">478 schema-validated tool endpoints covering OS, DB, network, & blockchain</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">DISPATCH PIPELINE</div>
+              <div class="info-desc">Zero-overhead JSON-RPC protocol with strict parameter validation</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">FAILOVER RUNTIME</div>
+              <div class="info-desc">Circuit breakers with automated fallback execution policies</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 03 -->
+      <div class="stack-layer" onclick="toggleLayer(this)">
+        <div class="layer-head">
+          <div class="layer-id-title">
+            <span class="layer-badge mono">LAYER 03</span>
+            <div>
+              <div class="layer-title">Redundant Memory &middot; 4-Tier Knowledge Graph</div>
+              <div class="layer-sub">Persistent multi-turn recall combining graph relationships and dense vector space</div>
+            </div>
+          </div>
+          <span class="layer-toggle">&darr;</span>
+        </div>
+        <div class="layer-details">
+          <div class="layer-grid">
+            <div class="layer-info-box">
+              <div class="info-title mono">TIER 1 & 2</div>
+              <div class="info-desc">In-memory sliding context window + local LMDB indexed cache</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">TIER 3 & 4</div>
+              <div class="info-desc">Distributed vector storage (HNSW) + MongoDB persistent entity graph</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">SESSION LIFETIME</div>
+              <div class="info-desc">Continuous perpetual retention with zero session auto-expiry</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 04 -->
+      <div class="stack-layer" onclick="toggleLayer(this)">
+        <div class="layer-head">
+          <div class="layer-id-title">
+            <span class="layer-badge mono">LAYER 04</span>
+            <div>
+              <div class="layer-title">Reflection &middot; Continuous Self-Audit Loop</div>
+              <div class="layer-sub">Independent evaluator agent assessing logical coherence and factual veracity</div>
+            </div>
+          </div>
+          <span class="layer-toggle">&darr;</span>
+        </div>
+        <div class="layer-details">
+          <div class="layer-grid">
+            <div class="layer-info-box">
+              <div class="info-title mono">AUDIT PASS RATE</div>
+              <div class="info-desc">99.4% logic integrity benchmarked across 10,000 synthetic test runs</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">BIAS SUPPRESSION</div>
+              <div class="info-desc">Axiomatic truth filters preventing hallucination cascades</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">ERROR CORRECTION</div>
+              <div class="info-desc">Real-time retry with counter-factual re-prompting</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 05 -->
+      <div class="stack-layer" onclick="toggleLayer(this)">
+        <div class="layer-head">
+          <div class="layer-id-title">
+            <span class="layer-badge mono">LAYER 05</span>
+            <div>
+              <div class="layer-title">Event Routing &middot; Async WebSockets Pipeline</div>
+              <div class="layer-sub">Sub-millisecond event bus connecting voice audio, sensors, and execution runners</div>
+            </div>
+          </div>
+          <span class="layer-toggle">&darr;</span>
+        </div>
+        <div class="layer-details">
+          <div class="layer-grid">
+            <div class="layer-info-box">
+              <div class="info-title mono">STREAM THROUGHPUT</div>
+              <div class="info-desc">2,969 LOC asynchronous pipeline running at full 60 FPS update rate</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">INTERRUPT HANDLING</div>
+              <div class="info-desc">Zero-lag barge-in cancellation within 35ms of user interaction</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">PROTOCOL MATRIX</div>
+              <div class="info-desc">Binary audio packets, JSON commands, and WebGL particle uniforms</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 06 -->
+      <div class="stack-layer" onclick="toggleLayer(this)">
+        <div class="layer-head">
+          <div class="layer-id-title">
+            <span class="layer-badge mono">LAYER 06</span>
+            <div>
+              <div class="layer-title">Multi-LLM Parliament &middot; Ensemble Consensus</div>
+              <div class="layer-sub">Multi-agent assembly model with role division for research, code, and verification</div>
+            </div>
+          </div>
+          <span class="layer-toggle">&darr;</span>
+        </div>
+        <div class="layer-details">
+          <div class="layer-grid">
+            <div class="layer-info-box">
+              <div class="info-title mono">ASSEMBLY ROLES</div>
+              <div class="info-desc">Architect, Code Synthesizer, Adversarial Verifier, and Fact Auditor</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">VOTING MECHANISM</div>
+              <div class="info-desc">Weighted majority consensus preventing single-model blindspots</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">ORCHESTRATION</div>
+              <div class="info-desc">Dynamic task sharding across specialized model architectures</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Layer 07 -->
+      <div class="stack-layer" onclick="toggleLayer(this)">
+        <div class="layer-head">
+          <div class="layer-id-title">
+            <span class="layer-badge mono">LAYER 07</span>
+            <div>
+              <div class="layer-title">Sovereign Security &middot; Cryptographic Enclave</div>
+              <div class="layer-sub">Zero-trust credential isolation, hardware token guards, and secure execution boundaries</div>
+            </div>
+          </div>
+          <span class="layer-toggle">&darr;</span>
+        </div>
+        <div class="layer-details">
+          <div class="layer-grid">
+            <div class="layer-info-box">
+              <div class="info-title mono">CREDENTIAL ISOLATION</div>
+              <div class="info-desc">Secrets stored in encrypted hardware enclaves without plain text exposure</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">VOICE SECURITY PIN</div>
+              <div class="info-desc">Holographic 3-digit cryptographic PIN barrier guarding system execution</div>
+            </div>
+            <div class="layer-info-box">
+              <div class="info-title mono">SANDBOX CONTROL</div>
+              <div class="info-desc">Strict OS capability caps preventing unauthorized file or shell access</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Production Systems Showcase -->
+  <section id="production">
+    <div class="section-header">
+      <div class="section-title-wrap">
+        <span class="section-index mono">[03/05] PRODUCTION ENGINES</span>
+        <h2 class="section-heading">Architectural Showcase</h2>
+      </div>
+      <span class="mono" style="font-size: 11px; color: #64748b;">Active production grade</span>
+    </div>
+
+    <div class="showcase-grid">
+      <!-- Card 1 -->
+      <div class="showcase-card">
+        <div class="card-top">
+          <span class="card-tag mono">CORE SYSTEM</span>
+          <h3 class="card-title">SAAI &middot; 7-Layer Autonomous AI Ecosystem</h3>
+          <p class="card-desc">
+            A persistent, self-evolving autonomous intelligence operating 24/7 on local silicon. Engineered without external startup frameworks, featuring 478 custom tools across 14 MCP servers, 4-tier redundant memory, and a continuous reflection loop.
+          </p>
+          <ul class="spec-list mono">
+            <li class="spec-item">478 schema-tested MCP tools</li>
+            <li class="spec-item">14 dedicated microservice servers</li>
+            <li class="spec-item">Continuous reflection and audit loop</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="showcase-card">
+        <div class="card-top">
+          <span class="card-tag mono">QUANTITATIVE LAB</span>
+          <h3 class="card-title">Josh Lab &middot; Arbitrage & Liquidation Engine</h3>
+          <p class="card-desc">
+            Production flash loan arbitrage and Aave V3 liquidation engine on Polygon mainnet. Custom Solidity smart contracts integrated with asynchronous multi-hop routing, Uniswap V3, QuickSwap, and Curve pools.
+          </p>
+          <ul class="spec-list mono">
+            <li class="spec-item">Polygon Mainnet & Aave V3 Flash Loans</li>
+            <li class="spec-item">2,969 LOC Async WebSockets Engine</li>
+            <li class="spec-item">Sub-millisecond multi-hop pathfinder</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="showcase-card">
+        <div class="card-top">
+          <span class="card-tag mono">MACHINE LEARNING</span>
+          <h3 class="card-title">Kronos &middot; ML Time Series Forecaster</h3>
+          <p class="card-desc">
+            Production-grade time-series forecasting service with a high-throughput FastAPI backend and real-time React/TypeScript dashboard. Complete machine learning pipeline from raw telemetry to 24-step forecasting.
+          </p>
+          <ul class="spec-list mono">
+            <li class="spec-item">FastAPI async microservice backend</li>
+            <li class="spec-item">React & TypeScript visualization HUD</li>
+            <li class="spec-item">Automated drift detection & retraining</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Card 4 -->
+      <div class="showcase-card">
+        <div class="card-top">
+          <span class="card-tag mono">ADVANCED INTELLIGENCE</span>
+          <h3 class="card-title">Multi-LLM Parliament Architecture</h3>
+          <p class="card-desc">
+            Ensemble assembly model comprising multiple specialized model instances with formal debate protocols, adversarial cross-verification, and weighted majority voting pipelines.
+          </p>
+          <ul class="spec-list mono">
+            <li class="spec-item">Adversarial verification protocol</li>
+            <li class="spec-item">Zero-sycophancy truth verification</li>
+            <li class="spec-item">Independent validation checkpoints</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dispatch / Contact Section -->
+  <section id="dispatch" class="dispatch-section">
+    <div class="hero-tagline mono" style="justify-content: center;">
+      <span>[04/05] DISPATCH PROTOCOL</span>
+    </div>
+    <h2 class="dispatch-heading">Let's Architect Something Extraordinary.</h2>
+    <p class="dispatch-p">
+      Available for production autonomous AI systems design, quantitative trading infrastructure, and sovereign technical architecture worldwide.
+    </p>
+    <div class="dispatch-actions">
+      <a href="mailto:contact@sahir.ai" class="action-btn-primary mono">
+        <span>INITIATE DISPATCH</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </a>
+      <a href="../demo" class="action-btn-secondary mono">
+        <span>VIEW 3D NEURAL ORB</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+          <polyline points="2 17 12 22 22 17"></polyline>
+          <polyline points="2 12 12 17 22 12"></polyline>
+        </svg>
+      </a>
+      <a href="../" class="action-btn-secondary mono">
+        <span>FULL VOICE INTERFACE</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+          <line x1="12" y1="19" x2="12" y2="23"></line>
+          <line x1="8" y1="23" x2="16" y2="23"></line>
+        </svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer mono">
+    <div>SAAI &middot; 7-LAYER AUTONOMOUS ECOSYSTEM &middot; SOVEREIGN SILICON</div>
+    <div>OPERATING 24/7 &middot; ZERO EXTERNAL FRAMEWORKS</div>
+  </footer>
+</main>
+
+<script>
+function toggleLayer(el) {
+  const isActive = el.classList.contains('active');
+  document.querySelectorAll('.stack-layer').forEach(layer => {
+    layer.classList.remove('active');
+  });
+  if (!isActive) {
+    el.classList.add('active');
+  }
+}
+</script>
+</body>
+</html>

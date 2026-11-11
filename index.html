@@ -2362,8 +2362,30 @@ function showMediaViewer({ type = 'image', url = '', content = '', title = '', d
     }
   }
 
-  if (cleanType === 'video') {
-    if (videoWrap) videoWrap.style.display = 'block';
+  if (cleanType === 'site' || cleanType === 'iframe' || cleanType === 'web') {
+    if (videoWrap) {
+      videoWrap.style.display = 'block';
+      videoWrap.style.aspectRatio = 'auto';
+      videoWrap.style.height = '72vh';
+    }
+    if (videoEl) videoEl.style.display = 'none';
+    if (iframeEl) {
+      iframeEl.style.display = 'block';
+      iframeEl.style.width = '100%';
+      iframeEl.style.height = '100%';
+      iframeEl.src = displayUrl || './site';
+    }
+    if (openLinkBtn) {
+      openLinkBtn.style.display = 'inline-flex';
+      openLinkBtn.href = displayUrl || './site';
+      openLinkBtn.textContent = 'Open Full Screen ↗';
+    }
+  } else if (cleanType === 'video') {
+    if (videoWrap) {
+      videoWrap.style.display = 'block';
+      videoWrap.style.aspectRatio = '16/9';
+      videoWrap.style.height = 'auto';
+    }
     const ytMatch = (displayUrl || '').match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
     if (ytMatch && iframeEl) {
       iframeEl.style.display = 'block';
@@ -2406,6 +2428,8 @@ function hideMediaViewer(){
   if (m) m.classList.remove('active');
   const v = document.getElementById('mediaModalVideo');
   if (v) { v.pause(); v.src = ''; }
+  const vw = document.getElementById('mediaVideoWrap');
+  if (vw) { vw.style.aspectRatio = ''; vw.style.height = ''; }
   const f = document.getElementById('mediaModalIframe');
   if (f) f.src = '';
 }
@@ -3972,6 +3996,15 @@ function checkVoiceIntent(str){
   if (isCommand(/\b(girl|chehra|avatar|face)\b|लड़की|चेहरा|अवतार/i)) { showGirl(); return 'girl'; }
   if (isCommand(/\b(model|bust|humanoid|robot|aimodel)\b|मॉडल|बस्ट|रोबोट/i)) { morphShape('aimodel'); return 'aimodel'; }
   if (isCommand(/\b(orb|sphere|ball|gola|orbee)\b|गोला|ऑर्ब/i)) { morphShape('orb'); return 'orb'; }
+  if (isCommand(/\b(site|show site|website|open site|portfolio|autonomous build|ecosystem|stack)\b|साइट|वेबसाइट|पोर्टफोलियो/i)) {
+    showMediaViewer({
+      type: 'site',
+      url: 'https://nxtzenmaker-max.github.io/holo/site',
+      title: '⚡ SAAI // Autonomous AI Architectural Showcase',
+      description: '7-Layer Sovereign AI Constitutional Stack & Production Engines'
+    });
+    return 'site';
+  }
 
   // Check universal dictionary for any arbitrary object (guitar, lion, tree, cup, butterfly, etc.)
   const isMorphTrigger = /(bano|banao|ban jao|banjao|bana do|shape|turn into|transform|convert|dikhao)/i.test(s) || s.split(/\s+/).length <= 2;
@@ -4504,8 +4537,8 @@ function connectVoiceAgent(){
                     properties: {
                       type: {
                         type: "string",
-                        enum: ["image", "video", "document"],
-                        description: "Type of media: 'image' for pictures/art, 'video' for video clips/streams, 'document' for text/code/reports/files"
+                        enum: ["image", "video", "document", "site"],
+                        description: "Type of media: 'image' for pictures/art, 'video' for video clips/streams, 'document' for text/code/reports/files, 'site' for interactive web pages / architectural showcase"
                       },
                       title: {
                         type: "string",
