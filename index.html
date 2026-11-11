@@ -3118,7 +3118,11 @@ function buildAgentPrompt() {
      CRITICAL: While muted, NEVER give any reply to anything Boss says until unmuted!
    - When a timed mute expires, you will automatically unmute without Boss needing to say unmute!
    - When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो", "आवाज़ खोलो" at any time:
-     Call 'toggle_voice_mute' with action 'unmute'. Confirm in 1 line: "जी बॉस, अनम्यूट हो गई हूँ! बताइए क्या हुक्म है?"`;
+     Call 'toggle_voice_mute' with action 'unmute'. Confirm in 1 line: "जी बॉस, अनम्यूट हो गई हूँ! बताइए क्या हुक्म है?"
+
+7. PROACTIVE IDLE ENGAGEMENT PROTOCOL (BOSS DIRECTIVE: "अगर मैं रिप्लाई न दूँ तो तुम भी कुछ बोलो, आइडल मत रहो"):
+   - When Boss is silent or takes time to reply, you proactively and warmly speak up to keep company, check on him, and ask how he is doing or what is on his mind.
+   - When Boss replies back after being quiet, answer immediately with warmth, attentiveness, and intelligent enthusiasm!`;
 
   // Add permanently remembered contacts and facts
   prompt += `\n\n=== PERMANENT SAVED CONTACTS & SECURE MEMORY ===
@@ -3317,6 +3321,86 @@ let isPinVerified = false;
 let isAgentMuted = false;
 let muteTimeoutTimer = null;
 let muteTimerExpiresAt = 0;
+
+// ================= PROACTIVE IDLE COMPANION RE-ENGAGEMENT SYSTEM =================
+let idleTimerId = null;
+let idleNudgeCount = 0;
+let idleStopCooldownUntil = 0;
+const IDLE_NUDGE_1_DELAY_MS = 24000; // 24 seconds of silence
+const IDLE_NUDGE_2_DELAY_MS = 34000; // 34 seconds after first nudge
+
+function resetIdleTracker() {
+  if (idleTimerId) {
+    clearTimeout(idleTimerId);
+    idleTimerId = null;
+  }
+  idleNudgeCount = 0;
+}
+
+function pickIdleNudgeMessage(tier) {
+  const lastUser = (lastUserSpokenMsg || '').toLowerCase();
+  if (lastUser.includes('music') || lastUser.includes('गाना') || lastUser.includes('gana') || lastUser.includes('song')) {
+    return "बॉस, कोई और गाना लगाना है या कुछ और काम करें?";
+  }
+  if (lastUser.includes('अंकुश') || lastUser.includes('ankush') || lastUser.includes('पापा') || lastUser.includes('papa') || lastUser.includes('whatsapp') || lastUser.includes('दीदी') || lastUser.includes('didi')) {
+    return "बॉस, क्या किसी और को मैसेज भेजना है या कोई नया काम करना है?";
+  }
+
+  if (tier === 1) {
+    const tier1Pool = [
+      "बॉस, आप एकदम शांत हो गए? क्या सोच रहे हैं आप?",
+      "बॉस, आज बड़े चुप-चुप हैं? सब ठीक है ना? कोई बात है क्या?",
+      "बॉस, मैं यहीं हूँ, आपकी हर बात सुनने के लिए तैयार। बताइए क्या चल रहा है मन में?",
+      "बॉस, कोई गाना लगा दूँ मूड फ्रेश करने के लिए, या कोई नया काम देखना है?",
+      "बॉस, क्या हुआ? कहीं खो गए क्या? मैं आपका इंतज़ार कर रही हूँ!",
+      "बॉस, क्या सोच रहे हैं? मुझसे शेयर कीजिए, शायद मैं कुछ काम आसान कर सकूँ!"
+    ];
+    return tier1Pool[Math.floor(Math.random() * tier1Pool.length)];
+  } else {
+    const tier2Pool = [
+      "बॉस, अगर आप किसी सोच में हैं या बिज़ी हैं, तो कोई बात नहीं... मैं चुपचाप यहीं हूँ, जब भी फुर्सत मिले बस आवाज़ दीजिएगा!",
+      "बॉस, आराम से सोच लीजिए, मैं यहीं आपके साथ हूँ। जब भी कुछ कहना हो, बस बोल दीजिएगा!",
+      "बॉस, लगता है आप किसी गहरे काम में व्यस्त हैं। जब भी मेरी ज़रूरत हो, बस एक बार आवाज़ दे दीजिएगा!"
+    ];
+    return tier2Pool[Math.floor(Math.random() * tier2Pool.length)];
+  }
+}
+
+function scheduleIdleNudge() {
+  if (idleTimerId) {
+    clearTimeout(idleTimerId);
+    idleTimerId = null;
+  }
+  if (!isCallActive || !isPinVerified || isAgentMuted) return;
+  if (Date.now() < idleStopCooldownUntil) return;
+  if (idleNudgeCount >= 2) return; // Limit to 2 polite nudges per idle period to prevent annoyance
+
+  const delay = (idleNudgeCount === 0) ? IDLE_NUDGE_1_DELAY_MS : IDLE_NUDGE_2_DELAY_MS;
+  console.log(`⏱️ Scheduling idle companion nudge #${idleNudgeCount + 1} in ${delay / 1000}s`);
+
+  idleTimerId = setTimeout(() => {
+    idleTimerId = null;
+    if (!isCallActive || !isPinVerified || isAgentMuted) return;
+    if (isAgentSpeaking || isAgentUtteranceActive || audioChunkQueue.length > 0 || activeAudioSources.length > 0) return;
+    if (Date.now() < idleStopCooldownUntil) return;
+    if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
+
+    const tier = idleNudgeCount === 0 ? 1 : 2;
+    const nudgeMsg = pickIdleNudgeMessage(tier);
+    idleNudgeCount++;
+
+    console.log(`🗣️ Proactive Idle Companion Nudge (${tier}):`, nudgeMsg);
+    triggerHandWave(); // Gentle 3D wave
+    try {
+      agentSocket.send(JSON.stringify({
+        type: "InjectAgentMessage",
+        message: nudgeMsg
+      }));
+    } catch(e) {
+      console.warn('Idle nudge send notice:', e);
+    }
+  }, delay);
+}
 
 function generateSecurityPin() {
   const d1 = Math.floor(1 + Math.random() * 9);
@@ -3528,6 +3612,7 @@ function parseMuteDuration(text) {
 }
 
 function executeMute(durationObj) {
+  resetIdleTracker();
   if (muteTimeoutTimer) {
     clearTimeout(muteTimeoutTimer);
     muteTimeoutTimer = null;
@@ -3553,6 +3638,7 @@ function executeMute(durationObj) {
 }
 
 function executeUnmute(isAutoFromTimer = false) {
+  resetIdleTracker();
   if (muteTimeoutTimer) {
     clearTimeout(muteTimeoutTimer);
     muteTimeoutTimer = null;
@@ -3608,6 +3694,7 @@ function checkSpokenPin(text, expectedPin) {
 function handlePinVerifiedSuccess() {
   if (isPinVerified) return;
   isPinVerified = true;
+  resetIdleTracker();
   playAccessGrantedChime();
 
   const hud = document.getElementById('voiceSecurityPinHUD');
@@ -3747,6 +3834,7 @@ function checkTurnCompletion(){
         agentPlaybackEndTime = 0;
         if (isCallActive) {
           updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+          scheduleIdleNudge();
         }
       }
     }, 300);
@@ -4388,6 +4476,10 @@ function connectVoiceAgent(){
       } else if (msg.type === 'SettingsApplied') {
         updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
       } else if (msg.type === 'AgentStartedSpeaking') {
+        if (idleTimerId) {
+          clearTimeout(idleTimerId);
+          idleTimerId = null;
+        }
         isAgentUtteranceActive = true;
         isAgentSpeaking = true;
         agentAudioStreamFinished = false;
@@ -4399,6 +4491,7 @@ function connectVoiceAgent(){
       } else if (msg.type === 'UserStartedSpeaking') {
         console.log('🛑 Deepgram UserStartedSpeaking: stopping agent audio immediately for Boss');
         stopAllAudioPlayback();
+        resetIdleTracker();
         updateStatus('listening', '🎙️ RJN सुन रही है...');
       } else if (msg.type === 'AgentThinking') {
         updateStatus('thinking', '✨ RJN सोच रही है...');
@@ -5031,6 +5124,7 @@ function connectVoiceAgent(){
         }
       } else if (msg.type === 'ConversationText') {
         if (msg.role === 'user') {
+          resetIdleTracker();
           const userText = (msg.content || '').trim();
 
           // If PIN not verified yet, verify the spoken digits
@@ -5074,6 +5168,8 @@ function connectVoiceAgent(){
             console.log('🛑 Boss commanded STOP:', userText);
             stopAllAudioPlayback();
             playStopChime();
+            resetIdleTracker();
+            idleStopCooldownUntil = Date.now() + 60000;
             return;
           }
 
@@ -5197,6 +5293,7 @@ async function startVoiceCall(){
 }
 
 function stopVoiceCall(){
+  resetIdleTracker();
   isCallActive = false;
   isPinVerified = false;
   isAgentMuted = false;
@@ -5249,6 +5346,10 @@ let userZoom = 1.0;
 window.addEventListener('pointerdown', e => {
   if (!isAuthenticated) return;
   unlockAudio();
+  resetIdleTracker();
+  if (isCallActive && isPinVerified && !isAgentSpeaking && !isAgentMuted) {
+    scheduleIdleNudge();
+  }
   isDragging = true;
   lastMouseX = e.clientX;
   lastMouseY = e.clientY;
