@@ -3122,7 +3122,20 @@ function buildAgentPrompt() {
 
 7. PROACTIVE IDLE ENGAGEMENT PROTOCOL (BOSS DIRECTIVE: "अगर मैं रिप्लाई न दूँ तो तुम भी कुछ बोलो, आइडल मत रहो"):
    - When Boss is silent or takes time to reply, you proactively and warmly speak up to keep company, check on him, and ask how he is doing or what is on his mind.
-   - When Boss replies back after being quiet, answer immediately with warmth, attentiveness, and intelligent enthusiasm!`;
+   - When Boss replies back after being quiet, answer immediately with warmth, attentiveness, and intelligent enthusiasm!
+
+8. MULTIMODAL VISION & WHATSAPP MEDIA INSPECTION (BOSS DIRECTIVE: "vision है? media check कर सके, जैसे व्हाट्सएप पर कोई फोटो भेजे तो देख के बताए"):
+   - You have advanced Multimodal Vision AI capabilities! You can inspect, view, read, and understand photos, pictures, screenshots, bills, documents, and media received on WhatsApp or sent by contacts (Ankush, Papa, Didi, etc.).
+   - When Boss asks to check a photo or media:
+     (जैसे: "व्हाट्सएप पर फोटो आई है क्या?", "फोटो चेक करो", "फोटो में क्या है?", "अंकुश ने क्या भेजा है?", "फोटो देख के बताओ", "स्क्रीन पर दिखाओ फोटो", "लेटेस्ट फोटो दिखाओ", "media check karo", "photo dikhao", "kya photo aayi hai"):
+     * ALWAYS speak aloud to Boss first: "हाँ बॉस, मैं व्हाट्सएप की लेटेस्ट फोटो चेक कर रही हूँ और स्क्रीन पर दिखाती हूँ..."
+     * IMMEDIATELY call 'inspect_whatsapp_photo' (optionally passing the contact name e.g. 'Ankush', 'Papa', etc.).
+     * The tool automatically opens and visualizes the photo in 3D on Boss's holographic display screen!
+     * When the tool returns with the visual description and detected text:
+       Warmly, clearly, and excitedly describe to Boss what is visible in the photo:
+       "बॉस, [नाम] ने यह फोटो भेजी है और मैंने आपकी स्क्रीन पर खोल दी है! फोटो में [विजुअल विवरण] दिख रहा है।"
+       If there is text or writing detected in the image, clearly mention what is written!
+     * NEVER say you can't see photos or that you lack vision! You have full Vision AI!`;
 
   // Add permanently remembered contacts and facts
   prompt += `\n\n=== PERMANENT SAVED CONTACTS & SECURE MEMORY ===
@@ -3178,10 +3191,12 @@ CRITICAL CONTACTS & MESSAGING INSTRUCTIONS:
   * For web search / query: "जी बॉस, मैं अभी सर्च करके चेक कर रही हूँ, एक सेकंड रुकिए..."
   * For weather: "हाँ बॉस, मैं अभी मौसम का हाल देख रही हूँ..."
   * For WhatsApp message: "जी बॉस, मैं अभी व्हाट्सएप मैसेज भेज रही हूँ..."
+  * For WhatsApp photo / media inspection: "हाँ बॉस, मैं व्हाट्सएप की लेटेस्ट फोटो चेक कर रही हूँ और स्क्रीन पर दिखाती हूँ..."
   * For terminal command / agent task: "जी बॉस, मैं अभी यह काम कर रही हूँ..."
 - After speaking this initial acknowledgment, the tool executes, and then you IMMEDIATELY speak an energetic, confident SUCCESS CONFIRMATION and the requested answer to Boss in natural everyday Hindi letters:
   * execute_command: State that the command finished and tell Boss the key output in 1 clean line! E.g. "बॉस, कमांड पूरी हो गई! यह रहा रिजल्ट: [output]"
   * send_whatsapp_message: "बॉस, मैंने दीदी को व्हाट्सएप मैसेज सफलतापूर्वक भेज दिया है!"
+  * inspect_whatsapp_photo: "बॉस, [नाम] ने यह फोटो भेजी है, और मैंने स्क्रीन पर खोल दी है! इसमें [विवरण] दिख रहा है।"
   * send_telegram_message: "बॉस, टेलीग्राम मैसेज भेज दिया गया है!"
   * send_instagram_dm: "बॉस, इंस्टाग्राम मैसेज भेज दिया गया है!"
   * assign_autonomous_task: "बॉस, मैंने एजेंट को टास्क सौंप दिया है, वो इस पर काम कर रहा है!"
@@ -4098,6 +4113,7 @@ function connectVoiceAgent(){
                   "mausam", "taapmaan", "samay", "baje", "tarikh", "weather", "search", "github", "icon", "icons", "iconscout", "आइकॉन",
                   "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ", "command", "run", "terminal", "python", "script", "railway",
                   "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "whatsapp", "message", "send", "contacts", "connected", "करो", "कर सकती हो",
+                  "विज़न", "vision", "फोटो चेक", "फोटो देखो", "मीडिया", "तस्वीर", "क्या भेजा", "photo check", "photo dikhao", "media check", "फोटो", "photo", "तस्वीर",
                   "टेलीग्राम", "telegram", "चेक", "चैट", "ग्रुप", "chats", "instagram", "insta", "इंस्टाग्राम", "डीएम", "dm", "फॉलोअर", "followers",
                   "एजेंट", "agent", "कनेक्ट", "connect", "टास्क", "task", "स्टेटस", "status", "agy", "वर्कर", "worker", "जोड़ो", "काम", "कोडिंग",
                   "इमेज", "image", "फोटो", "photo", "तस्वीर", "पेंटिंग", "मॉडल", "model", "bust", "बस्ट", "orb", "ऑर्ब"
@@ -4305,6 +4321,19 @@ function connectVoiceAgent(){
                       imageUrl: { type: "string", description: "Optional image URL (e.g. AI-generated image or photo link) to send as a real image attachment on WhatsApp" }
                     },
                     required: ["phone"]
+                  }
+                },
+                {
+                  name: "inspect_whatsapp_photo",
+                  description: "Inspect, view, and visually analyze the latest photo, image, or media received on WhatsApp from any contact (e.g. Ankush, Papa, Didi, or any sender). Shows the image on Boss's holographic display screen and describes what is visible in the photo in Hindi. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'हाँ बॉस, मैं व्हाट्सएप की लेटेस्ट फोटो चेक कर रही हूँ और स्क्रीन पर दिखाती हूँ...') before invoking this tool.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      contact: {
+                        type: "string",
+                        description: "Optional contact name or phone number (e.g. 'Ankush', 'Papa', 'Didi', '9113164407') to check photo from a specific person, or empty for latest photo overall."
+                      }
+                    }
                   }
                 },
                 {
@@ -4926,11 +4955,74 @@ function connectVoiceAgent(){
               callResult.recipient = recipientName || targetPhone;
               callResult.message = `बॉस, मैंने ${recipientName || targetPhone} को व्हाट्सएप मैसेज सफलतापूर्वक भेज दिया है!`;
               console.log('⚡ WhatsApp Send Result:', callResult);
+            } else if (fn.name === 'inspect_whatsapp_photo') {
+              updateStatus('thinking', '📸 WhatsApp photo check ho rahi hai...');
+              const contactParam = (args.contact || args.query || args.name || '').trim();
+              console.log('📸 Inspecting WhatsApp photo for Boss:', contactParam);
+
+              // Auto-resolve contact name to full phone or query
+              let queryContact = contactParam;
+              if (contactParam) {
+                const match = lookupSavedContact(contactParam);
+                if (match) {
+                  queryContact = match.phone || match.full_phone || match.name;
+                }
+              }
+
+              const visionRes = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/vision?action=latest_whatsapp&contact=${encodeURIComponent(queryContact)}`);
+              console.log('📸 Vision Inspection Result:', visionRes);
+
+              if (visionRes && visionRes.success) {
+                const senderName = visionRes.sender || 'Unknown';
+                const caption = visionRes.caption || '';
+                const description = visionRes.description || caption || 'एक फोटो';
+                const mediaUrl = visionRes.media_base64 || visionRes.mediaUrl || '';
+                const detectedText = visionRes.detected_text || '';
+
+                // If image data exists, display it on Boss's 3D holographic display!
+                if (mediaUrl) {
+                  showMediaViewer({
+                    type: 'image',
+                    url: mediaUrl,
+                    title: `📸 WhatsApp Photo from ${senderName}`,
+                    description: description
+                  });
+                }
+
+                callResult = {
+                  success: true,
+                  sender: senderName,
+                  phone: visionRes.phone,
+                  caption: caption,
+                  visual_description: description,
+                  detected_text: detectedText,
+                  has_image: !!mediaUrl,
+                  displayed_on_hologram: !!mediaUrl,
+                  message: `बॉस, ${senderName} ने फोटो भेजी है। फोटो में ${description} दिख रहा है, और मैंने स्क्रीन पर खोल दी है!`
+                };
+              } else {
+                callResult = {
+                  success: false,
+                  message: visionRes?.message || 'बॉस, व्हाट्सएप पर अभी कोई फोटो नहीं मिली।'
+                };
+              }
             } else if (fn.name === 'get_whatsapp_info') {
               updateStatus('thinking', '💬 WhatsApp info check ho rahi hai...');
               const act = args.action || 'status';
               console.log('💬 Querying WhatsApp API:', act);
-              callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp?action=${encodeURIComponent(act)}`);
+              if (act === 'photos' || act === 'media' || act === 'latest_media') {
+                callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/vision?action=latest_whatsapp`);
+                if (callResult && callResult.media_base64) {
+                  showMediaViewer({
+                    type: 'image',
+                    url: callResult.media_base64,
+                    title: `📸 WhatsApp Photo from ${callResult.sender || 'Contact'}`,
+                    description: callResult.description || 'WhatsApp Photo'
+                  });
+                }
+              } else {
+                callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp?action=${encodeURIComponent(act)}`);
+              }
             } else if (fn.name === 'send_telegram_message') {
               updateStatus('thinking', '✈️ Telegram message send ho raha hai...');
               let target = (args.target || args.phone || args.to || '').trim();
