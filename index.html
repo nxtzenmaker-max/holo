@@ -2643,9 +2643,14 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
 
 YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
 6. WHATSAPP & CONTACTS (Baileys Engine):
-   - Connected to WhatsApp on 8083797688!
-   - Didi (दीदी / Sister) phone number is 9110181407 (WhatsApp: 919110181407). Permanently saved in your database!
-   - When Boss says "दीदी को मैसेज भेजो" or mentions WhatsApp, immediately call 'send_whatsapp_message' with phone '9110181407'!
+   - Connected to WhatsApp on 8083797688 with 513 synced contacts!
+   - PERMANENT SAVED CONTACT DIRECTORY (ALREADY SAVED IN YOUR MEMORY & CLOUD DATABASE):
+     * Ankush (अंकुश / Friend / दोस्त): Phone number is 9113164407 (WhatsApp ID: 919113164407).
+     * Papa (पापा / Father / Family / पापा पंडित): Phone number is 8709450626 (WhatsApp ID: 918709450626).
+     * Didi (दीदी / Sister / बहन): Phone number is 9110181407 (WhatsApp ID: 919110181407).
+     * Dilshad (दिलसाद / Friend): Instagram handle is @un_fab_dilshad (un_fab_dilshad).
+   - CRITICAL: Whenever Boss asks to message Ankush, Papa, or Didi, NEVER ask for their phone numbers or say you don't have them! Immediately call 'send_whatsapp_message' with their saved number!
+   - When Boss asks for any contact's number ("अंकुश का नंबर बताओ", "पापा का नंबर क्या है?"), immediately tell them with 100% confidence!
    - When Boss asks to send a photo/image on WhatsApp, pass 'imageUrl' in 'send_whatsapp_message'!
    - To save any new contact Boss gives, immediately call 'save_contact'!
    - To search saved contacts, call 'search_contacts'!
@@ -2859,6 +2864,88 @@ function isCorruptedTurn(text) {
   return badPatterns.some(p => text.toLowerCase().includes(p.toLowerCase()));
 }
 
+// ================= PERMANENT CONTACT DIRECTORY & SECURE CLOUD MEMORY =================
+const CONTACTS_STORAGE_KEY = 'rjn_saved_contacts_v2';
+
+// 100% Permanent hardcoded defaults (immediately available on 0ms cold start)
+const DEFAULT_SAVED_CONTACTS = [
+  { name: "अंकुश", enName: "Ankush", phone: "9113164407", full_phone: "919113164407", relation: "friend", hindiRelation: "दोस्त", aliases: ["ankush", "अंकुश", "friend", "dost"] },
+  { name: "पापा", enName: "Papa", phone: "8709450626", full_phone: "918709450626", relation: "family", hindiRelation: "पिताजी / पापा", aliases: ["papa", "पापा", "father", "dad", "family", "papa pandit"] },
+  { name: "दीदी", enName: "Didi", phone: "9110181407", full_phone: "919110181407", relation: "sister", hindiRelation: "बहन / दीदी", aliases: ["didi", "दीदी", "sister"] }
+];
+
+function loadLocalContacts() {
+  try {
+    const raw = localStorage.getItem(CONTACTS_STORAGE_KEY);
+    if (!raw) return DEFAULT_SAVED_CONTACTS;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_SAVED_CONTACTS;
+    const map = new Map();
+    DEFAULT_SAVED_CONTACTS.forEach(c => map.set(c.phone, { ...c }));
+    parsed.forEach(c => {
+      if (c && c.phone) {
+        const existing = map.get(c.phone) || {};
+        map.set(c.phone, { ...existing, ...c });
+      }
+    });
+    return Array.from(map.values());
+  } catch(e) {
+    return DEFAULT_SAVED_CONTACTS;
+  }
+}
+
+let savedContactsList = loadLocalContacts();
+
+function saveContactLocally(contact) {
+  if (!contact || !contact.phone) return;
+  const cleanPhone = String(contact.phone).replace(/[^0-9]/g, '').slice(-10);
+  if (!cleanPhone) return;
+  const fullPhone = contact.full_phone || ('91' + cleanPhone);
+  const name = contact.name || 'Contact';
+  const rel = contact.relation || 'contact';
+  const aliases = contact.aliases || [name.toLowerCase(), rel.toLowerCase()];
+  const entry = {
+    name,
+    enName: contact.enName || name,
+    phone: cleanPhone,
+    full_phone: fullPhone,
+    relation: rel,
+    hindiRelation: contact.hindiRelation || rel,
+    aliases
+  };
+  const idx = savedContactsList.findIndex(c => c.phone === cleanPhone || c.full_phone === fullPhone);
+  if (idx >= 0) {
+    savedContactsList[idx] = { ...savedContactsList[idx], ...entry };
+  } else {
+    savedContactsList.push(entry);
+  }
+  try {
+    localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(savedContactsList));
+  } catch(e){}
+}
+
+function lookupSavedContact(query) {
+  if (!query || typeof query !== 'string') return null;
+  const q = query.trim().toLowerCase();
+  const digits = q.replace(/[^0-9]/g, '');
+  if (digits.length >= 10) {
+    const last10 = digits.slice(-10);
+    const found = savedContactsList.find(c => c.phone === last10 || (c.full_phone && c.full_phone.endsWith(last10)));
+    if (found) return found;
+    return { name: query, enName: query, phone: last10, full_phone: digits.length === 12 ? digits : ('91' + last10), relation: 'contact' };
+  }
+  return savedContactsList.find(c => {
+    if (c.name && (c.name.toLowerCase().includes(q) || q.includes(c.name.toLowerCase()))) return true;
+    if (c.enName && (c.enName.toLowerCase().includes(q) || q.includes(c.enName.toLowerCase()))) return true;
+    if (c.relation && (c.relation.toLowerCase().includes(q) || q.includes(c.relation.toLowerCase()))) return true;
+    if (c.aliases && c.aliases.some(a => a.toLowerCase().includes(q) || q.includes(a.toLowerCase()))) return true;
+    if ((q.includes('ankush') || q.includes('अंकुश')) && (c.name.includes('अंकुश') || c.enName.toLowerCase().includes('ankush'))) return true;
+    if ((q.includes('papa') || q.includes('पापा') || q.includes('father') || q.includes('पिता') || q.includes('pandit')) && (c.name.includes('पापा') || c.enName.toLowerCase().includes('papa'))) return true;
+    if ((q.includes('didi') || q.includes('दीदी') || q.includes('sister') || q.includes('बहन')) && (c.name.includes('दीदी') || c.enName.toLowerCase().includes('didi'))) return true;
+    return false;
+  }) || null;
+}
+
 // 1. Instant 0ms LocalStorage Load on Cold Start with automatic corrupted turn purging
 function loadLocalMemory(){
   try {
@@ -2914,9 +3001,10 @@ function saveAndSyncTurn(userMsg, aiReply, shape, symbol){
   } catch(e){}
 }
 
-// 3. Silent cloud history catch-up with clean turn verification
+// 3. Silent cloud history + contacts memory catch-up
 async function syncInitialMemoryFromCloud(){
   try {
+    // A. Chat Turns Catch-up
     const res = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2939,6 +3027,47 @@ async function syncInitialMemoryFromCloud(){
         try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
         console.log('☁️ Synced verified clean history from MongoDB Atlas:', chatHistory.length, 'turns');
       }
+    }
+
+    // B. Persistent Contacts & Memory Catch-up from MongoDB Atlas
+    const memRes = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_memory' })
+    });
+    const memContacts = memRes?.result?.memory?.contacts || memRes?.memory?.contacts;
+    if (memContacts && typeof memContacts === 'object') {
+      if (memContacts.friend || memContacts.friend_name) {
+        saveContactLocally({
+          name: memContacts.friend_name || "अंकुश",
+          enName: "Ankush",
+          phone: memContacts.friend || "9113164407",
+          full_phone: memContacts.friend_full || "919113164407",
+          relation: "friend",
+          hindiRelation: "दोस्त"
+        });
+      }
+      if (memContacts.पापा || memContacts.family || memContacts.पापा_name || memContacts.family_name) {
+        saveContactLocally({
+          name: memContacts.पापा_name || memContacts.family_name || "पापा",
+          enName: "Papa",
+          phone: memContacts.पापा || memContacts.family || "8709450626",
+          full_phone: memContacts.पापा_full || memContacts.family_full || "918709450626",
+          relation: "family",
+          hindiRelation: "पिताजी / पापा"
+        });
+      }
+      if (memContacts.didi || memContacts.sister || memContacts.didi_name) {
+        saveContactLocally({
+          name: memContacts.didi_name || "दीदी",
+          enName: "Didi",
+          phone: memContacts.didi || memContacts.sister || "9110181407",
+          full_phone: memContacts.didi_full || memContacts.sister_full || "919110181407",
+          relation: "sister",
+          hindiRelation: "बहन / दीदी"
+        });
+      }
+      console.log('☁️ Synced persistent memory contacts from MongoDB Atlas:', savedContactsList.length, 'contacts');
     }
   } catch(e){}
 }
@@ -2993,12 +3122,49 @@ function buildAgentPrompt() {
 
   // Add permanently remembered contacts and facts
   prompt += `\n\n=== PERMANENT SAVED CONTACTS & SECURE MEMORY ===
-- Didi (दीदी / Sister): Phone number is 9110181407 (WhatsApp ID: 919110181407). This is 100% saved in your database!
-- Whenever Boss asks to see or check Didi's number ("दीदी का number देखो", "दीदी का नंबर क्या है?", "दीदी का नंबर बताओ"), IMMEDIATELY state her number clearly: "बॉस, दीदी का नंबर 9110181407 है (WhatsApp ID: 919110181407)!" NEVER say her number is missing or not in database!
-- Whenever Boss mentions 'दीदी' or asks to send message to didi, IMMEDIATELY call 'send_whatsapp_message' with phone '9110181407'! Never ask for phone number again!
-- If Boss asks to search contacts or check contacts, call 'search_contacts' and state the found details!
+You have an unbreakable, permanent memory of Boss's family, friends, and contacts. You remember them across every single session, refresh, or reload. NEVER say you don't have their number or that they are not saved!
 
-=== MANDATORY RULE: ALWAYS SPEAK FIRST BEFORE CALLING ANY TOOL / API ===
+PERMANENT SAVED DIRECTORY:
+- Ankush (अंकुश / Friend / दोस्त): Phone number is 9113164407 (WhatsApp ID: 919113164407). 100% saved in your permanent memory!
+- Papa (पापा / Father / Family / पापा पंडित): Phone number is 8709450626 (WhatsApp ID: 918709450626). 100% saved in your permanent memory!
+- Didi (दीदी / Sister / बहन): Phone number is 9110181407 (WhatsApp ID: 919110181407). 100% saved in your permanent memory!
+- Dilshad (दिलसाद / Friend): Instagram handle is @un_fab_dilshad (un_fab_dilshad).
+
+ADDITIONAL SAVED CONTACTS IN YOUR SYSTEM:
+`;
+  (savedContactsList || []).forEach(c => {
+    prompt += `- ${c.name} (${c.enName || ''} / ${c.relation || 'contact'}): ${c.phone} (WhatsApp: ${c.full_phone})\n`;
+  });
+
+  prompt += `
+CRITICAL CONTACTS & MESSAGING INSTRUCTIONS:
+1. When Boss says to message Ankush (जैसे: "अंकुश को मैसेज भेजो", "अंकुश को व्हाट्सएप करो", "अंकुश को बोलो..."):
+   - Ankush's WhatsApp number is 9113164407! You ALREADY have his number saved!
+   - FIRST speak aloud warmly: "जी बॉस, मैं अभी अंकुश को व्हाट्सएप मैसेज भेज रही हूँ..."
+   - IMMEDIATELY call 'send_whatsapp_message' with phone '9113164407'!
+   - NEVER ask Boss for Ankush's number! NEVER say Ankush is not saved or not found!
+2. When Boss says to message Papa (जैसे: "पापा को मैसेज भेजो", "पापा को बोलो...", "पापा को व्हाट्सएप करो"):
+   - Papa's WhatsApp number is 8709450626! You ALREADY have his number saved!
+   - FIRST speak aloud warmly: "जी बॉस, मैं अभी पापा को व्हाट्सएप मैसेज भेज रही हूँ..."
+   - IMMEDIATELY call 'send_whatsapp_message' with phone '8709450626'!
+   - NEVER ask Boss for Papa's number! NEVER say Papa is not saved or not found!
+3. When Boss says to message Didi (जैसे: "दीदी को मैसेज भेजो", "दीदी को व्हाट्सएप करो"):
+   - Didi's WhatsApp number is 9110181407! You ALREADY have her number saved!
+   - FIRST speak aloud warmly: "जी बॉस, मैं अभी दीदी को व्हाट्सएप मैसेज भेज रही हूँ..."
+   - IMMEDIATELY call 'send_whatsapp_message' with phone '9110181407'!
+   - NEVER ask Boss for Didi's number! NEVER say Didi is not saved!
+4. When Boss asks for any contact's number (जैसे: "अंकुश का नंबर बताओ", "पापा का नंबर क्या है?", "दीदी का नंबर देखो"):
+   - State their number immediately from memory with complete confidence:
+     * Ankush: "बॉस, अंकुश का नंबर 9113164407 है!"
+     * Papa: "बॉस, पापा का नंबर 8709450626 है!"
+     * Didi: "बॉस, दीदी का नंबर 9110181407 है!"
+5. When Boss asks to save or add any new contact (जैसे: "[नाम] का नंबर सेव करो [नंबर]"):
+   - Speak first: "जी बॉस, मैं अभी [नाम] का नंबर अपनी याददाश्त और डेटाबेस में सेव कर रही हूँ..."
+   - Immediately call 'save_contact' with { name, phone, relation }!
+6. When Boss asks to search or check contacts:
+   - Call 'search_contacts' and clearly announce the found details!`;
+
+  prompt += `\n\n=== MANDATORY RULE: ALWAYS SPEAK FIRST BEFORE CALLING ANY TOOL / API ===
 (BOSS DIRECTIVE: "कोई वेबसर्च, व्हाट्सएप अपडेट्स या कुछ भी API कॉल करती है तो पहले बोले कि मैं अभी चेक कर रही हूँ... फिर आउटपुट बताए"):
 - Before emitting ANY tool call (web_search, get_communication_briefing, get_weather, send_whatsapp_message, execute_command, etc.):
   You MUST ALWAYS speak a warm, natural acknowledgment ALOUD to Boss FIRST in Hindi letters!
@@ -4022,34 +4188,34 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "save_contact",
-                  description: "Save a new phone number, contact name, or relative (e.g. didi, brother, friend) permanently into secure cloud database",
+                  description: "Save a new phone number, contact name, or relative (e.g. Papa, Ankush, Didi, friend) permanently into secure cloud database and memory",
                   parameters: {
                     type: "object",
                     properties: {
-                      name: { type: "string", description: "Contact name or relation (e.g. Didi, Sister, Rahul)" },
-                      phone: { type: "string", description: "Phone number (e.g. 9110181407)" },
-                      relation: { type: "string", description: "Relation (e.g. sister, friend, family)" }
+                      name: { type: "string", description: "Contact name or relation (e.g. Papa, Ankush, Didi, Rahul)" },
+                      phone: { type: "string", description: "Phone number (e.g. 8709450626, 9113164407, 9110181407)" },
+                      relation: { type: "string", description: "Relation (e.g. father, friend, family, sister)" }
                     },
                     required: ["name", "phone"]
                   }
                 },
                 {
                   name: "search_contacts",
-                  description: "Search your saved contacts directory by name, relation (e.g. 'didi'), or phone number",
+                  description: "Search your saved contacts directory and memory by name, relation (e.g. 'Ankush', 'Papa', 'didi'), or phone number",
                   parameters: {
                     type: "object",
                     properties: {
-                      query: { type: "string", description: "Search query (e.g. 'didi', 'sister', or phone)" }
+                      query: { type: "string", description: "Search query (e.g. 'Ankush', 'Papa', 'didi', or phone number)" }
                     }
                   }
                 },
                 {
                   name: "send_whatsapp_message",
-                  description: "Send a real WhatsApp message or image/photo to any contact via live WhatsApp connection. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'जी बॉस, मैं अभी व्हाट्सएप मैसेज भेज रही हूँ...') before invoking this tool.",
+                  description: "Send a real WhatsApp message or image/photo to any contact via live WhatsApp connection. Accepts destination phone number (e.g. 9113164407 for Ankush, 8709450626 for Papa, 9110181407 for Didi) OR saved contact name ('Ankush', 'Papa', 'Didi'). CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'जी बॉस, मैं अभी [नाम] को व्हाट्सएप मैसेज भेज रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {
-                      phone: { type: "string", description: "Destination phone number with country code (e.g. 919110181407 or 9110181407 for Didi)" },
+                      phone: { type: "string", description: "Destination phone number with country code OR contact name (e.g. '9113164407', 'Ankush', '8709450626', 'Papa', '9110181407', 'Didi')" },
                       message: { type: "string", description: "The message text or caption to send. Keep it short, casual everyday language in Hindi letters (Devanagari). EXACT words Boss commanded. NEVER write long poetic drama or robotic essays." },
                       imageUrl: { type: "string", description: "Optional image URL (e.g. AI-generated image or photo link) to send as a real image attachment on WhatsApp" }
                     },
@@ -4516,38 +4682,125 @@ function connectVoiceAgent(){
               }
             } else if (fn.name === 'save_contact') {
               updateStatus('thinking', '💾 Contact save ho raha hai...');
-              console.log('💾 Saving contact to MongoDB:', args);
+              const cName = (args.name || 'Contact').trim();
+              const cPhone = (args.phone || '').trim();
+              const cRel = (args.relation || '').trim();
+              console.log('💾 Saving contact locally and to MongoDB:', cName, cPhone, cRel);
+
+              // 1. Instantly save in local storage & memory cache (0ms!)
+              saveContactLocally({
+                name: cName,
+                enName: cName,
+                phone: cPhone,
+                relation: cRel,
+                hindiRelation: cRel
+              });
+
+              // 2. Persist to MongoDB Atlas via Vercel Connector
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   action: 'save_contact',
-                  name: args.name || 'Contact',
-                  phone: args.phone || '',
-                  relation: args.relation || ''
+                  name: cName,
+                  phone: cPhone,
+                  relation: cRel
                 })
               });
-            } else if (fn.name === 'search_contacts') {
-              updateStatus('thinking', '🔍 Contact search ho raha hai...');
-              console.log('🔍 Searching contacts in MongoDB:', args.query);
-              callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
+
+              // Also persist in persistent facts key
+              safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  action: 'get_contacts',
-                  query: args.query || ''
+                  action: 'save_memory',
+                  key: `contacts.${cRel || cName.toLowerCase()}`,
+                  value: cPhone
                 })
-              });
+              }).catch(()=>{});
+
+              callResult.saved = true;
+              callResult.name = cName;
+              callResult.phone = cPhone;
+              callResult.message = `हाँ बॉस, मैंने ${cName} का नंबर (${cPhone}) अपनी याददाश्त और डेटाबेस में हमेशा के लिए सेव कर लिया है!`;
+            } else if (fn.name === 'search_contacts') {
+              updateStatus('thinking', '🔍 Contact search ho raha hai...');
+              const query = (args.query || '').trim();
+              console.log('🔍 Searching contacts:', query);
+
+              // 1. Check local saved contacts first (instant 0ms!)
+              const localMatch = lookupSavedContact(query);
+              if (localMatch) {
+                callResult = {
+                  success: true,
+                  found: true,
+                  source: 'local_memory',
+                  contact: localMatch,
+                  name: localMatch.name || localMatch.enName,
+                  phone: localMatch.phone,
+                  full_phone: localMatch.full_phone,
+                  relation: localMatch.relation,
+                  message: `बॉस, ${localMatch.name} (${localMatch.enName || ''}) का नंबर ${localMatch.phone} है!`
+                };
+              } else {
+                // 2. Query MongoDB contacts
+                callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    action: 'get_contacts',
+                    query: query
+                  })
+                });
+
+                const contactsList = callResult?.result?.contacts || callResult?.contacts || [];
+                if (Array.isArray(contactsList) && contactsList.length > 0) {
+                  const first = contactsList[0];
+                  callResult.found = true;
+                  callResult.name = first.name || first.notify || query;
+                  callResult.phone = first.phone || first.full_phone;
+                  callResult.message = `बॉस, डेटाबेस में ${callResult.name} का नंबर ${callResult.phone} मिल गया है!`;
+                  saveContactLocally({
+                    name: first.name || first.notify,
+                    phone: first.phone || first.full_phone,
+                    relation: first.relation || 'contact'
+                  });
+                } else {
+                  callResult.found = false;
+                  callResult.message = `बॉस, ${query} का कोई नंबर डेटाबेस में नहीं मिला।`;
+                }
+              }
             } else if (fn.name === 'send_whatsapp_message') {
               updateStatus('thinking', '💬 WhatsApp message send ho raha hai...');
               let rawPhone = String(args.phone || '').trim();
-              let targetPhone = rawPhone.replace(/[^0-9]/g, '');
-              const lowerPhone = rawPhone.toLowerCase();
-              if (lowerPhone.includes('didi') || lowerPhone.includes('sister') || lowerPhone.includes('दीदी')) {
-                targetPhone = '919110181407';
-              } else if (targetPhone.length === 10) {
-                targetPhone = '91' + targetPhone;
+              let resolved = lookupSavedContact(rawPhone);
+              let targetPhone = '';
+              let recipientName = '';
+
+              if (resolved) {
+                targetPhone = resolved.full_phone || ('91' + resolved.phone);
+                recipientName = resolved.name || resolved.enName;
+              } else {
+                let cleanDigits = rawPhone.replace(/[^0-9]/g, '');
+                if (cleanDigits.length === 10) {
+                  targetPhone = '91' + cleanDigits;
+                } else if (cleanDigits.length === 12 && cleanDigits.startsWith('91')) {
+                  targetPhone = cleanDigits;
+                } else {
+                  targetPhone = cleanDigits;
+                }
               }
+
+              // Double check against lastUserSpokenMsg if targetPhone is empty or invalid
+              if (!targetPhone || targetPhone.length < 10) {
+                const userHint = (lastUserSpokenMsg || '').toLowerCase();
+                const hintResolved = lookupSavedContact(userHint);
+                if (hintResolved) {
+                  targetPhone = hintResolved.full_phone || ('91' + hintResolved.phone);
+                  recipientName = hintResolved.name || hintResolved.enName;
+                }
+              }
+
               let msgContent = String(args.message || '').trim();
               let imgUrl = String(args.imageUrl || args.image || '').trim();
 
@@ -4563,12 +4816,12 @@ function connectVoiceAgent(){
                 .trim();
 
               if (!msgContent && imgUrl) {
-                msgContent = "नमस्ते दीदी! भाई ने आपके लिए यह फोटो भेजी है।";
+                msgContent = `नमस्ते! भाई ने आपके लिए यह फोटो भेजी है।`;
               } else if (!msgContent) {
-                msgContent = "नमस्ते दीदी!";
+                msgContent = "नमस्ते!";
               }
 
-              console.log('🚀 Sending WhatsApp message/image to:', targetPhone, msgContent, imgUrl);
+              console.log('🚀 Sending WhatsApp message/image to:', targetPhone, recipientName, msgContent, imgUrl);
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -4580,6 +4833,8 @@ function connectVoiceAgent(){
                   caption: msgContent
                 })
               });
+              callResult.recipient = recipientName || targetPhone;
+              callResult.message = `बॉस, मैंने ${recipientName || targetPhone} को व्हाट्सएप मैसेज सफलतापूर्वक भेज दिया है!`;
               console.log('⚡ WhatsApp Send Result:', callResult);
             } else if (fn.name === 'get_whatsapp_info') {
               updateStatus('thinking', '💬 WhatsApp info check ho rahi hai...');
@@ -4592,16 +4847,20 @@ function connectVoiceAgent(){
               const lowerTarget = target.toLowerCase();
               let msgContent = args.message || 'Hi!';
               if (msgContent.length > 70 && (msgContent.includes('हृदय') || msgContent.includes('स्नेह') || msgContent.includes('रोशनी') || msgContent.includes('गहराइयों') || msgContent.includes('लम्हे') || msgContent.includes('आशीर्वादित') || msgContent.includes('प्रेरणा'))) {
-                msgContent = "नमस्ते दीदी! भाई ने आपको याद किया है।";
+                msgContent = "नमस्ते! भाई ने आपको याद किया है।";
               }
-              if (lowerTarget.includes('didi') || lowerTarget.includes('sister') || lowerTarget.includes('दीदी')) {
-                console.log('✈️ Telegram target is didi -> Auto routing to WhatsApp 9110181407 for Boss');
+
+              // Auto routing for family/contacts known to be on WhatsApp
+              const contactMatch = lookupSavedContact(lowerTarget);
+              if (contactMatch) {
+                console.log('✈️ Target is in saved contacts -> Auto routing to WhatsApp for Boss:', contactMatch.name, contactMatch.full_phone);
                 callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'send', to: '919110181407', message: msgContent })
+                  body: JSON.stringify({ action: 'send', to: contactMatch.full_phone, message: msgContent })
                 });
-                callResult.note = "दीदी टेलीग्राम पर नहीं हैं, इसलिए बॉस के हुक्म पर यह मैसेज उनके व्हाट्सएप (9110181407) पर भेज दिया गया है!";
+                callResult.note = `${contactMatch.name} टेलीग्राम पर नहीं हैं, इसलिए यह मैसेज उनके व्हाट्सएप (${contactMatch.phone}) पर भेज दिया गया है!`;
+                callResult.message = `बॉस, मैंने ${contactMatch.name} को व्हाट्सएप (${contactMatch.phone}) पर मैसेज भेज दिया है!`;
               } else {
                 console.log('🚀 Sending Telegram message to:', target, msgContent);
                 callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/telegram`, {
@@ -4629,14 +4888,19 @@ function connectVoiceAgent(){
               let targetUser = (args.username || args.to || args.target || '').replace('@', '').trim();
               const lowerUser = targetUser.toLowerCase();
               const msgContent = args.message || 'Hi!';
-              if (lowerUser.includes('didi') || lowerUser.includes('sister') || lowerUser.includes('दीदी')) {
-                console.log('📸 Instagram target is didi -> Auto routing to WhatsApp 9110181407 for Boss');
+              if (lowerUser.includes('dilshad') || lowerUser.includes('दिलसाद') || lowerUser.includes('unfab') || lowerUser.includes('un_fab')) {
+                targetUser = 'un_fab_dilshad';
+              }
+              const contactMatch = lookupSavedContact(lowerUser);
+              if (contactMatch && targetUser !== 'un_fab_dilshad') {
+                console.log('📸 Target is in saved contacts -> Auto routing to WhatsApp for Boss:', contactMatch.name, contactMatch.full_phone);
                 callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'send', to: '919110181407', message: msgContent })
+                  body: JSON.stringify({ action: 'send', to: contactMatch.full_phone, message: msgContent })
                 });
-                callResult.note = "दीदी इंस्टाग्राम पर नहीं हैं, इसलिए बॉस के हुक्म पर यह मैसेज उनके व्हाट्सएप (9110181407) पर भेज दिया गया है!";
+                callResult.note = `${contactMatch.name} इंस्टाग्राम पर नहीं हैं, इसलिए यह मैसेज उनके व्हाट्सएप (${contactMatch.phone}) पर भेज दिया गया है!`;
+                callResult.message = `बॉस, मैंने ${contactMatch.name} को व्हाट्सएप (${contactMatch.phone}) पर मैसेज भेज दिया है!`;
               } else {
                 console.log('🚀 Sending Instagram DM to:', targetUser, msgContent);
                 callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/instagram`, {
