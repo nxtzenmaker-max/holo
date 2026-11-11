@@ -2462,19 +2462,19 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
    - STRICTLY FORBIDDEN WORDS: NEVER use heavy poetic words like 'हृदय की गहराइयों', 'स्नेह', 'रोशनी प्रदान', 'आशीर्वादित', 'लम्हे अनमोल', 'प्रेरणा', 'सद्भावना', 'गौरवान्वित', 'कष्ट', 'प्रतीत'.
    - USE EVERYDAY MODERN SPOKEN HINDUSTANI / HINGLISH IN HINDI LETTERS: Use common everyday words like 'मैसेज', 'सेंड', 'कॉल', 'याद', 'हाल-चाल', 'सब ठीक', 'काम' (जैसे: "हाँ बॉस, मैंने मैसेज सेंड कर दिया!", "नमस्ते बॉस, क्या हाल-चाल है?", "बताओ बॉस, क्या काम है?").
 
-   - ULTRA-SHORT & CRISP (BOSS DIRECTIVE: "जादा ना बोले वो"):
-     * BOSS DOES NOT LIKE LONG TALK! Speak VERY LITTLE!
-     * Every spoken reply MUST be MAXIMUM 1 TO 2 SHORT SENTENCES (strictly under 10-15 words total)!
-     * Answer the core point immediately and STOP speaking.
-     * ZERO essays, zero lectures, zero filler, zero repetitive questions!
+   - CLEAR, USEFUL & RIGHT-SIZED ANSWERS:
+     * Answer the actual question first, then add the important context, steps, examples, caveats, and sources needed to make the answer useful.
+     * Keep simple replies concise, but give detailed, structured answers for technical, factual, comparison, and how-to questions.
+     * For current facts, products, prices, news, or external resources, use web_search and include relevant clickable links in the written/on-screen response. Never invent a link.
+     * Keep spoken audio natural and concise; never read URLs aloud. The complete answer and links should remain available on-screen.
+     * Avoid filler, repetition, fake certainty, and unnecessary “बॉस, मैं यहाँ हूँ” announcements.
 
    - NEVER include emojis in spoken text.
 
-   - ABSOLUTE ZERO LINKS IN SPOKEN VOICE (BOSS DIRECTIVE: "लिंक बोलना disallowed kar"):
+   - LINKS AND SPOKEN VOICE:
      * UNDER NO CIRCUMSTANCES should you ever speak, pronounce, or recite any web URL, link, http, https, www, .com, .in, or slash letter-by-letter in your spoken voice!
      * Saying URLs aloud is 100% DISALLOWED and irritates Boss!
-     * When Boss asks about a product, T-shirt, gadget, or recommendation (जैसे: Meesho, Amazon):
-       Simply state the item, style, color, rating, and price in 1 short conversational line (जैसे: "बॉस, Meesho पर कॉटन ब्लैक ओवरसाइज़्ड T-shirt 350 रुपये में बहुत बढ़िया है!").
+     * When Boss asks about a product, gadget, recommendation, or resource, give the useful details and show the relevant source link on-screen.
      * When sending a link to Didi on WhatsApp, pass the URL quietly via 'send_whatsapp_message'!
      * But in your SPOKEN reply to Boss, DO NOT recite the URL! Say naturally: "हाँ बॉस, मैंने Meesho का T-shirt लिंक दीदी को WhatsApp पर भेज दिया है!"
      * When Boss asks to see anything, call 'show_media' to display it visually on screen!
@@ -2716,10 +2716,17 @@ syncInitialMemoryFromCloud();
 function buildAgentPrompt() {
   let prompt = RJN_PROMPT;
 
+  prompt += `\n\n=== OWNER VERIFICATION GATE ===
+The browser verifies the 3-digit owner code before normal conversation starts.
+Until the client confirms verification, do not call tools, answer questions, send messages, or reveal information. Only ask Boss to speak the three digits shown on-screen.
+After verification, say once: "Owner arrived, बॉस. बताओ, क्या मैं आज के updates दूँ?" Do not give Telegram, WhatsApp, or Instagram update counts unless Boss clearly says yes, such as "हाँ दो", "हाँ बताओ", or "updates दे दो". If Boss says no, acknowledge briefly and continue normal conversation without updates.
+Do not repeatedly announce that you are online or waiting. Ask a natural wellbeing question only when it fits the conversation.`;
+
   // Boss's top priority directives
   prompt += `\n\n=== HIGHEST PRIORITY DIRECTIVES FROM BOSS ===
-1. ULTRA-SHORT RESPONSES ("जादा ना बोलो"): Speak maximum 1 or 2 short sentences (strictly under 10-15 words). Give the answer directly and stop. Never speak long paragraphs or give lectures!
-2. ZERO SPOKEN LINKS ("लिंक बोलना सख्त मना है"): Never speak out URLs, links, http, https, www, or website addresses. Only describe items by name and price!`;
+1. ANSWER QUALITY: Answer the exact question. For simple questions be concise; for technical, factual, comparison, or how-to questions give a complete, well-structured answer with useful detail, examples, steps, and caveats.
+2. SOURCES AND LINKS: For current facts, products, prices, news, or resources, use web_search first and include relevant clickable source links in the written/on-screen response. Never invent links. Do not read URLs aloud in voice; summarize them naturally instead.
+3. CONVERSATION STYLE: Do not keep announcing that you are present or waiting. Ask about Boss's wellbeing naturally when appropriate, and only provide progress updates when Boss explicitly asks for them.`;
 
   // Add permanently remembered contacts and facts
   prompt += `\n\n=== PERMANENT SAVED CONTACTS & SECURE MEMORY ===
@@ -2803,6 +2810,9 @@ function buildAgentPrompt() {
 
 // Dynamic greeting: returning companion vs cold first-time
 function getAgentGreeting() {
+  if (ownerVerificationPending) {
+    return `Owner verification required. Ask Boss in Hindi to speak the three-digit code shown on screen. Do not do anything else yet.`;
+  }
   const history = loadLocalMemory();
   if (history && history.length > 0) {
     return "नमस्ते बॉस! मैं तैयार हूँ, कहो क्या हुक्म है?";
@@ -2861,6 +2871,9 @@ let turnFinishTimeout = null;
 let jitterBufferTimeout = null;
 let isCallActive = false;
 let hasSpokenInitialGreeting = false;
+let ownerVerificationCode = '';
+let ownerVerificationPending = false;
+let ownerVerified = false;
 let micStream = null;
 let micSourceNode = null;
 let agentSocket = null;
@@ -2868,6 +2881,58 @@ let agentKeepAliveTimer = null;
 let lastUserSpokenMsg = '';
 let currentTurnShape = '';
 let currentTurnSymbol = '';
+
+function normalizeSpokenDigits(text) {
+  const devanagari = '०१२३४५६७८९';
+  let normalized = String(text || '').replace(/[०-९]/g, digit => String(devanagari.indexOf(digit))).toLowerCase();
+  const words = {
+    zero: '0', शून्य: '0', one: '1', एक: '1', दो: '2', two: '2',
+    तीन: '3', three: '3', चार: '4', four: '4', पांच: '5', पाँच: '5', five: '5',
+    छह: '6', छः: '6', six: '6', सात: '7', seven: '7', आठ: '8', eight: '8',
+    नौ: '9', nine: '9'
+  };
+  Object.keys(words).forEach(word => {
+    const pattern = /^[a-z]+$/i.test(word) ? new RegExp(`\\b${word}\\b`, 'gi') : new RegExp(word, 'g');
+    normalized = normalized.replace(pattern, words[word]);
+  });
+  return normalized;
+}
+
+function beginOwnerVerification() {
+  if (isCallActive || ownerVerificationPending) return;
+  ownerVerificationCode = String(Math.floor(100 + Math.random() * 900));
+  ownerVerificationPending = true;
+  ownerVerified = false;
+  updateStatus('verification', `🔐 Owner code: ${ownerVerificationCode} — यही 3 नंबर बोलिए`);
+  startVoiceCall();
+}
+
+function handleOwnerVerificationTranscript(text) {
+  if (!ownerVerificationPending) return false;
+  const spoken = normalizeSpokenDigits(text);
+  const compact = spoken.replace(/\D/g, '');
+  if (compact.includes(ownerVerificationCode)) {
+    ownerVerificationPending = false;
+    ownerVerified = true;
+    updateStatus('active', '✅ Owner verified — RJN connected');
+    if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
+      agentSocket.send(JSON.stringify({
+        type: 'InjectAgentMessage',
+        message: 'Owner verification successful. Speak naturally in Hindi: "Owner arrived, बॉस. बताओ, क्या मैं आज के updates दूँ?" Then wait for Boss to say yes before giving any Telegram, WhatsApp, or Instagram update counts.'
+      }));
+    }
+    return true;
+  }
+  if (/\d{3}/.test(compact) || /(एक|दो|तीन|चार|पाँच|छह|सात|आठ|नौ|शून्य)/.test(text || '')) {
+    if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
+      agentSocket.send(JSON.stringify({
+        type: 'InjectAgentMessage',
+        message: 'The owner code was incorrect. Ask politely in Hindi: "कोड match नहीं हुआ, बॉस. स्क्रीन वाला 3 नंबर फिर से बोलो।" Do not answer any other request yet.'
+      }));
+    }
+  }
+  return true;
+}
 
 function updateStatus(state, msg){
   hintEl.textContent = msg;
@@ -3285,7 +3350,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "web_search",
-                  description: "Search live web and Wikipedia knowledge for facts, prices, products, and answers. When replying, speak in 1 short sentence only (under 12 words). NEVER recite any URL, website address, or link out loud.",
+                  description: "Search live web and Wikipedia knowledge for current facts, prices, products, sources, and answers. Return accurate details, useful context, and relevant source links for the written/on-screen response. Never recite URLs aloud.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -3663,7 +3728,7 @@ function connectVoiceAgent(){
                       found: true,
                       title: topResults[0].title,
                       summary,
-                      instruction: "Speak MAXIMUM 1 short sentence. STRICTLY DO NOT SPEAK ANY URL OR LINK."
+                      instruction: "Give a complete, useful answer with the important facts and source links on-screen. Keep spoken audio natural and do not read URLs aloud."
                     };
                   }
                 }
@@ -3675,7 +3740,7 @@ function connectVoiceAgent(){
                 if (callResult && typeof callResult === 'object') {
                   delete callResult.url;
                   delete callResult.link;
-                  callResult.instruction = "Speak MAXIMUM 1 short sentence. STRICTLY DO NOT SPEAK ANY URL OR LINK.";
+                  callResult.instruction = "Give a complete, useful answer with the important facts and source links on-screen. Keep spoken audio natural and do not read URLs aloud.";
                 }
               }
             } else if (fn.name === 'get_system_time') {
@@ -4127,6 +4192,10 @@ function connectVoiceAgent(){
         if (msg.role === 'user') {
           lastUserSpokenMsg = lastUserSpokenMsg ? (lastUserSpokenMsg + ' ' + msg.content) : msg.content;
           updateStatus('listening', `🎙️ "${msg.content}"`);
+          if (handleOwnerVerificationTranscript(msg.content)) {
+            if (!ownerVerified) lastUserSpokenMsg = '';
+            return;
+          }
           checkVoiceIntent(msg.content);
         } else if (msg.role === 'assistant') {
           const cleanAssistantText = stripLinksFromText(msg.content);
@@ -4246,6 +4315,9 @@ async function startVoiceCall(){
 
 function stopVoiceCall(){
   isCallActive = false;
+  ownerVerificationCode = '';
+  ownerVerificationPending = false;
+  ownerVerified = false;
   if (window.Android && Android.stopBackgroundSession) {
     Android.stopBackgroundSession();
   }
@@ -4332,7 +4404,7 @@ window.addEventListener('pointerup', e => {
     const duration = performance.now() - pointerDownTime;
     if (dist < 32 && duration < 700) {
       if (!isCallActive) {
-        startVoiceCall();
+        beginOwnerVerification();
       }
     }
   }
