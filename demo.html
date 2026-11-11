@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Holo AI // Lively Demo</title>
+<title>Holo AI · Interface Demo</title>
 <style>
   *, *::before, *::after {
     box-sizing: border-box;
@@ -15,24 +15,24 @@
     width: 100%;
     height: 100%;
     overflow: hidden;
-    background: #03040a;
+    background: #06080e;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #e2e8f0;
   }
 
-  /* Deep Space Ambient Glow centered behind the upper Orb */
+  /* Soft, non-aggressive ambient lighting centered behind the Orb */
   #glow {
     position: fixed;
     left: 50%;
     top: 26%;
-    width: 80vmin;
-    height: 80vmin;
-    margin: -40vmin 0 0 -40vmin;
+    width: 72vmin;
+    height: 72vmin;
+    margin: -36vmin 0 0 -36vmin;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(139, 92, 246, 0.18) 38%, rgba(3, 4, 10, 0) 68%);
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.09) 0%, rgba(99, 102, 241, 0.04) 42%, rgba(6, 8, 14, 0) 70%);
     pointer-events: none;
     will-change: transform, opacity;
-    transition: transform 0.15s ease-out, opacity 0.2s ease-out;
+    transition: transform 0.2s ease-out, opacity 0.25s ease-out;
     z-index: 1;
   }
 
@@ -54,7 +54,7 @@
     cursor: grabbing;
   }
 
-  /* Minimalist Top HUD Bar */
+  /* Top Minimalist Navigation Bar */
   .top-hud {
     position: fixed;
     top: 14px;
@@ -63,47 +63,44 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 18px;
+    padding: 0 20px;
     z-index: 10;
     pointer-events: none;
   }
   .hud-brand {
     display: flex;
     align-items: center;
-    gap: 10px;
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(56, 189, 248, 0.25);
+    gap: 9px;
+    background: rgba(13, 17, 25, 0.82);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 9999px;
     padding: 6px 14px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
     pointer-events: auto;
   }
   .hud-dot {
-    width: 8px;
-    height: 8px;
+    width: 6.5px;
+    height: 6.5px;
     border-radius: 50%;
     background: #38bdf8;
-    box-shadow: 0 0 10px #38bdf8;
-    animation: pulseDot 2s infinite ease-in-out;
+    opacity: 0.9;
   }
   .hud-title {
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    color: #f8fafc;
-    text-transform: uppercase;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #f1f5f9;
   }
   .hud-mode-pill {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.05em;
+    font-size: 10.5px;
+    font-weight: 500;
     padding: 2px 7px;
     border-radius: 6px;
-    background: rgba(56, 189, 248, 0.15);
-    color: #38bdf8;
-    border: 1px solid rgba(56, 189, 248, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.06);
   }
   .hud-actions {
     display: flex;
@@ -114,82 +111,76 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(148, 163, 184, 0.25);
+    background: rgba(13, 17, 25, 0.82);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     color: #cbd5e1;
     font-size: 12px;
     font-weight: 500;
-    padding: 6px 12px;
+    padding: 6px 13px;
     border-radius: 9999px;
     text-decoration: none;
     transition: all 0.2s ease;
     cursor: pointer;
   }
   .hud-btn:hover {
-    background: rgba(30, 41, 59, 0.9);
-    border-color: rgba(56, 189, 248, 0.5);
-    color: #38bdf8;
-    transform: translateY(-1px);
+    background: rgba(26, 32, 46, 0.9);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #f8fafc;
   }
 
-  /* Lively Agent Output Panel BELOW the Orb */
+  /* Refined, Minimal Console BELOW the Orb */
   .console-wrapper {
     position: fixed;
-    bottom: 16px;
+    bottom: 18px;
     left: 50%;
     transform: translateX(-50%);
-    width: min(92vw, 760px);
-    max-height: 48vh;
+    width: min(92vw, 740px);
+    max-height: 46vh;
     display: flex;
     flex-direction: column;
-    background: rgba(10, 16, 31, 0.84);
-    backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    border-radius: 20px;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 30px rgba(56, 189, 248, 0.12);
+    background: rgba(12, 16, 24, 0.88);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 24px 50px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.03);
     z-index: 20;
     overflow: hidden;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    transition: border-color 0.25s ease;
   }
   .console-wrapper.active-stream {
-    border-color: rgba(56, 189, 248, 0.55);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 36px rgba(56, 189, 248, 0.25);
+    border-color: rgba(56, 189, 248, 0.35);
   }
 
-  /* Console Top Bar */
+  /* Console Header */
   .console-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 10px 16px;
-    background: rgba(15, 23, 42, 0.6);
-    border-bottom: 1px solid rgba(56, 189, 248, 0.12);
+    background: rgba(18, 24, 36, 0.55);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   }
   .console-status {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+    font-size: 11.5px;
+    font-weight: 500;
     color: #94a3b8;
-    text-transform: uppercase;
   }
   .status-light {
-    width: 7px;
-    height: 7px;
+    width: 6.5px;
+    height: 6.5px;
     border-radius: 50%;
     background: #10b981;
-    box-shadow: 0 0 8px #10b981;
-    transition: background 0.3s, box-shadow 0.3s;
+    transition: background 0.25s;
   }
   .status-light.streaming {
     background: #38bdf8;
-    box-shadow: 0 0 12px #38bdf8;
-    animation: pulseDot 0.8s infinite alternate ease-in-out;
+    animation: pulseDot 1s infinite alternate ease-in-out;
   }
   .console-tools {
     display: flex;
@@ -197,63 +188,65 @@
     gap: 6px;
   }
   .tool-btn {
-    background: rgba(30, 41, 59, 0.6);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     color: #94a3b8;
-    font-size: 11px;
-    padding: 3px 8px;
+    font-size: 11.5px;
+    padding: 4px 9px;
     border-radius: 6px;
     cursor: pointer;
     transition: all 0.15s ease;
   }
   .tool-btn:hover {
     color: #f1f5f9;
-    border-color: rgba(56, 189, 248, 0.4);
-    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(255, 255, 255, 0.18);
+    background: rgba(255, 255, 255, 0.08);
   }
 
-  /* Console Scrollable Stream Body */
+  /* Scrollable Text Body */
   .console-body {
     flex: 1 1 auto;
     overflow-y: auto;
     padding: 14px 18px;
-    font-size: 14px;
-    line-height: 1.6;
+    font-size: 13.5px;
+    line-height: 1.62;
     color: #e2e8f0;
     scroll-behavior: smooth;
-    max-height: 240px;
+    max-height: 230px;
   }
   .console-body::-webkit-scrollbar {
-    width: 5px;
+    width: 4px;
   }
   .console-body::-webkit-scrollbar-track {
     background: transparent;
   }
   .console-body::-webkit-scrollbar-thumb {
-    background: rgba(56, 189, 248, 0.25);
+    background: rgba(255, 255, 255, 0.12);
     border-radius: 4px;
   }
   .console-body::-webkit-scrollbar-thumb:hover {
-    background: rgba(56, 189, 248, 0.45);
+    background: rgba(255, 255, 255, 0.22);
   }
 
-  /* Query Bubble */
+  /* User Query Pill */
   .user-query-tag {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     font-size: 11px;
-    font-weight: 600;
-    color: #38bdf8;
-    background: rgba(56, 189, 248, 0.12);
-    border: 1px solid rgba(56, 189, 248, 0.25);
+    font-weight: 500;
+    color: #cbd5e1;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 2px 8px;
     border-radius: 6px;
-    margin-bottom: 8px;
-    letter-spacing: 0.04em;
+    margin-bottom: 10px;
   }
 
-  /* Streaming Content Typography */
+  /* Typography */
   .stream-text {
     word-break: break-word;
     white-space: pre-wrap;
@@ -266,146 +259,148 @@
     margin-bottom: 0;
   }
   .stream-text strong {
-    color: #38bdf8;
+    color: #f1f5f9;
     font-weight: 600;
   }
   .stream-text code {
-    background: rgba(15, 23, 42, 0.7);
-    color: #a5f3fc;
-    padding: 2px 6px;
-    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.06);
+    color: #e2e8f0;
+    padding: 2px 5px;
+    border-radius: 4px;
     font-size: 12.5px;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    border: 1px solid rgba(56, 189, 248, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
   .stream-text pre {
-    background: rgba(3, 7, 18, 0.75);
-    border: 1px solid rgba(56, 189, 248, 0.25);
-    border-radius: 10px;
+    background: rgba(6, 9, 15, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
     padding: 10px 14px;
     overflow-x: auto;
     margin: 8px 0;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     font-size: 12px;
-    color: #e0f2fe;
+    color: #e2e8f0;
   }
 
-  /* Blinking Lively Holographic Cursor */
+  /* Clean, aesthetic vertical cursor */
   .lively-cursor {
     display: inline-block;
-    width: 7px;
+    width: 2px;
     height: 15px;
     background: #38bdf8;
     margin-left: 3px;
     vertical-align: -2px;
-    box-shadow: 0 0 8px #38bdf8;
-    animation: cursorBlink 0.65s infinite step-start;
+    animation: cursorBlink 0.75s infinite step-start;
   }
   @keyframes cursorBlink {
     0%, 100% { opacity: 1; }
     50% { opacity: 0; }
   }
 
-  /* Interactive Quick Chips */
+  /* Quick Chips Row */
   .chips-row {
     display: flex;
     gap: 6px;
-    padding: 8px 14px 4px 14px;
+    padding: 8px 14px;
     overflow-x: auto;
     white-space: nowrap;
-    border-top: 1px solid rgba(56, 189, 248, 0.08);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
   }
   .chips-row::-webkit-scrollbar {
     height: 0;
   }
   .chip {
     flex: 0 0 auto;
-    background: rgba(30, 41, 59, 0.5);
-    border: 1px solid rgba(148, 163, 184, 0.2);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     color: #94a3b8;
     font-size: 11.5px;
     font-weight: 500;
     padding: 4px 10px;
-    border-radius: 9999px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.15s ease;
     user-select: none;
   }
+  .chip svg {
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+  }
   .chip:hover {
-    background: rgba(56, 189, 248, 0.15);
-    border-color: rgba(56, 189, 248, 0.4);
-    color: #38bdf8;
-    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.07);
+    border-color: rgba(255, 255, 255, 0.16);
+    color: #f1f5f9;
+  }
+  .chip:hover svg {
+    opacity: 1;
   }
 
-  /* Console Input Bar */
+  /* Input Bar */
   .console-input-bar {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 8px 12px 10px 12px;
-    background: rgba(10, 16, 31, 0.95);
+    background: rgba(12, 16, 24, 0.95);
   }
   .input-field {
     flex: 1;
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid rgba(56, 189, 248, 0.2);
-    border-radius: 12px;
-    padding: 9px 14px;
-    font-size: 13.5px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 9px 13px;
+    font-size: 13px;
     color: #f8fafc;
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.2s;
   }
   .input-field::placeholder {
     color: #64748b;
   }
   .input-field:focus {
-    border-color: #38bdf8;
-    box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+    border-color: rgba(56, 189, 248, 0.45);
   }
   .send-btn {
-    background: linear-gradient(135deg, #0284c7 0%, #6366f1 100%);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #0284c7;
     border: none;
     color: #ffffff;
     font-size: 12.5px;
-    font-weight: 600;
-    padding: 9px 16px;
-    border-radius: 12px;
+    font-weight: 500;
+    padding: 9px 14px;
+    border-radius: 10px;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    transition: background 0.15s ease, opacity 0.15s ease;
   }
   .send-btn:hover {
-    opacity: 0.95;
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(2, 132, 199, 0.55);
+    background: #0369a1;
   }
   .send-btn:active {
-    transform: translateY(0);
+    opacity: 0.9;
   }
 
-  /* Subtle Hint for User */
   .orb-hint {
     position: fixed;
-    top: 60px;
+    top: 58px;
     left: 50%;
     transform: translateX(-50%);
     font-size: 11px;
-    color: rgba(148, 163, 184, 0.6);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    color: rgba(148, 163, 184, 0.45);
+    letter-spacing: 0.06em;
     pointer-events: none;
     z-index: 5;
     text-align: center;
   }
 
   @keyframes pulseDot {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.85); }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
   }
 
   @media (max-width: 640px) {
@@ -415,12 +410,12 @@
       max-height: 52vh;
     }
     .console-body {
-      max-height: 190px;
+      max-height: 180px;
       padding: 10px 14px;
-      font-size: 13px;
+      font-size: 12.8px;
     }
     .hud-title {
-      font-size: 11.5px;
+      font-size: 12px;
     }
     .hud-mode-pill {
       display: none;
@@ -433,22 +428,31 @@
 <div id="glow"></div>
 <canvas id="c"></canvas>
 
-<!-- Top HUD Header -->
+<!-- Top Navigation Bar -->
 <div class="top-hud">
   <div class="hud-brand">
     <div class="hud-dot"></div>
-    <span class="hud-title">Holo AI Core</span>
-    <span class="hud-mode-pill">Silent Text Demo</span>
+    <span class="hud-title">Holo AI</span>
+    <span class="hud-mode-pill">Text Demo</span>
   </div>
   <div class="hud-actions">
-    <a href="./" class="hud-btn" title="Open Full Live Voice Companion">
-      <span>🎙️ Full Voice App</span>
-      <span>↗</span>
+    <a href="./" class="hud-btn" title="Open Full Voice Companion">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+        <line x1="12" y1="19" x2="12" y2="23"></line>
+        <line x1="8" y1="23" x2="16" y2="23"></line>
+      </svg>
+      <span>Voice Interface</span>
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="7" y1="17" x2="17" y2="7"></line>
+        <polyline points="7 7 17 7 17 17"></polyline>
+      </svg>
     </a>
   </div>
 </div>
 
-<div class="orb-hint">✦ 3D Particle Orb &middot; Drag to Rotate &middot; Pinch to Zoom</div>
+<div class="orb-hint">3D Neural Orb · Drag to Rotate · Scroll to Zoom</div>
 
 <!-- Lively Agent Output Console Placed Cleanly BELOW the Orb -->
 <div class="console-wrapper" id="consoleWrapper">
@@ -459,8 +463,20 @@
       <span id="statusText">System Ready</span>
     </div>
     <div class="console-tools">
-      <button type="button" class="tool-btn" id="btnCopy" title="Copy Agent Text">📋 Copy</button>
-      <button type="button" class="tool-btn" id="btnClear" title="Clear Console">↺ Clear</button>
+      <button type="button" class="tool-btn" id="btnCopy" title="Copy text">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+        </svg>
+        <span>Copy</span>
+      </button>
+      <button type="button" class="tool-btn" id="btnClear" title="Clear console">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="1 4 1 10 7 10"></polyline>
+          <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+        </svg>
+        <span>Clear</span>
+      </button>
     </div>
   </div>
 
@@ -470,22 +486,62 @@
     <div class="stream-text" id="streamTarget"></div>
   </div>
 
-  <!-- Quick Interactive Chips for Fast 1-Click Testing -->
+  <!-- Quick Interactive Chips with Clean Minimal SVG Icons -->
   <div class="chips-row">
-    <div class="chip" data-prompt="Introduce yourself and explain what this demo is.">✨ Who are you?</div>
-    <div class="chip" data-prompt="Kaise ho aap? Kuch Hinglish me mazedaar batao.">🇮🇳 Hinglish Companion</div>
-    <div class="chip" data-prompt="Explain Quantum Computing and Superposition simply.">⚡ Quantum Physics</div>
-    <div class="chip" data-prompt="Write a Python async streaming pipeline snippet.">🐍 Python Stream</div>
-    <div class="chip" data-prompt="Switch orb shape to a glowing heart.">💖 Heart Morph</div>
-    <div class="chip" data-prompt="How do WebGL simplex noise shaders drive this 3D orb?">🔮 Shader Physics</div>
+    <div class="chip" data-prompt="Introduce yourself and explain the system architecture.">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+      <span>Overview</span>
+    </div>
+    <div class="chip" data-prompt="Kaise ho aap? Hinglish me companion style me baat karo.">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+      <span>Companion</span>
+    </div>
+    <div class="chip" data-prompt="Explain Quantum Superposition and wave function collapse concisely.">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+      </svg>
+      <span>Quantum Physics</span>
+    </div>
+    <div class="chip" data-prompt="Write an efficient Python async stream generator snippet.">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="16 18 22 12 16 6"></polyline>
+        <polyline points="8 6 2 12 8 18"></polyline>
+      </svg>
+      <span>Python Stream</span>
+    </div>
+    <div class="chip" data-prompt="Switch orb shape to a 3D geometric heart.">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+        <polyline points="2 17 12 22 22 17"></polyline>
+        <polyline points="2 12 12 17 22 12"></polyline>
+      </svg>
+      <span>Geometric Morph</span>
+    </div>
+    <div class="chip" data-prompt="Explain the WebGL simplex noise implementation in the vertex shader.">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="3" y1="9" x2="21" y2="9"></line>
+        <line x1="9" y1="21" x2="9" y2="9"></line>
+      </svg>
+      <span>Shader Pipeline</span>
+    </div>
   </div>
 
-  <!-- Input Field for Custom Prompt Testing -->
+  <!-- Input Bar with Clean SVG Arrow -->
   <form class="console-input-bar" id="inputForm">
-    <input type="text" class="input-field" id="promptInput" placeholder="Ask anything to test lively agent stream..." autocomplete="off" />
+    <input type="text" class="input-field" id="promptInput" placeholder="Enter inquiry or test query..." autocomplete="off" />
     <button type="submit" class="send-btn">
       <span>Send</span>
-      <span>↗</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
     </button>
   </form>
 </div>
@@ -578,16 +634,16 @@ void main(){
   vec3 dir=normalize(pos+vec3(0.0001));
   float n=snoise(pos*1.5+vec3(0.0, t*0.15, t*0.10));
   float n2=snoise(pos*4.5+vec3(t*0.3, 0.0, -t*0.2));
-  float d=(n*(0.012+uLevel*0.06+uBass*0.04)+n2*(0.004+uMid*0.02+uHigh*0.01));
+  float d=(n*(0.010+uLevel*0.04+uBass*0.03)+n2*(0.003+uMid*0.012+uHigh*0.008));
   pos+=dir*d;
-  pos*=1.0+uBass*0.06;
+  pos*=1.0+uBass*0.04;
 
-  // Touch physics distortion
+  // Touch physics
   vec2 dv=pos.xy-uTouch.xy;
   float dd=length(dv);
   float fall=exp(-dd*dd*24.0)*uTouch.z;
-  pos.xy+=normalize(dv+vec2(0.0001))*fall*0.16+vec2(-dv.y, dv.x)/(dd+0.06)*fall*0.04;
-  pos.z+=fall*0.12;
+  pos.xy+=normalize(dv+vec2(0.0001))*fall*0.14+vec2(-dv.y, dv.x)/(dd+0.06)*fall*0.03;
+  pos.z+=fall*0.10;
 
   // 3D Matrix Rotation & Perspective Projection
   float cy=cos(uRotY), sy=sin(uRotY), cx=cos(uRotX), sx=sin(uRotX);
@@ -595,20 +651,21 @@ void main(){
   vec3 r2=vec3(r1.x, r1.y*cx-r1.z*sx, r1.y*sx+r1.z*cx);
   float f=1.0/(2.6-r2.z*0.8);
   
-  // Position orb at top portion via uOffset.y
+  // Position orb at upper center area
   gl_Position=vec4(r2.x*f*uScale.x*2.6 + uOffset.x, r2.y*f*uScale.y*2.6 + uOffset.y, 0.0, 1.0);
 
   float depth=clamp((r2.z/1.6)*0.5+0.5, 0.0, 1.0);
-  gl_PointSize=(1.1+depth*2.2+aSeed*0.7)*uDPR*(1.0+uLevel*0.5);
+  gl_PointSize=(1.1+depth*2.0+aSeed*0.6)*uDPR*(1.0+uLevel*0.35);
 
   float cmix=n*0.5+0.5+mid*0.4;
-  vec3 c1=vec3(0.10, 0.65, 1.00); // Electric Cyan
-  vec3 c2=vec3(0.55, 0.35, 1.00); // Deep Violet
-  vec3 c3=vec3(1.00, 0.35, 0.75); // Neon Rose
+  // Aesthetic, non-neon, elegant palette (Ice Blue, Steel Indigo, Slate Violet)
+  vec3 c1=vec3(0.18, 0.65, 0.92);
+  vec3 c2=vec3(0.48, 0.40, 0.88);
+  vec3 c3=vec3(0.75, 0.45, 0.78);
   vec3 col=mix(c1, c2, clamp(cmix+depth*0.3-0.2, 0.0, 1.0));
-  col=mix(col, c3, clamp(uLevel*1.2*cmix, 0.0, 0.7));
-  vec3 themeCol=col*(0.45+depth*0.65);
-  float themeA=(0.30+mid*0.14)*(0.25+depth*0.75);
+  col=mix(col, c3, clamp(uLevel*0.8*cmix, 0.0, 0.5));
+  vec3 themeCol=col*(0.40+depth*0.60);
+  float themeA=(0.28+mid*0.12)*(0.25+depth*0.75);
   vColor=themeCol;
   vA=themeA;
 }
@@ -621,7 +678,7 @@ varying float vA;
 void main(){
   float circ=1.0-smoothstep(0.05, 0.5, length(gl_PointCoord-0.5));
   float al=circ*vA;
-  gl_FragColor=vec4(vColor*al, al*0.5);
+  gl_FragColor=vec4(vColor*al, al*0.45);
 }
 `;
 
@@ -723,7 +780,7 @@ gl.blendFunc(gl.ONE, gl.ONE);
 gl.clearColor(0, 0, 0, 0);
 resize();
 
-// Interactive rotation & user gesture controls
+// Gesture handling
 let rotX = 0, rotY = 0, targetRotX = 0, targetRotY = 0;
 let isDragging = false, lastMouseX = 0, lastMouseY = 0;
 let userZoom = 1.0, morph = 1.0;
@@ -745,8 +802,8 @@ window.addEventListener('pointermove', e => {
   if (isDragging) {
     const dx = e.clientX - lastMouseX;
     const dy = e.clientY - lastMouseY;
-    targetRotY += dx * 0.005;
-    targetRotX += dy * 0.005;
+    targetRotY += dx * 0.0045;
+    targetRotX += dy * 0.0045;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
     touchPos = [nx, ny, 1.0];
@@ -762,11 +819,10 @@ window.addEventListener('pointercancel', () => { isDragging = false; });
 window.addEventListener('wheel', e => {
   if (e.target.closest('#consoleWrapper')) return;
   e.preventDefault();
-  const delta = e.deltaY < 0 ? 0.06 : -0.06;
+  const delta = e.deltaY < 0 ? 0.05 : -0.05;
   userZoom = Math.min(2.0, Math.max(0.5, userZoom + delta));
 }, { passive: false });
 
-// Morphing function
 function morphTo(newPoints) {
   for (let i = 0; i < N; i++) {
     let m = Math.min(1, Math.max(0, (morph - seeds[i] * 0.45) / 0.55));
@@ -784,7 +840,7 @@ function morphTo(newPoints) {
   gl.bufferData(gl.ARRAY_BUFFER, curTo, gl.DYNAMIC_DRAW);
 }
 
-// Render loop with energetic lively pulses when the agent is writing!
+// Render loop: Calm, aesthetic, subtle movement without harsh neon flashing
 let lastT = performance.now();
 let audioLevel = 0, bassLevel = 0, midLevel = 0, highLevel = 0;
 let isAgentGenerating = false;
@@ -798,49 +854,45 @@ function render(now) {
   rotX += (targetRotX - rotX) * 0.08;
   rotY += (targetRotY - rotY) * 0.08;
   if (!isDragging) {
-    targetRotY += 0.0035;
+    targetRotY += 0.0028;
   }
   if (morph < 1.0) {
     morph = Math.min(1.0, morph + dt * 0.85);
   }
 
-  // Synthesize lively neural energy for the Orb:
-  // When agent is actively generating text, the Orb dances & pulses with energy!
+  // Smooth, subtle harmonic pulsation while streaming
   if (isAgentGenerating) {
-    const pulse1 = Math.sin(t * 9.0) * 0.5 + 0.5;
-    const pulse2 = Math.cos(t * 14.0) * 0.5 + 0.5;
-    audioLevel = 0.22 + pulse1 * 0.25;
-    bassLevel = 0.26 + pulse2 * 0.22;
-    midLevel = 0.20 + Math.sin(t * 18.0) * 0.15;
-    highLevel = 0.15 + pulse1 * 0.18;
+    const pulse1 = Math.sin(t * 7.0) * 0.5 + 0.5;
+    audioLevel = 0.12 + pulse1 * 0.15;
+    bassLevel = 0.14 + pulse1 * 0.14;
+    midLevel = 0.10 + Math.sin(t * 12.0) * 0.08;
+    highLevel = 0.08;
   } else {
-    // Gentle ambient organic breathing
-    const breathe = Math.sin(t * 1.4) * 0.5 + 0.5;
-    audioLevel = 0.03 + breathe * 0.04;
-    bassLevel = 0.04 + breathe * 0.05;
-    midLevel = 0.02 + breathe * 0.03;
-    highLevel = 0.01;
+    // Gentle natural breathing
+    const breathe = Math.sin(t * 1.2) * 0.5 + 0.5;
+    audioLevel = 0.02 + breathe * 0.03;
+    bassLevel = 0.03 + breathe * 0.03;
+    midLevel = 0.01;
+    highLevel = 0.005;
   }
 
-  // Atmospheric glow reactivity
-  const glowScale = 1.0 + bassLevel * 0.25;
-  const glowOpacity = 0.45 + audioLevel * 0.55;
+  // Restrained ambient glow modulation
+  const glowScale = 1.0 + bassLevel * 0.15;
+  const glowOpacity = 0.35 + audioLevel * 0.30;
   glowEl.style.transform = `scale(${glowScale})`;
   glowEl.style.opacity = glowOpacity;
 
   // Responsive scale & vertical offset positioning
   const aspect = W / H;
   let scX = 1.0, scY = 1.0;
-  let offsetY = 0.28; // Shift Orb up so the lower 45% is completely free for text console!
+  let offsetY = 0.28;
 
   if (aspect < 1.0) {
-    // Mobile view: slightly smaller orb and higher offset
     const mobileFit = 0.56;
     scX = mobileFit;
     scY = mobileFit * aspect;
     offsetY = 0.32;
   } else {
-    // Desktop view
     const desktopFit = 0.62;
     scX = desktopFit / aspect;
     scY = desktopFit;
@@ -883,7 +935,6 @@ const btnClear = document.getElementById('btnClear');
 let activeStreamTimer = null;
 let currentRawReply = '';
 
-// Markdown formatting helper (bold, code, lists, headers)
 function renderMarkdown(md) {
   let html = md
     .replace(/&/g, '&amp;')
@@ -899,7 +950,6 @@ function renderMarkdown(md) {
   return html;
 }
 
-// Lively streaming engine: words emerge progressively with organic timing
 function streamLivelyResponse(fullText, userQuery) {
   if (activeStreamTimer) {
     clearInterval(activeStreamTimer);
@@ -910,22 +960,19 @@ function streamLivelyResponse(fullText, userQuery) {
   currentRawReply = fullText;
   consoleWrapper.classList.add('active-stream');
   statusLight.className = 'status-light streaming';
-  statusText.textContent = 'Transmitting Neural Stream...';
+  statusText.textContent = 'Transmitting stream...';
 
-  // Display User Query Tag
   if (userQuery) {
-    queryTagWrap.innerHTML = `<div class="user-query-tag"><span>User</span><span>&rsaquo;</span><span>${escapeHtml(userQuery)}</span></div>`;
+    queryTagWrap.innerHTML = `<div class="user-query-tag"><span>Inquiry</span><span>&rsaquo;</span><span>${escapeHtml(userQuery)}</span></div>`;
   } else {
     queryTagWrap.innerHTML = '';
   }
 
-  // Tokenize text into words/whitespace units
   const tokens = fullText.match(/\S+|\s+/g) || [fullText];
   let currentIndex = 0;
   let accumulatedText = '';
 
   activeStreamTimer = setInterval(() => {
-    // Deliver 1 to 2 tokens per tick for snappy, lively streaming
     const batchSize = Math.random() > 0.4 ? 2 : 1;
     for (let b = 0; b < batchSize && currentIndex < tokens.length; b++) {
       accumulatedText += tokens[currentIndex];
@@ -941,69 +988,68 @@ function streamLivelyResponse(fullText, userQuery) {
       isAgentGenerating = false;
       consoleWrapper.classList.remove('active-stream');
       statusLight.className = 'status-light';
-      statusText.textContent = 'Stream Complete';
+      statusText.textContent = 'Completed';
 
-      // Keep resting cursor or remove smoothly
       setTimeout(() => {
         streamTarget.innerHTML = renderMarkdown(accumulatedText);
       }, 700);
     }
-  }, 24); // ~24ms cadence gives fluid, lively 40+ tokens/sec feel
+  }, 24);
 }
 
 function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// Knowledge Base for instant, 100% reliable demo responses
+// Clean, articulate knowledge base with zero emoji clutter
 const DEMO_KNOWLEDGE = [
   {
-    pattern: /who are you|tum kaun ho|introduce yourself|apna parichay|what is this/i,
-    reply: `I am **Holo AI**—an autonomous 3D Neural Agent living directly inside your browser canvas.\n\n` +
-           `✦ **Architecture Highlights:**\n` +
-           `• **65,000 Particle WebGL Orb:** Simplex noise displacement modulated in real-time GLSL.\n` +
-           `• **Silent Demo Mode:** Zero voice audio or microphone permissions required for this test bench.\n` +
-           `• **Lively Neural Stream:** Tokens stream directly to your HUD below while the 3D Orb pulses in visual synchronization.\n\n` +
-           `*(Namaste! Main Holo AI hoon—aapka visual companion. Upar 3D orb ko ghumaiye aur neeche test queries run kijiye!)*`
+    pattern: /who are you|tum kaun ho|introduce yourself|apna parichay|architecture|overview/i,
+    reply: `I am **Holo AI**—an interactive 3D Neural Interface running natively in your browser.\n\n` +
+           `**System Characteristics:**\n` +
+           `• **65,000 Particle WebGL Orb:** GPU-accelerated Simplex Noise displacement executed per-vertex at 60 FPS.\n` +
+           `• **Silent Test Mode:** Designed specifically for evaluating visual kinetics, text cadence, and structural fluidity without voice audio.\n` +
+           `• **Dynamic Offset Geometry:** Positioned in the upper view frustum to maintain absolute separation from the lower console.\n\n` +
+           `*(Namaste! Main Holo AI hoon—aapka visual interface. Upar 3D orb ko drag karke inspect karein aur neeche test queries execute karein.)*`
   },
   {
-    pattern: /kaise ho|kya haal|kya chal raha|kaisa hai|hinglish/i,
-    reply: `Main ekdam shandaar aur high-energy hoon! 🚀\n\n` +
-           `Aapka 3D Particle Orb upar bina kisi lag ke 60 FPS par smooth spin kar raha hai. Aaj is demo page par hamne sound ko poori tarah silent rakha hai, taaki aap bina kisi disturbance ke lively text streaming aur neural reactive orb ka anand le sakein.\n\n` +
-           `Bataiye, abhi kuch code generate karna hai, koi sawal poochna hai, ya orb ka shape morph karna hai?`
+    pattern: /kaise ho|kya haal|kya chal raha|kaisa hai|hinglish|companion/i,
+    reply: `Main bilkul theek hoon. 3D Neural Orb 60 FPS par bina kisi lag ke smoothly operate kar raha hai.\n\n` +
+           `Is demo interface me sound ko intentionally off rakha gaya hai taaki layout aur live text streaming ka clean visual experience test kiya ja sake.\n\n` +
+           `Aap koi code snippet generate karwana chahte hain ya koi specific algorithm test karna chahte hain?`
   },
   {
     pattern: /quantum|superposition|qubit|physics/i,
-    reply: `**Quantum Superposition & The 3D Orb Analogy:**\n\n` +
-           `In classical computing, a bit is rigidly 0 or 1. In quantum computing, a **qubit** exists in a linear combination of states:\n\n` +
-           `\`|ψ⟩ = α|0⟩ + β|1⟩\` where \`|α|² + |β|² = 1\`.\n\n` +
-           `Notice how the 65,000 particles above don't sit in static positions—they exist as a continuous wave function of 3D probabilities until sampled. When you drag to rotate, you are effectively collapsing the visual frame from another perspective!`
+    reply: `**Quantum Superposition & Orbital State Space:**\n\n` +
+           `In classical systems, information resolves strictly to binary states: {0, 1}. A quantum qubit exists as a normalized coherent linear superposition:\n\n` +
+           `|ψ⟩ = α|0⟩ + β|1⟩, where |α|² + |β|² = 1\n\n` +
+           `The 65,000 starlight particles above mathematically mirror this principle. They do not occupy discrete rigid locations; their coordinates are evaluated continuously over a 3D probability density manifold.`
   },
   {
     pattern: /python|async|code|pipeline/i,
-    reply: `Here is a lightweight Python asynchronous streaming generator matching this exact lively pipeline:\n\n` +
-           `\`\`\`python\nimport asyncio\nimport sys\n\nasync def lively_stream(tokens):\n    for token in tokens:\n        sys.stdout.write(token + " ")\n        sys.stdout.flush()\n        # 25ms delay creates snappy companion stream\n        await asyncio.sleep(0.025)\n    print("\\n[Stream Complete]")\n\nasyncio.run(lively_stream(["Neural", "Core", "Active", "At", "60FPS"]))\n\`\`\`\n` +
-           `Zero latency, zero thread-locking, and ready for production pipelines.`
+    reply: `**Asynchronous Token Stream Generator (Python):**\n\n` +
+           `\`\`\`python\nimport asyncio\nimport sys\n\nasync def stream_tokens(payload: list[str], interval_ms: float = 24.0):\n    delay = interval_ms / 1000.0\n    for token in payload:\n        sys.stdout.write(token + " ")\n        sys.stdout.flush()\n        await asyncio.sleep(delay)\n    sys.stdout.write("\\n")\n\n# Execution sample\nasyncio.run(stream_tokens(["Interface", "Stream", "Operational", "At", "60FPS"]))\n\`\`\`\n` +
+           `Non-blocking, zero thread-locking, and fully aligned with reactive UI architectures.`
   },
   {
-    pattern: /heart|dil|morph/i,
+    pattern: /heart|dil|morph|geometry/i,
     action: () => { morphTo(genHeart()); },
-    reply: `💖 **Shape Morphed to 3D Holographic Heart!**\n\n` +
-           `The 65,000 particles have smoothly calculated mathematical algebraic surfaces and migrated their coordinates from spherical geodesics to a 3D cardioid manifold.\n\n` +
-           `Touch and drag to rotate the heart in 3D!`
+    reply: `**Manifold Transition Initiated:**\n\n` +
+           `The 65,000 particles have migrated their parametric coordinates to an algebraic 3D cardioid boundary surface.\n\n` +
+           `Drag the canvas to rotate the transformed structure along arbitrary 3D axes.`
   },
   {
     pattern: /sphere|orb|ball|circle/i,
     action: () => { morphTo(genSphere()); },
-    reply: `🔮 **Shape Morphed back to Neural Particle Orb!**\n\n` +
-           `Restoring standard 3D starlight particle sphere with full simplex noise waving dynamics.`
+    reply: `**Restoring Spherical Geodesic Orb:**\n\n` +
+           `Particle coordinates successfully transitioned back to the default 3D starlight particle sphere with full Simplex wave dynamics.`
   },
   {
     pattern: /shader|glsl|webgl|simplex/i,
-    reply: `**How WebGL Shaders Power This Interface:**\n\n` +
-           `1. **Custom Vertex Shader:** Computes 3D Perlin/Simplex noise on 65,000 points simultaneously via GPU parallel execution.\n` +
-           `2. **Perspective Math:** Points are projected using \`f = 1.0 / (2.6 - r2.z * 0.8)\` for true depth scaling.\n` +
-           `3. **Vertical Offset (\`uOffset.y\`):** Elevates the orb to the upper region of the viewport so your chat output stays comfortably visible below without any overlapping.`
+    reply: `**GPU Shader Architecture:**\n\n` +
+           `1. **Per-Vertex Noise Evaluation:** Custom Simplex noise operates directly inside the vertex shader across all 65,000 points in parallel.\n` +
+           `2. **Perspective Math:** Depth scaling is governed by: f = 1.0 / (2.6 - r2.z * 0.8).\n` +
+           `3. **Vertical Frustum Offset:** The uOffset.y uniform elevates the orb center upward, ensuring the output console never collides with or obscures the 3D focal point.`
   }
 ];
 
@@ -1011,7 +1057,6 @@ function handleUserQuery(query) {
   query = (query || '').trim();
   if (!query) return;
 
-  // Check matching pattern in demo knowledge
   let matched = DEMO_KNOWLEDGE.find(k => k.pattern.test(query));
   let replyText = '';
 
@@ -1019,13 +1064,11 @@ function handleUserQuery(query) {
     if (matched.action) matched.action();
     replyText = matched.reply;
   } else {
-    // Dynamic structured intelligent fallback
-    replyText = `**Received Inquiry:** "${query}"\n\n` +
-                `✦ **Synthesis Analysis:**\n` +
-                `The neural system has processed your test input in Silent Demo Mode.\n` +
-                `• **Response Integrity:** 100% token throughput verified.\n` +
-                `• **Orb Synchronization:** Harmonic frequencies were dynamically coupled to the text cadence.\n` +
-                `• **Live Status:** Ready for next query or prompt chip!`;
+    replyText = `**Inquiry Acknowledged:** "${query}"\n\n` +
+                `**Processing Details:**\n` +
+                `• **Interface State:** Silent Test Bench active.\n` +
+                `• **Throughput:** Real-time token cadence verified.\n` +
+                `• **Orb Coupling:** Kinetic resonance dynamically modulated to the text stream.`;
   }
 
   streamLivelyResponse(replyText, query);
@@ -1041,7 +1084,6 @@ inputForm.addEventListener('submit', e => {
   handleUserQuery(q);
 });
 
-// Quick Chips Click
 document.querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', () => {
     const p = chip.getAttribute('data-prompt');
@@ -1049,38 +1091,40 @@ document.querySelectorAll('.chip').forEach(chip => {
   });
 });
 
-// Copy Button
 btnCopy.addEventListener('click', () => {
   if (!currentRawReply) return;
   navigator.clipboard.writeText(currentRawReply).then(() => {
-    const orig = btnCopy.textContent;
-    btnCopy.textContent = '✓ Copied!';
-    setTimeout(() => { btnCopy.textContent = orig; }, 1500);
+    const origHTML = btnCopy.innerHTML;
+    btnCopy.innerHTML = `
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+      <span>Copied</span>
+    `;
+    setTimeout(() => { btnCopy.innerHTML = origHTML; }, 1500);
   });
 });
 
-// Clear Button
 btnClear.addEventListener('click', () => {
   if (activeStreamTimer) clearInterval(activeStreamTimer);
   activeStreamTimer = null;
   isAgentGenerating = false;
   queryTagWrap.innerHTML = '';
-  streamTarget.innerHTML = '<span style="color:#64748b; font-style:italic;">Console cleared. Tap any chip or type a prompt above to test lively streaming output.</span>';
+  streamTarget.innerHTML = '<span style="color:#64748b; font-style:italic;">Console cleared. Select a chip or enter a query above to initiate output stream.</span>';
   statusLight.className = 'status-light';
   statusText.textContent = 'System Ready';
 });
 
-// Initial boot message showing the lively typewriter stream immediately on load!
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     streamLivelyResponse(
-      `✦ **Holo AI // Lively Demo Interface Initialized**\n\n` +
-      `• **3D Particle Orb:** Active above (Touch/Drag to rotate in 3D).\n` +
-      `• **Silent Test Bench:** Voice TTS is muted so you can test crisp, lively text output and visual responsiveness.\n` +
-      `• **Testing:** Tap any of the quick test chips below or type a query in the input box!`,
+      `**Holo AI // Test Interface Ready**\n\n` +
+      `• **3D Particle Orb:** Active above. Touch or drag to rotate.\n` +
+      `• **Silent Architecture:** Audio voice output is disabled for pure visual and textual evaluation.\n` +
+      `• **Interaction:** Select an option from the chips below or type a query in the input bar.`,
       null
     );
-  }, 400);
+  }, 350);
 });
 </script>
 </body>
