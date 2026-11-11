@@ -584,7 +584,7 @@
 </div>
 
 <script>
-// ================= 3D WEBGL PARTICLE ORB ENGINE =================
+// ================= EXACT 3D WEBGL PARTICLE ORB ENGINE (PURE GEOMETRY) =================
 const cv = document.getElementById('c');
 const gl = cv.getContext('webgl', { antialias: false, alpha: true, premultipliedAlpha: true });
 const glowEl = document.getElementById('glow');
@@ -607,7 +607,6 @@ attribute vec4 aCol;
 uniform float uTime, uLevel, uBass, uMid, uHigh, uRotY, uRotX, uDPR, uMorph;
 uniform vec2 uScale;
 uniform vec2 uOffset;
-uniform vec3 uTouch;
 varying vec3 vColor;
 varying float vA;
 
@@ -668,19 +667,13 @@ void main(){
   pos=vec3(pos.x*ca+pos.z*sa, pos.y, -pos.x*sa+pos.z*ca);
   pos+=vec3(sin(aSeed*127.1), sin(aSeed*311.7), sin(aSeed*74.7))*0.45*mid;
 
+  // Exact Simplex Wave Harmonics from index.html (Pure and clean, zero distortion on touch)
   vec3 dir=normalize(pos+vec3(0.0001));
   float n=snoise(pos*1.5+vec3(0.0, t*0.15, t*0.10));
   float n2=snoise(pos*4.5+vec3(t*0.3, 0.0, -t*0.2));
-  float d=(n*(0.010+uLevel*0.04+uBass*0.03)+n2*(0.003+uMid*0.012+uHigh*0.008));
+  float d=(n*(0.012+uLevel*0.05+uBass*0.03)+n2*(0.004+uMid*0.015+uHigh*0.008));
   pos+=dir*d;
-  pos*=1.0+uBass*0.04;
-
-  // Touch physics
-  vec2 dv=pos.xy-uTouch.xy;
-  float dd=length(dv);
-  float fall=exp(-dd*dd*24.0)*uTouch.z;
-  pos.xy+=normalize(dv+vec2(0.0001))*fall*0.14+vec2(-dv.y, dv.x)/(dd+0.06)*fall*0.03;
-  pos.z+=fall*0.10;
+  pos*=1.0+uBass*0.05;
 
   // 3D Matrix Rotation & Perspective Projection
   float cy=cos(uRotY), sy=sin(uRotY), cx=cos(uRotX), sx=sin(uRotX);
@@ -688,20 +681,20 @@ void main(){
   vec3 r2=vec3(r1.x, r1.y*cx-r1.z*sx, r1.y*sx+r1.z*cx);
   float f=1.0/(2.6-r2.z*0.8);
   
-  // Position orb at upper center area
+  // Clean offset to position orb above console
   gl_Position=vec4(r2.x*f*uScale.x*2.6 + uOffset.x, r2.y*f*uScale.y*2.6 + uOffset.y, 0.0, 1.0);
 
   float depth=clamp((r2.z/1.6)*0.5+0.5, 0.0, 1.0);
-  gl_PointSize=(1.1+depth*2.0+aSeed*0.6)*uDPR*(1.0+uLevel*0.35);
+  gl_PointSize=(1.1+depth*2.2+aSeed*0.7)*uDPR*(1.0+uLevel*0.5);
 
   float cmix=n*0.5+0.5+mid*0.4;
-  vec3 c1=vec3(0.18, 0.65, 0.92);
-  vec3 c2=vec3(0.48, 0.40, 0.88);
-  vec3 c3=vec3(0.75, 0.45, 0.78);
+  vec3 c1=vec3(0.12, 0.65, 0.95);
+  vec3 c2=vec3(0.50, 0.38, 0.95);
+  vec3 c3=vec3(0.85, 0.40, 0.80);
   vec3 col=mix(c1, c2, clamp(cmix+depth*0.3-0.2, 0.0, 1.0));
-  col=mix(col, c3, clamp(uLevel*0.8*cmix, 0.0, 0.5));
-  vec3 themeCol=col*(0.40+depth*0.60);
-  float themeA=(0.28+mid*0.12)*(0.25+depth*0.75);
+  col=mix(col, c3, clamp(uLevel*1.0*cmix, 0.0, 0.6));
+  vec3 themeCol=col*(0.45+depth*0.65);
+  float themeA=(0.30+mid*0.14)*(0.25+depth*0.75);
   vColor=themeCol;
   vA=themeA;
 }
@@ -714,7 +707,7 @@ varying float vA;
 void main(){
   float circ=1.0-smoothstep(0.05, 0.5, length(gl_PointCoord-0.5));
   float al=circ*vA;
-  gl_FragColor=vec4(vColor*al, al*0.45);
+  gl_FragColor=vec4(vColor*al, al*0.5);
 }
 `;
 
@@ -806,7 +799,7 @@ const bTo = mkBuf('aTo', 3, curTo);
 mkBuf('aSeed', 1, seeds);
 
 const U = {};
-['uTime','uLevel','uBass','uMid','uHigh','uRotY','uRotX','uDPR','uMorph','uScale','uOffset','uTouch'].forEach(n => {
+['uTime','uLevel','uBass','uMid','uHigh','uRotY','uRotX','uDPR','uMorph','uScale','uOffset'].forEach(n => {
   U[n] = gl.getUniformLocation(prog, n);
 });
 
@@ -816,47 +809,75 @@ gl.blendFunc(gl.ONE, gl.ONE);
 gl.clearColor(0, 0, 0, 0);
 resize();
 
-// Gesture handling
+// Pure 3D Rotation & Touch Controls (Identical to original index.html)
 let rotX = 0, rotY = 0, targetRotX = 0, targetRotY = 0;
 let isDragging = false, lastMouseX = 0, lastMouseY = 0;
+let pointerDownX = 0, pointerDownY = 0, pointerDownTime = 0;
 let userZoom = 1.0, morph = 1.0;
-let touchPos = [0, 0, 0];
+let tapPulseEnergy = 0;
 
 window.addEventListener('pointerdown', e => {
   if (e.target.closest('#consoleWrapper, .top-hud')) return;
   isDragging = true;
   lastMouseX = e.clientX;
   lastMouseY = e.clientY;
-  const nx = (e.clientX / innerWidth) * 2 - 1;
-  const ny = -(e.clientY / innerHeight) * 2 + 1;
-  touchPos = [nx, ny, 1.0];
+  pointerDownX = e.clientX;
+  pointerDownY = e.clientY;
+  pointerDownTime = performance.now();
 });
 
 window.addEventListener('pointermove', e => {
-  const nx = (e.clientX / innerWidth) * 2 - 1;
-  const ny = -(e.clientY / innerHeight) * 2 + 1;
-  if (isDragging) {
-    const dx = e.clientX - lastMouseX;
-    const dy = e.clientY - lastMouseY;
-    targetRotY += dx * 0.0045;
-    targetRotX += dy * 0.0045;
-    lastMouseX = e.clientX;
-    lastMouseY = e.clientY;
-    touchPos = [nx, ny, 1.0];
-  } else {
-    touchPos[0] = nx;
-    touchPos[1] = ny;
-    touchPos[2] = Math.max(0.0, touchPos[2] - 0.04);
-  }
+  if (!isDragging) return;
+  const dx = e.clientX - lastMouseX;
+  const dy = e.clientY - lastMouseY;
+  targetRotY += dx * 0.006;
+  targetRotX += dy * 0.006;
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
 });
 
-window.addEventListener('pointerup', () => { isDragging = false; });
+window.addEventListener('pointerup', e => {
+  if (isDragging) {
+    isDragging = false;
+    const dist = Math.hypot(e.clientX - pointerDownX, e.clientY - pointerDownY);
+    const duration = performance.now() - pointerDownTime;
+    // On quick tap: add a gentle, harmonious energy wave to the orb
+    if (dist < 20 && duration < 400) {
+      tapPulseEnergy = 0.25;
+    }
+  }
+});
 window.addEventListener('pointercancel', () => { isDragging = false; });
+
+// Multi-touch pinch-to-zoom
+let initialPinchDist = null, initialPinchZoom = 1.0;
+window.addEventListener('touchstart', e => {
+  if (e.touches && e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    initialPinchDist = Math.hypot(dx, dy);
+    initialPinchZoom = userZoom;
+  }
+}, { passive: true });
+
+window.addEventListener('touchmove', e => {
+  if (e.touches && e.touches.length === 2 && initialPinchDist) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.hypot(dx, dy);
+    userZoom = Math.min(2.5, Math.max(0.4, initialPinchZoom * (dist / initialPinchDist)));
+  }
+}, { passive: true });
+
+window.addEventListener('touchend', e => {
+  if (!e.touches || e.touches.length < 2) initialPinchDist = null;
+}, { passive: true });
+
 window.addEventListener('wheel', e => {
   if (e.target.closest('#consoleWrapper')) return;
   e.preventDefault();
-  const delta = e.deltaY < 0 ? 0.05 : -0.05;
-  userZoom = Math.min(2.0, Math.max(0.5, userZoom + delta));
+  const delta = e.deltaY < 0 ? 0.06 : -0.06;
+  userZoom = Math.min(2.5, Math.max(0.4, userZoom + delta));
 }, { passive: false });
 
 function morphTo(newPoints) {
@@ -876,7 +897,7 @@ function morphTo(newPoints) {
   gl.bufferData(gl.ARRAY_BUFFER, curTo, gl.DYNAMIC_DRAW);
 }
 
-// Render loop: Calm, aesthetic movement
+// Render loop: Pure 3D WebGL rotation matching index.html
 let lastT = performance.now();
 let audioLevel = 0, bassLevel = 0, midLevel = 0, highLevel = 0;
 let isAgentGenerating = false;
@@ -890,31 +911,37 @@ function render(now) {
   rotX += (targetRotX - rotX) * 0.08;
   rotY += (targetRotY - rotY) * 0.08;
   if (!isDragging) {
-    targetRotY += 0.0028;
+    targetRotY += 0.0035;
   }
   if (morph < 1.0) {
     morph = Math.min(1.0, morph + dt * 0.85);
   }
 
-  // Smooth, subtle harmonic pulsation while streaming
-  if (isAgentGenerating) {
-    const pulse1 = Math.sin(t * 7.0) * 0.5 + 0.5;
-    audioLevel = 0.12 + pulse1 * 0.15;
-    bassLevel = 0.14 + pulse1 * 0.14;
-    midLevel = 0.10 + Math.sin(t * 12.0) * 0.08;
-    highLevel = 0.08;
+  // Smooth decay of tap wave
+  if (tapPulseEnergy > 0.001) {
+    tapPulseEnergy *= 0.92;
   } else {
-    // Gentle natural breathing
-    const breathe = Math.sin(t * 1.2) * 0.5 + 0.5;
-    audioLevel = 0.02 + breathe * 0.03;
-    bassLevel = 0.03 + breathe * 0.03;
-    midLevel = 0.01;
-    highLevel = 0.005;
+    tapPulseEnergy = 0;
   }
 
-  // Restrained ambient glow modulation
-  const glowScale = 1.0 + bassLevel * 0.15;
-  const glowOpacity = 0.35 + audioLevel * 0.30;
+  // Pure harmonic audio frequencies
+  if (isAgentGenerating) {
+    const pulse1 = Math.sin(t * 7.0) * 0.5 + 0.5;
+    audioLevel = 0.12 + pulse1 * 0.14 + tapPulseEnergy;
+    bassLevel = 0.14 + pulse1 * 0.12 + tapPulseEnergy;
+    midLevel = 0.10 + Math.sin(t * 12.0) * 0.08;
+    highLevel = 0.06;
+  } else {
+    const breathe = Math.sin(t * 1.3) * 0.5 + 0.5;
+    audioLevel = 0.025 + breathe * 0.035 + tapPulseEnergy;
+    bassLevel = 0.03 + breathe * 0.04 + tapPulseEnergy;
+    midLevel = 0.012;
+    highLevel = 0.006;
+  }
+
+  // Glow subtle reactivity
+  const glowScale = 1.0 + bassLevel * 0.16;
+  const glowOpacity = 0.40 + audioLevel * 0.35;
   glowEl.style.transform = `scale(${glowScale})`;
   glowEl.style.opacity = glowOpacity;
 
@@ -924,12 +951,12 @@ function render(now) {
   let offsetY = 0.28;
 
   if (aspect < 1.0) {
-    const mobileFit = 0.56;
+    const mobileFit = 0.58;
     scX = mobileFit;
     scY = mobileFit * aspect;
     offsetY = 0.32;
   } else {
-    const desktopFit = 0.62;
+    const desktopFit = 0.65;
     scX = desktopFit / aspect;
     scY = desktopFit;
     offsetY = 0.26;
@@ -948,7 +975,6 @@ function render(now) {
   gl.uniform1f(U.uMorph, morph);
   gl.uniform2f(U.uScale, scX, scY);
   gl.uniform2f(U.uOffset, 0.0, offsetY);
-  gl.uniform3f(U.uTouch, touchPos[0], touchPos[1], touchPos[2]);
 
   gl.clear(gl.COLOR_BUFFER_BIT);
   gl.drawArrays(gl.POINTS, 0, N);
@@ -971,7 +997,6 @@ const btnClear = document.getElementById('btnClear');
 let activeAnimationId = null;
 let currentRawReply = '';
 
-// Markdown to Streamable Action Tokens Parser
 function parseMarkdownToStreamTokens(md) {
   const tokens = [];
   const lines = md.split('\n');
@@ -980,7 +1005,6 @@ function parseMarkdownToStreamTokens(md) {
   for (let i = 0; i < lines.length; i++) {
     let line = lines[i];
 
-    // Fenced code blocks
     if (line.trim().startsWith('```')) {
       if (!inCode) {
         inCode = true;
@@ -1009,7 +1033,6 @@ function parseMarkdownToStreamTokens(md) {
       line = line.replace(/^\s*[-•]\s+/, '• ');
     }
 
-    // Split line into formatting units and regular words
     const parts = line.split(/(\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g);
     for (const part of parts) {
       if (!part) continue;
@@ -1041,7 +1064,6 @@ function parseMarkdownToStreamTokens(md) {
   return tokens;
 }
 
-// Buttery-smooth, V-Sync synchronized streaming engine
 function streamLivelyResponse(fullText, userQuery) {
   if (activeAnimationId) {
     cancelAnimationFrame(activeAnimationId);
@@ -1054,14 +1076,12 @@ function streamLivelyResponse(fullText, userQuery) {
   statusLight.className = 'status-light streaming';
   statusText.textContent = 'Transmitting stream...';
 
-  // Display user query tag
   if (userQuery) {
     queryTagWrap.innerHTML = `<div class="user-query-tag"><span>Inquiry</span><span>&rsaquo;</span><span>${escapeHtml(userQuery)}</span></div>`;
   } else {
     queryTagWrap.innerHTML = '';
   }
 
-  // Clear output target and initialize caret
   streamTarget.innerHTML = '';
   const cursor = document.createElement('span');
   cursor.className = 'lively-cursor';
@@ -1074,7 +1094,6 @@ function streamLivelyResponse(fullText, userQuery) {
 
   let lastFrameTime = performance.now();
   let tokenAccumulator = 0;
-  // ~38-42 tokens/sec cadence creates an organic, silky reading flow
   const tokensPerMs = 0.038;
 
   function processSingleToken(tok) {
@@ -1125,14 +1144,12 @@ function streamLivelyResponse(fullText, userQuery) {
     lastFrameTime = now;
     tokenAccumulator += delta * tokensPerMs;
 
-    // Process tokens accumulated up to this frame
     while (tokenAccumulator >= 1.0 && tokenIndex < tokens.length) {
       processSingleToken(tokens[tokenIndex]);
       tokenIndex++;
       tokenAccumulator -= 1.0;
     }
 
-    // Smooth exponential scroll glide (LERP)
     const targetScroll = consoleBody.scrollHeight - consoleBody.clientHeight;
     if (targetScroll > consoleBody.scrollTop + 0.5) {
       consoleBody.scrollTop += (targetScroll - consoleBody.scrollTop) * 0.16;
@@ -1147,7 +1164,6 @@ function streamLivelyResponse(fullText, userQuery) {
       statusLight.className = 'status-light';
       statusText.textContent = 'Completed';
 
-      // Settle scroll naturally to bottom
       function settleScroll() {
         const remaining = consoleBody.scrollHeight - consoleBody.clientHeight - consoleBody.scrollTop;
         if (remaining > 0.5) {
@@ -1159,7 +1175,6 @@ function streamLivelyResponse(fullText, userQuery) {
       }
       requestAnimationFrame(settleScroll);
 
-      // Smoothly fade out the caret
       setTimeout(() => {
         cursor.style.transition = 'opacity 0.4s ease';
         cursor.style.opacity = '0';
@@ -1175,7 +1190,6 @@ function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
-// Clean, articulate knowledge base with zero emoji clutter
 const DEMO_KNOWLEDGE = [
   {
     pattern: /who are you|tum kaun ho|introduce yourself|apna parichay|architecture|overview/i,
