@@ -23,14 +23,39 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(48vmin
 .pill small{font-family:var(--mono);font-size:10px;color:var(--mu);font-weight:400}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px rgba(94,224,160,.6)}
 .stage{flex:1 1 auto;min-height:0;margin:10px 0 8px;pointer-events:none}
-.console{height:40%;display:flex;flex-direction:column;max-width:720px;width:100%;align-self:center;background:var(--glass);border:1px solid var(--bd);border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.5);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);overflow:hidden}
-@media(max-width:640px){.console{height:38vh;border-radius:20px}}
-.console{transition:height .35s cubic-bezier(.3,.7,.2,1)}
-.console[data-s="max"]{height:76%}
-.console[data-s="min"]{height:112px}
-.console[data-s="min"] #out,.console[data-s="min"] .chips{display:none}
+.console{height:42%;display:flex;flex-direction:column;max-width:720px;width:100%;align-self:center;background:var(--glass);border:1px solid var(--bd);border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.5);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);overflow:hidden;transition:height .35s cubic-bezier(.3,.7,.2,1)}
+.console[hidden]{display:none!important}
+@media(max-width:640px){.console{height:45vh;border-radius:20px}}
+.console[data-s="max"]{height:78%}
+.console[data-s="min"]{height:46px}
+.console[data-s="min"] #out{display:none}
 .console[data-s="min"] .hd{border-bottom:0}
 .ib:disabled{opacity:.3;pointer-events:none}
+.close-btn:hover{background:rgba(255,115,154,.15)!important;color:#ff739a!important}
+.st-agent-badge{font-weight:700;color:var(--ac);letter-spacing:.06em;font-size:10px}
+.st-sep{opacity:.35}
+.term-out{flex:1;min-height:0;overflow-y:auto;padding:12px 14px;font-family:var(--mono);font-size:12px;line-height:1.55;color:#cfd8e3;scrollbar-width:none}
+.term-out::-webkit-scrollbar{display:none}
+.agent-banner{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 12px;margin-bottom:10px;background:rgba(138,180,255,.06);border:1px solid rgba(138,180,255,.18);border-radius:12px;font-size:11.5px}
+.agent-task-title{display:flex;align-items:center;gap:8px;min-width:0}
+.task-badge{font-size:9.5px;font-weight:700;letter-spacing:.05em;padding:2px 6px;border-radius:6px;background:rgba(138,180,255,.2);color:var(--ac);flex:none}
+.task-text{font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent-meta{display:flex;align-items:center;gap:8px;flex:none;font-size:10.5px;color:var(--mu)}
+.pill-status{padding:2px 7px;border-radius:999px;font-size:9.5px;font-weight:600;text-transform:uppercase;background:rgba(255,255,255,.06);color:var(--mu)}
+.pill-status.active{background:rgba(138,180,255,.18);color:var(--ac);box-shadow:0 0 10px rgba(138,180,255,.2)}
+.pill-status.done{background:rgba(94,224,160,.16);color:var(--ok)}
+.cmd-block{margin-bottom:10px;border-radius:10px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.06);overflow:hidden}
+.cmd-head{display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,255,255,.03);border-bottom:1px solid rgba(255,255,255,.04);font-size:11.5px}
+.cmd-prompt{color:var(--ac);font-weight:700;flex:none}
+.cmd-text{flex:1;color:#e0e8f5;font-weight:500;word-break:break-all}
+.cmd-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:5px;letter-spacing:.04em;flex:none}
+.cmd-badge.running{background:rgba(138,180,255,.2);color:var(--ac);animation:pulseBadge 1.2s infinite ease-in-out}
+.cmd-badge.ok{background:rgba(94,224,160,.18);color:var(--ok)}
+.cmd-badge.err{background:rgba(255,115,154,.2);color:#ff739a}
+@keyframes pulseBadge{50%{opacity:.45}}
+.cmd-output{margin:0;padding:8px 10px;font-family:inherit;font-size:11px;line-height:1.55;color:#9cb0c9;white-space:pre-wrap;word-break:break-word}
+.term-cursor{display:inline-block;width:7px;height:12px;vertical-align:-1px;background:var(--ac);box-shadow:0 0 8px rgba(138,180,255,.8);animation:blinkCursor .8s infinite}
+@keyframes blinkCursor{50%{opacity:0}}
 .tools{position:absolute;top:12px;right:14px;z-index:10}
 .tb{width:38px;height:38px;border-radius:50%;border:1px solid var(--bd);background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);color:var(--tx);display:grid;place-items:center;cursor:pointer;transition:all .18s ease}
 .tb:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08)}
@@ -42,7 +67,7 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(48vmin
 .opt.on{background:rgba(138,180,255,.22);border-color:rgba(138,180,255,.6);color:#fff}
 .sw{width:30px;height:30px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;transition:transform .15s}
 .sw.on{border-color:#fff;transform:scale(1.08)}
-:is(.tb,.opt,.sw):focus-visible{box-shadow:0 0 0 2px rgba(138,180,255,.7)}
+:is(.tb,.opt,.sw,.ib,.x):focus-visible{box-shadow:0 0 0 2px rgba(138,180,255,.7)}
 .hd{display:flex;align-items:center;justify-content:space-between;padding:9px 12px 9px 16px;border-bottom:1px solid var(--bd)}
 .st{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--mu)}
 .st .dot{width:6px;height:6px}.st.busy .dot{background:var(--ac);box-shadow:0 0 8px rgba(138,180,255,.7);animation:bp 1s ease-in-out infinite}
@@ -51,26 +76,6 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(48vmin
 .ib{display:inline-flex;align-items:center;gap:5px;height:30px;padding:0 10px;border:0;border-radius:9px;background:transparent;color:var(--mu);font:inherit;font-size:11px;cursor:pointer}
 .ib:hover{background:rgba(255,255,255,.06);color:var(--tx)}
 svg.i{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
-#out{flex:1;min-height:0;overflow-y:auto;padding:12px 16px;font-size:13.5px;line-height:1.6;scrollbar-width:none}
-#out::-webkit-scrollbar{display:none}
-.empty{color:var(--mu);font-size:13px}
-.q{font-family:var(--mono);font-size:11.5px;color:var(--ac);margin:0 0 4px}
-.a{margin:0 0 14px}
-.tok{display:inline-block;animation:tk .42s cubic-bezier(.2,.7,.2,1) both}
-@keyframes tk{from{opacity:0;filter:blur(2.5px);transform:translateY(4px)}to{opacity:1;filter:blur(0);transform:none}}
-.chips{display:flex;gap:7px;overflow-x:auto;padding:2px 14px 10px;scrollbar-width:none}
-.chips::-webkit-scrollbar{display:none}
-.chip{position:relative;flex:none;display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:9999px;font-size:11px;font-family:inherit;color:var(--tx);background:rgba(255,255,255,.04);border:1px solid var(--bd);cursor:pointer;white-space:nowrap}
-.chip::after{content:"";position:absolute;inset:-7px -2px}
-.chip:hover{background:rgba(138,180,255,.12);border-color:rgba(138,180,255,.3)}
-.chip-accent{background:rgba(138,180,255,.1);border-color:rgba(138,180,255,.3);color:var(--ac)}
-.chip .i{width:12px;height:12px}
-form{display:flex;gap:8px;padding:0 12px 12px}
-input{flex:1;min-width:0;height:42px;padding:0 16px;border-radius:999px;border:1px solid var(--bd);background:rgba(255,255,255,.04);color:var(--tx);font:inherit;font-size:15px}
-input::placeholder{color:var(--mu)}
-.send{width:42px;height:42px;flex:none;border:0;border-radius:50%;background:var(--ac);color:#08101e;display:grid;place-items:center;cursor:pointer}
-.send .i{width:18px;height:18px;stroke-width:2}
-:is(.ib,.chip,.send,input,.x):focus-visible{box-shadow:0 0 0 2px rgba(138,180,255,.7)}
 .modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:rgba(3,4,8,.65);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .modal[hidden]{display:none}
 .card{width:min(460px,100%);max-height:88vh;overflow:auto;background:rgba(12,17,27,.94);border:1px solid var(--bd);border-radius:22px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,.6);animation:tk .4s both}
@@ -136,31 +141,28 @@ input::placeholder{color:var(--mu)}
         <button class="sw" data-c="mint" type="button" aria-label="Mint" style="background:linear-gradient(135deg,#80f2cc,#80c2ff)"></button>
         <button class="sw" data-c="violet" type="button" aria-label="Violet" style="background:linear-gradient(135deg,#c299ff,#f599e6)"></button>
       </div>
+      <div class="row" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--bd)">
+        <button class="opt" id="simTaskBtn" type="button" style="width:100%;text-align:center;padding:7px;background:rgba(138,180,255,.1);border-color:rgba(138,180,255,.3);color:var(--ac);font-weight:600">▶ Simulate Agent Task</button>
+      </div>
     </div>
   </div>
 
-  <section class="console" data-s="normal" aria-label="Chat console">
+  <section class="console" id="agentConsole" data-s="normal" aria-label="Agent live execution" hidden>
     <div class="hd">
-      <div class="st" id="st"><i class="dot"></i><span id="stt">Ready</span></div>
+      <div class="st" id="st">
+        <i class="dot"></i>
+        <span class="st-agent-badge">RJN AGENT</span>
+        <span class="st-sep">·</span>
+        <span id="stt">Idle</span>
+      </div>
       <div class="acts">
-        <button class="ib" id="min" type="button" aria-label="Minimize console"><svg class="i"><use href="#dn"/></svg></button>
-        <button class="ib" id="max" type="button" aria-label="Expand console"><svg class="i"><use href="#upc"/></svg></button>
-        <button class="ib" id="copy" type="button"><svg class="i"><use href="#copy"/></svg>Copy</button>
-        <button class="ib" id="clear" type="button"><svg class="i"><use href="#trash"/></svg>Clear</button>
+        <button class="ib" id="min" type="button" aria-label="Minimize console" title="Minimize"><svg class="i"><use href="#dn"/></svg></button>
+        <button class="ib" id="max" type="button" aria-label="Expand console" title="Expand"><svg class="i"><use href="#upc"/></svg></button>
+        <button class="ib" id="copy" type="button" title="Copy Output"><svg class="i"><use href="#copy"/></svg>Copy</button>
+        <button class="ib close-btn" id="closeAgent" type="button" aria-label="Close" title="Close"><svg class="i"><use href="#x"/></svg></button>
       </div>
     </div>
-    <div id="out" aria-live="polite"><div class="empty">Ask something, or customize the 3D orb using the slider icon above.</div></div>
-    <div class="chips">
-      <button class="chip chip-accent" data-k="ar" type="button"><svg class="i"><use href="#ar"/></svg>Architecture Site</button>
-      <button class="chip" data-k="heart" type="button"><svg class="i"><use href="#heart"/></svg>Heart</button>
-      <button class="chip" data-k="star" type="button"><svg class="i"><use href="#star"/></svg>Star</button>
-      <button class="chip" data-k="galaxy" type="button"><svg class="i"><use href="#galaxy"/></svg>Galaxy</button>
-      <button class="chip" data-k="sphere" type="button"><svg class="i"><use href="#sphere"/></svg>Orb</button>
-      <button class="chip" data-k="ov" type="button"><svg class="i"><use href="#ov"/></svg>Overview</button>
-      <button class="chip" data-k="qu" type="button"><svg class="i"><use href="#qu"/></svg>Quantum State</button>
-      <button class="chip" data-k="py" type="button"><svg class="i"><use href="#py"/></svg>Python Pipeline</button>
-    </div>
-    <form id="f"><input id="q" placeholder="Ask anything, change shape or color (e.g. heart, star, ember)…" autocomplete="off" aria-label="Message"><button class="send" type="submit" aria-label="Send"><svg class="i"><use href="#send"/></svg></button></form>
+    <div id="out" class="term-out" aria-live="polite"></div>
   </section>
 </div>
 
@@ -355,83 +357,260 @@ function frame(now){
   smoothScroll();requestAnimationFrame(frame);
 }
 
-/* ---------- chat console ---------- */
-const out=$("#out"),stEl=$("#st"),stt=$("#stt");
-let sid=0,userScrolled=false,statusT;
-const setStatus=(busy,txt)=>{stEl.classList.toggle("busy",busy);stt.textContent=txt||(busy?"Responding":"Ready")};
-["wheel","touchstart"].forEach(ev=>out.addEventListener(ev,()=>{userScrolled=true},{passive:true}));
-function smoothScroll(){if(userScrolled)return;const m=out.scrollHeight-out.clientHeight,d=m-out.scrollTop;if(Math.abs(d)>.5)out.scrollTop+=d*.15}
-const TEXT_REPLIES={
- ov:"Holo AI is an interactive 3D neural interface running silently in your browser. The orb above is drawn live on your GPU with 58,000 starlight particles, and the console below streams its answers word by word. Drag the orb to rotate it, tap for an energy pulse, and pinch to zoom.",
- ar:"The SAAI Autonomous AI Architecture is a 7-layer constitutional stack: Cognitive Core, 478 MCP Tools across 14 Servers, Redundant 4-Tier Memory, Real-time Reflection Loop, Async Event Routing, Multi-LLM Parliament, and Sovereign Security. Opening the architectural showcase card now.",
- qu:"A qubit exists in a normalized linear superposition |ψ⟩ = α|0⟩ + β|1⟩. Measuring it collapses the state to one outcome, with probabilities set by the amplitudes. Like the orb, it looks calm and coherent from far away, and fluid up close.",
- py:"A clean Python pipeline has four stages: ingest, validate, transform, and store. Keep each stage a pure function, log only at the boundaries, and test the transform on a small fixture before you connect any real input or output.",
- heart:"Transitioning 58,000 starlight particles to an algebraic 3D cardioid heart manifold. Drag to inspect the curves from any angle.",
- star:"Particles reorganized into a 5-pointed 3D stellated cosmic star structure.",
- galaxy:"Forming a logarithmic double-spiral galaxy with relativistic core distribution.",
- sphere:"Restoring particles back to the balanced 3D geodesic starlight sphere with Simplex noise waves."
+/* ---------- RJN Autonomous Agent Live Execution Engine ---------- */
+const con=$("#agentConsole"),out=$("#out"),stEl=$("#st"),stt=$("#stt");
+const bMin=$("#min"),bMax=$("#max"),bClose=$("#closeAgent");
+let activeTask=null,currentCmdEl=null,currentOutEl=null,cursorEl=null;
+let userScrolled=false,statusT=null,taskClockInterval=null;
+
+const setStatus=(busy,txt)=>{
+  stEl.classList.toggle("busy",busy);
+  stt.textContent=txt||(busy?"Executing":"Idle");
 };
-const L={ov:"Overview",ar:"Architecture Site",qu:"Quantum State",py:"Python Pipeline",heart:"Heart",star:"Star",galaxy:"Galaxy",sphere:"Default Orb"};
 
-function checkIntent(str){
-  const s=(str||"").toLowerCase();
-  if(/\b(heart|dil)\b|हार्ट|दिल/i.test(s))return{type:"shape",val:"heart"};
-  if(/\b(star|sitara|tara)\b|तारा|सितारा|स्टार/i.test(s))return{type:"shape",val:"star"};
-  if(/\b(galaxy|universe|spiral)\b|गैलेक्सी|ब्रह्मांड/i.test(s))return{type:"shape",val:"galaxy"};
-  if(/\b(dna|helix)\b|डीएनए/i.test(s))return{type:"shape",val:"dna"};
-  if(/\b(torus|donut)\b|डोनट/i.test(s))return{type:"shape",val:"torus"};
-  if(/\b(cube|box)\b|क्यूब|डिब्बा/i.test(s))return{type:"shape",val:"cube"};
-  if(/\b(sphere|orb|ball|circle|gola)\b|गोला|ऑर्ब/i.test(s))return{type:"shape",val:"sphere"};
-  if(/\b(ice|blue|cyan)\b/i.test(s))return{type:"col",val:"ice"};
-  if(/\b(ember|fire|orange|gold)\b/i.test(s))return{type:"col",val:"ember"};
-  if(/\b(mint|green|emerald)\b/i.test(s))return{type:"col",val:"mint"};
-  if(/\b(violet|purple|magenta)\b/i.test(s))return{type:"col",val:"violet"};
-  return null;
+function showAgentPanel(taskTitle){
+  if(con.hidden){
+    con.hidden=false;
+    layout();
+  }
+  if(taskTitle)setStatus(true,taskTitle);
 }
 
-function ask(text,key){
-  if(con.dataset.s==="min")setSize("normal");const em=out.querySelector(".empty");if(em)em.remove();
-  const id=++sid;userScrolled=false;
-  
-  const intent=checkIntent(text)||(key&&SH[key]?{type:"shape",val:key}:null);
-  if(intent){
-    if(intent.type==="shape")setShape(intent.val);
-    else if(intent.type==="col")setColor(intent.val);
-  }
+function hideAgentPanel(){
+  con.hidden=true;
+  setStatus(false,"Idle");
+  layout();
+}
+bClose.addEventListener("click",hideAgentPanel);
 
-  const isSite=key==="ar"||/(^site$|\bsite\b|architecture|portfolio|7-layer|ecosystem)/i.test(text);
-  const q=document.createElement("div");q.className="q";q.textContent="> "+text;out.appendChild(q);
-  const a=document.createElement("div");a.className="a";out.appendChild(a);
-  
-  let reply="";
-  if(key&&TEXT_REPLIES[key]){
-    reply=TEXT_REPLIES[key];
-  }else if(intent&&TEXT_REPLIES[intent.val]){
-    reply=TEXT_REPLIES[intent.val];
-  }else if(isSite){
-    reply=TEXT_REPLIES.ar;
+function setSize(s){
+  con.dataset.s=s;
+  bMin.disabled=s==="min";
+  bMax.disabled=s==="max";
+  if(s!=="min")userScrolled=false;
+  layout();
+}
+bMin.addEventListener("click",()=>setSize(con.dataset.s==="max"?"normal":"min"));
+bMax.addEventListener("click",()=>setSize(con.dataset.s==="min"?"normal":"max"));
+
+["wheel","touchstart"].forEach(ev=>out.addEventListener(ev,()=>{userScrolled=true},{passive:true}));
+function smoothScroll(){
+  if(userScrolled||con.hidden)return;
+  const m=out.scrollHeight-out.clientHeight,d=m-out.scrollTop;
+  if(Math.abs(d)>.5)out.scrollTop+=d*.2;
+}
+
+function removeCursor(){
+  if(cursorEl&&cursorEl.parentNode)cursorEl.remove();
+  cursorEl=null;
+}
+
+function escapeHtml(s){
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function startAgentTask(taskData){
+  showAgentPanel(taskData.task||taskData.title||"Agent Task");
+  userScrolled=false;
+  out.innerHTML="";
+  removeCursor();
+  if(taskClockInterval)clearInterval(taskClockInterval);
+
+  const startTime=Date.now();
+  const banner=document.createElement("div");
+  banner.className="agent-banner";
+  const agentName=taskData.agent||"RJN AGENT";
+  const taskText=taskData.task||taskData.title||"Autonomous Task Execution";
+  banner.innerHTML=`
+    <div class="agent-task-title">
+      <span class="task-badge">${escapeHtml(agentName)}</span>
+      <span class="task-text">${escapeHtml(taskText)}</span>
+    </div>
+    <div class="agent-meta">
+      <span id="agentTime">0.0s</span>
+      <span class="pill-status active" id="agentPill">RUNNING</span>
+    </div>
+  `;
+  out.appendChild(banner);
+  const timeEl=banner.querySelector("#agentTime");
+  const pillEl=banner.querySelector("#agentPill");
+
+  taskClockInterval=setInterval(()=>{
+    if(!timeEl)return;
+    const elapsed=((Date.now()-startTime)/1000).toFixed(1);
+    timeEl.textContent=elapsed+"s";
+  },100);
+
+  activeTask={startTime,banner,timeEl,pillEl};
+  pulse=Math.max(pulse,.9);energy=Math.max(energy,.7);waveT=0;
+}
+
+function runAgentCommand(cmdData){
+  if(con.hidden)showAgentPanel();
+  removeCursor();
+
+  const block=document.createElement("div");
+  block.className="cmd-block";
+  block.innerHTML=`
+    <div class="cmd-head">
+      <span class="cmd-prompt">❯</span>
+      <span class="cmd-text">${escapeHtml(cmdData.command||"")}</span>
+      <span class="cmd-badge running">RUNNING</span>
+    </div>
+    <pre class="cmd-output"></pre>
+  `;
+  out.appendChild(block);
+
+  const outEl=block.querySelector(".cmd-output");
+  const badgeEl=block.querySelector(".cmd-badge");
+  currentCmdEl=block;
+  currentOutEl=outEl;
+
+  pulse=Math.max(pulse,.75);energy=Math.max(energy,.6);waveT=0;
+  userScrolled=false;
+
+  if(cmdData.output){
+    streamText(outEl,cmdData.output,()=>{
+      badgeEl.className=(cmdData.exitCode===0||cmdData.status==="success"||cmdData.exitCode===undefined)?"cmd-badge ok":"cmd-badge err";
+      badgeEl.textContent=(cmdData.exitCode===0||cmdData.exitCode===undefined)?"EXIT 0":"FAIL";
+    });
   }else{
-    reply=`You asked: “${text}”. The 58,000 particle neural orb is coupled and operating smoothly at 60 FPS.`;
+    const c=document.createElement("span");c.className="term-cursor";cursorEl=c;outEl.appendChild(c);
   }
-
-  const toks=reply.split(" ");let i=0;setStatus(true);
-  (function step(){
-    if(id!==sid)return;
-    if(i>=toks.length){setStatus(false);if(isSite)openModal();return}
-    const s=document.createElement("span");s.className="tok";s.textContent=toks[i];
-    a.appendChild(s);a.appendChild(document.createTextNode(" "));
-    if(i%3===0)energy=Math.min(1,energy+.35);
-    i++;setTimeout(step,22+Math.random()*16);
-  })();
+  return{block,outEl,badgeEl};
 }
-$("#f").addEventListener("submit",e=>{e.preventDefault();const v=$("#q").value.trim();if(!v)return;$("#q").value="";ask(v)});
-document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>ask(L[b.dataset.k]||b.textContent.trim(),b.dataset.k)));
-$("#clear").addEventListener("click",()=>{sid++;out.innerHTML='<div class="empty">Ask something, or customize the 3D orb using the slider icon above.</div>';setStatus(false)});
-$("#copy").addEventListener("click",async()=>{
-  const t=out.innerText.trim();if(!t||out.querySelector(".empty"))return;
-  try{await navigator.clipboard.writeText(t)}catch(e){const ta=document.createElement("textarea");ta.value=t;ta.style.cssText="position:fixed;opacity:0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(_){}ta.remove()}
-  setStatus(false,"Copied");clearTimeout(statusT);statusT=setTimeout(()=>setStatus(false),1300);
+
+function streamText(targetEl,text,onDone){
+  const chars=Array.from(text||"");
+  let idx=0;
+  removeCursor();
+  const c=document.createElement("span");c.className="term-cursor";cursorEl=c;targetEl.appendChild(c);
+
+  function step(){
+    if(idx>=chars.length){
+      removeCursor();
+      if(onDone)onDone();
+      return;
+    }
+    const chunk=chars.slice(idx,idx+3).join("");
+    idx+=3;
+    const txtNode=document.createTextNode(chunk);
+    targetEl.insertBefore(txtNode,c);
+    if(!userScrolled)out.scrollTop=out.scrollHeight;
+    setTimeout(step,14+Math.random()*12);
+  }
+  step();
+}
+
+function appendAgentOutput(line){
+  if(!currentOutEl)runAgentCommand({command:"agent_stream",output:""});
+  if(cursorEl){
+    currentOutEl.insertBefore(document.createTextNode(line+"\n"),cursorEl);
+  }else{
+    currentOutEl.appendChild(document.createTextNode(line+"\n"));
+  }
+  if(!userScrolled)out.scrollTop=out.scrollHeight;
+  pulse=Math.max(pulse,.45);
+}
+
+function completeAgentTask(result){
+  removeCursor();
+  if(taskClockInterval){clearInterval(taskClockInterval);taskClockInterval=null}
+  if(activeTask&&activeTask.pillEl){
+    activeTask.pillEl.className="pill-status done";
+    activeTask.pillEl.textContent="COMPLETED";
+  }
+  setStatus(false,"Completed");
+  pulse=Math.max(pulse,1.);energy=Math.max(energy,.85);waveT=0;
+}
+
+/* Event listeners for cross-tab & programmatic task streaming */
+function handleAgentEvent(evt){
+  if(!evt||typeof evt!=="object")return;
+  if(evt.type==="task_start"||evt.type==="assign_task"){
+    startAgentTask({task:evt.task||evt.instruction,agent:evt.agent||"RJN AGENT"});
+    if(evt.command){
+      runAgentCommand({command:evt.command,output:evt.output||"[Connecting cloud runner]\n[Execution initialized]\n"});
+    }
+  }else if(evt.type==="command_run"||evt.type==="execute_command"){
+    runAgentCommand({command:evt.command,output:evt.output,exitCode:evt.exitCode});
+  }else if(evt.type==="command_output"){
+    appendAgentOutput(evt.output);
+  }else if(evt.type==="task_done"||evt.type==="status_check"){
+    if(evt.output)appendAgentOutput(evt.output);
+    completeAgentTask(evt);
+  }else if(evt.type==="close_panel"){
+    hideAgentPanel();
+  }
+}
+
+try{
+  if(typeof BroadcastChannel!=="undefined"){
+    const bc=new BroadcastChannel("rjn_agent_events");
+    bc.onmessage=e=>handleAgentEvent(e.data);
+  }
+}catch(_){}
+
+window.addEventListener("storage",e=>{
+  if(e.key==="rjn_agent_event"&&e.newValue){
+    try{handleAgentEvent(JSON.parse(e.newValue))}catch(_){}
+  }
 });
+window.addEventListener("message",e=>{
+  if(e.data&&(e.data.type||e.data.action))handleAgentEvent(e.data);
+});
+
+/* Global Window API */
+window.rjnAgent={
+  startTask:startAgentTask,
+  runCommand:runAgentCommand,
+  appendOutput:appendAgentOutput,
+  completeTask:completeAgentTask,
+  show:showAgentPanel,
+  hide:hideAgentPanel
+};
+window.postAgentTask=(task,agent)=>startAgentTask({task,agent});
+window.runAgentCommand=(command,output)=>runAgentCommand({command,output});
+
+/* copy output */
+$("#copy").addEventListener("click",async()=>{
+  const t=out.innerText.trim();if(!t)return;
+  try{await navigator.clipboard.writeText(t)}catch(e){const ta=document.createElement("textarea");ta.value=t;ta.style.cssText="position:fixed;opacity:0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(_){}ta.remove()}
+  setStatus(false,"Logs Copied");clearTimeout(statusT);statusT=setTimeout(()=>setStatus(false,con.hidden?"Idle":"Ready"),1400);
+});
+
+/* simulation runner */
+const simBtn=$("#simTaskBtn");
+if(simBtn){
+  simBtn.addEventListener("click",()=>{
+    pop.hidden=true;tb.setAttribute("aria-expanded","false");
+    startAgentTask({agent:"RJN SUBAGENT #1",task:"Neural Mesh Synthesis & Live Cloud Sync"});
+    setTimeout(()=>{
+      runAgentCommand({
+        command:'python3 /root/mongo_tool.py assign_task "Optimize 58K starlight vertex pipeline"',
+        output:'[02:04:11] Connected to Railway cloud runner (https://rjn-runner-production.up.railway.app)\n[02:04:12] Subagent sandbox initialized: Ubuntu 24.04 LTS (x86_64)\n[02:04:13] Task lock acquired: Memory session synced with MongoDB.\n[02:04:14] Subagent status: 200 OK. Worker dispatched.\n',
+        exitCode:0
+      });
+    },500);
+    setTimeout(()=>{
+      runAgentCommand({
+        command:'git status --porcelain',
+        output:'M  demo.html\nM  demo/index.html\n[02:04:16] Working tree clean. Zero compilation defects.\n',
+        exitCode:0
+      });
+    },2600);
+    setTimeout(()=>{
+      runAgentCommand({
+        command:'gh run list --repo nxtzenmaker-max/holo -L 1',
+        output:'✓  pages-build-deployment  master  SUCCESS (9s)\n[02:04:19] Production site live: https://nxtzenmaker-max.github.io/holo/\n',
+        exitCode:0
+      });
+    },4800);
+    setTimeout(()=>{
+      completeAgentTask();
+    },6500);
+  });
+}
 
 /* portfolio modal */
 const modal=$("#modal");let lastFocus=null;
@@ -441,11 +620,7 @@ $("#mx").addEventListener("click",closeModal);
 modal.addEventListener("click",e=>{if(e.target===modal)closeModal()});
 addEventListener("keydown",e=>{if(e.key==="Escape"&&!modal.hidden)closeModal()});
 
-/* expand / minimize console */
-const con=document.querySelector(".console"),bMin=$("#min"),bMax=$("#max");
-function setSize(s){con.dataset.s=s;bMin.disabled=s==="min";bMax.disabled=s==="max";if(s!=="min")userScrolled=false}
-bMin.addEventListener("click",()=>setSize(con.dataset.s==="max"?"normal":"min"));
-bMax.addEventListener("click",()=>setSize(con.dataset.s==="min"?"normal":"max"));
+/* stage auto-centering */
 new ResizeObserver(()=>{const r=stage.getBoundingClientRect();baseR=Math.max(60,Math.min(r.height*.36,r.width*.4));cyPx=r.top+r.height/2;offs=1-2*cyPx/innerHeight}).observe(stage);
 
 /* orb customiser popup */

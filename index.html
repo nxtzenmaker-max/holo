@@ -4868,6 +4868,11 @@ function connectVoiceAgent(){
               updateStatus('thinking', '⚡ Cloud command run ho raha hai...');
               const cmd = args.command || '';
               console.log('🚀 Running command on Cloud Server:', cmd);
+              try {
+                const cmdEvt = { type: 'command_run', command: cmd, agent: 'RJN COMMAND RUNNER' };
+                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(cmdEvt);
+                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...cmdEvt, _ts: Date.now() }));
+              } catch(_) {}
               const execRaw = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
@@ -4890,6 +4895,16 @@ function connectVoiceAgent(){
                 stderr: cleanStderr,
                 exitCode: execRaw?.exitCode ?? 0
               };
+              try {
+                const outEvt = {
+                  type: 'command_run',
+                  command: cmd,
+                  output: cleanStdout || cleanStderr || 'Command completed with exit code 0.',
+                  exitCode: callResult.exitCode
+                };
+                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(outEvt);
+                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...outEvt, _ts: Date.now() }));
+              } catch(_) {}
               console.log('⚡ Execution output:', callResult);
             } else if (fn.name === 'query_database') {
               updateStatus('thinking', '📊 Database check ho raha hai...');
@@ -5249,6 +5264,17 @@ function connectVoiceAgent(){
               const safeInstr = instruction.replace(/"/g, '\\"');
               const cmd = `python3 /root/mongo_tool.py assign_task "${safeInstr}"`;
               console.log('🚀 Assigning task to background agent:', instruction);
+              try {
+                const agentEvt = {
+                  type: 'task_start',
+                  task: instruction,
+                  command: cmd,
+                  agent: 'RJN AUTONOMOUS AGENT',
+                  output: `[Connecting to Railway cloud runner]\n[Task queued into MongoDB: ${safeInstr}]\n[Subagent worker spawned]\n`
+                };
+                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(agentEvt);
+                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...agentEvt, _ts: Date.now() }));
+              } catch(_) {}
               await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
@@ -5262,6 +5288,16 @@ function connectVoiceAgent(){
                 assigned: true, 
                 message: "टास्क एजेंट को सफलतापूर्वक सौंप दिया गया है, वो इस पर काम शुरू कर चुका है!" 
               };
+              try {
+                const doneEvt = {
+                  type: 'command_run',
+                  command: cmd,
+                  output: `[Task Assigned Successfully] "${instruction}"\nStatus: 200 OK. Subagent execution active in background.\n`,
+                  exitCode: 0
+                };
+                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(doneEvt);
+                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...doneEvt, _ts: Date.now() }));
+              } catch(_) {}
             } else if (fn.name === 'get_autonomous_task_status') {
               updateStatus('thinking', '📊 एजेंट का स्टेटस चेक हो रहा है...');
               const cmd = 'python3 /root/mongo_tool.py get_task';
