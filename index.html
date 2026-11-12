@@ -1094,252 +1094,6 @@
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.35; transform: scale(1.35); }
   }
-  /* ================= LIVELY AGENT EXECUTION TERMINAL ================= */
-  .agent-live-panel {
-    position: fixed;
-    bottom: 16px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: min(720px, calc(100% - 24px));
-    height: 42vh;
-    max-height: 520px;
-    z-index: 999;
-    background: rgba(10, 14, 24, 0.88);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 20px;
-    backdrop-filter: blur(28px);
-    -webkit-backdrop-filter: blur(28px);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 30px rgba(56, 189, 248, 0.06);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: height 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.3s ease, opacity 0.3s ease;
-  }
-  .agent-live-panel[data-s="max"] {
-    height: 78vh;
-    max-height: none;
-  }
-  .agent-live-panel[data-s="min"] {
-    height: 46px;
-  }
-  .agent-live-panel[data-s="min"] #agentTermOut {
-    display: none;
-  }
-  .agent-panel-hd {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    background: rgba(255, 255, 255, 0.02);
-    flex: none;
-  }
-  .agent-st {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: SFMono-Regular, Consolas, Menlo, monospace;
-    font-size: 11px;
-    color: #94a3b8;
-  }
-  .agent-st-dot {
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #38bdf8;
-    box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
-    animation: agentPulse 1.2s infinite ease-in-out;
-  }
-  @keyframes agentPulse {
-    50% { opacity: 0.4; }
-  }
-  .agent-st-tag {
-    font-weight: 700;
-    color: #38bdf8;
-    letter-spacing: 0.06em;
-  }
-  .agent-st-sep {
-    opacity: 0.35;
-  }
-  .agent-panel-acts {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .agent-panel-btn {
-    width: 30px;
-    height: 30px;
-    border-radius: 8px;
-    border: 0;
-    background: transparent;
-    color: #94a3b8;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    transition: all 0.15s ease;
-  }
-  .agent-panel-btn svg {
-    width: 15px;
-    height: 15px;
-  }
-  .agent-panel-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #e2e8f0;
-  }
-  .agent-close-btn:hover {
-    background: rgba(244, 63, 94, 0.16) !important;
-    color: #fb7185 !important;
-  }
-  .agent-term-out {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    padding: 12px 14px;
-    font-family: SFMono-Regular, Consolas, Menlo, monospace;
-    font-size: 11.5px;
-    line-height: 1.55;
-    color: #cbd5e1;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(255,255,255,0.12) transparent;
-  }
-  .agent-term-out::-webkit-scrollbar {
-    width: 4px;
-  }
-  .agent-term-out::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 4px;
-  }
-  .agent-task-banner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 8px 12px;
-    margin-bottom: 10px;
-    background: rgba(56, 189, 248, 0.08);
-    border: 1px solid rgba(56, 189, 248, 0.2);
-    border-radius: 12px;
-    font-size: 11.5px;
-  }
-  .agent-task-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: 0;
-  }
-  .agent-task-badge {
-    font-size: 9.5px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    padding: 2px 6px;
-    border-radius: 6px;
-    background: rgba(56, 189, 248, 0.22);
-    color: #38bdf8;
-    flex: none;
-  }
-  .agent-task-text {
-    font-weight: 600;
-    color: #f8fafc;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .agent-task-meta {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: none;
-    font-size: 10.5px;
-    color: #94a3b8;
-  }
-  .agent-pill-status {
-    padding: 2px 7px;
-    border-radius: 999px;
-    font-size: 9.5px;
-    font-weight: 600;
-    text-transform: uppercase;
-    background: rgba(255, 255, 255, 0.06);
-    color: #94a3b8;
-  }
-  .agent-pill-status.active {
-    background: rgba(56, 189, 248, 0.2);
-    color: #38bdf8;
-    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
-  }
-  .agent-pill-status.done {
-    background: rgba(74, 222, 128, 0.18);
-    color: #4ade80;
-  }
-  .agent-cmd-block {
-    margin-bottom: 10px;
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    overflow: hidden;
-  }
-  .agent-cmd-head {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 10px;
-    background: rgba(255, 255, 255, 0.03);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    font-size: 11.5px;
-  }
-  .agent-cmd-prompt {
-    color: #38bdf8;
-    font-weight: 700;
-    flex: none;
-  }
-  .agent-cmd-text {
-    flex: 1;
-    color: #e2e8f0;
-    font-weight: 500;
-    word-break: break-all;
-  }
-  .agent-cmd-badge {
-    font-size: 9px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 5px;
-    letter-spacing: 0.04em;
-    flex: none;
-  }
-  .agent-cmd-badge.running {
-    background: rgba(56, 189, 248, 0.22);
-    color: #38bdf8;
-    animation: agentPulse 1.2s infinite ease-in-out;
-  }
-  .agent-cmd-badge.ok {
-    background: rgba(74, 222, 128, 0.18);
-    color: #4ade80;
-  }
-  .agent-cmd-badge.err {
-    background: rgba(244, 63, 94, 0.2);
-    color: #fb7185;
-  }
-  .agent-cmd-output {
-    margin: 0;
-    padding: 8px 10px;
-    font-family: inherit;
-    font-size: 11px;
-    line-height: 1.55;
-    color: #94a3b8;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .agent-term-cursor {
-    display: inline-block;
-    width: 7px;
-    height: 12px;
-    vertical-align: -1px;
-    background: #38bdf8;
-    box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
-    animation: blinkTermCursor 0.8s infinite;
-  }
-  @keyframes blinkTermCursor {
-    50% { opacity: 0; }
-  }
 </style>
 </head>
 <body>
@@ -1441,7 +1195,7 @@
 </div>
 
 <!-- HAMBURGER MENU BUTTON -->
-<button type="button" id="menuToggleBtn" class="menu-toggle-btn" aria-label="Open menu" style="display: flex;">
+<button type="button" id="menuToggleBtn" class="menu-toggle-btn" aria-label="Open menu" style="display: none;">
   <span class="hamburger-line"></span>
   <span class="hamburger-line"></span>
   <span class="hamburger-line"></span>
@@ -1498,16 +1252,6 @@
           </span>
           <span style="opacity: 0.8;">↗</span>
         </a>
-      </div>
-
-      <div style="margin-top: 10px;">
-        <button type="button" onclick="closeSidebar(); startAgentTaskLively({agent:'RJN AGENT', task:'Live Command Execution Test'}); runAgentCmdLively({command:'gh run list --limit 1', output:'✓  pages-build-deployment  master  SUCCESS (9s)\n[Output verified: live stream active]\n', exitCode:0});" style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #38bdf8; font-size: 12px; font-weight: 600; padding: 10px 14px; border-radius: 12px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.28); cursor: pointer;">
-          <span style="display: flex; align-items: center; gap: 8px;">
-            <span style="width: 7px; height: 7px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 8px #4ade80;"></span>
-            <span>Test Agent Runner</span>
-          </span>
-          <span style="opacity: 0.8;">▶</span>
-        </button>
       </div>
     </div>
   </div>
@@ -1630,30 +1374,6 @@
     </div>
   </div>
 </div>
-<!-- LIVELY AGENT EXECUTION TERMINAL DRAWER -->
-<section class="agent-live-panel" id="agentLivePanel" data-s="normal" aria-label="Agent Execution" style="display: none;">
-  <div class="agent-panel-hd">
-    <div class="agent-st">
-      <span class="agent-st-dot"></span>
-      <span class="agent-st-tag">RJN AUTONOMOUS AGENT</span>
-      <span class="agent-st-sep">·</span>
-      <span id="agentStText">Ready</span>
-    </div>
-    <div class="agent-panel-acts">
-      <button type="button" class="agent-panel-btn" id="agentMinBtn" title="Minimize / Expand">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <button type="button" class="agent-panel-btn" id="agentCopyBtn" title="Copy Output">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/></svg>
-      </button>
-      <button type="button" class="agent-panel-btn agent-close-btn" id="agentCloseBtn" title="Close" aria-label="Close">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-  </div>
-  <div id="agentTermOut" class="agent-term-out"></div>
-</section>
-
 <script>
 const cv = document.getElementById('c');
 document.addEventListener("selectstart", e => { if (!e.target.closest("input, textarea")) e.preventDefault(); }, { passive: false });
@@ -5148,13 +4868,6 @@ function connectVoiceAgent(){
               updateStatus('thinking', '⚡ Cloud command run ho raha hai...');
               const cmd = args.command || '';
               console.log('🚀 Running command on Cloud Server:', cmd);
-              try {
-                showAgentLivePanel();
-                runAgentCmdLively({ command: cmd, output: '' });
-                const cmdEvt = { type: 'command_run', command: cmd, agent: 'RJN COMMAND RUNNER' };
-                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(cmdEvt);
-                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...cmdEvt, _ts: Date.now() }));
-              } catch(_) {}
               const execRaw = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
@@ -5177,17 +4890,6 @@ function connectVoiceAgent(){
                 stderr: cleanStderr,
                 exitCode: execRaw?.exitCode ?? 0
               };
-              try {
-                appendAgentLiveOutput(cleanStdout || cleanStderr || 'Command completed with exit code 0.');
-                const outEvt = {
-                  type: 'command_run',
-                  command: cmd,
-                  output: cleanStdout || cleanStderr || 'Command completed with exit code 0.',
-                  exitCode: callResult.exitCode
-                };
-                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(outEvt);
-                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...outEvt, _ts: Date.now() }));
-              } catch(_) {}
               console.log('⚡ Execution output:', callResult);
             } else if (fn.name === 'query_database') {
               updateStatus('thinking', '📊 Database check ho raha hai...');
@@ -5547,24 +5249,6 @@ function connectVoiceAgent(){
               const safeInstr = instruction.replace(/"/g, '\\"');
               const cmd = `python3 /root/mongo_tool.py assign_task "${safeInstr}"`;
               console.log('🚀 Assigning task to background agent:', instruction);
-              try {
-                showAgentLivePanel();
-                startAgentTaskLively({ task: instruction, agent: 'RJN AUTONOMOUS AGENT' });
-                runAgentCmdLively({
-                  command: cmd,
-                  output: `[Connecting to Railway cloud runner]\n[Task queued into MongoDB: ${safeInstr}]\n[Subagent worker spawned: sandbox ready]\n`,
-                  exitCode: 0
-                });
-                const agentEvt = {
-                  type: 'task_start',
-                  task: instruction,
-                  command: cmd,
-                  agent: 'RJN AUTONOMOUS AGENT',
-                  output: `[Connecting to Railway cloud runner]\n[Task queued into MongoDB: ${safeInstr}]\n[Subagent worker spawned]\n`
-                };
-                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(agentEvt);
-                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...agentEvt, _ts: Date.now() }));
-              } catch(_) {}
               await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
@@ -5578,16 +5262,6 @@ function connectVoiceAgent(){
                 assigned: true, 
                 message: "टास्क एजेंट को सफलतापूर्वक सौंप दिया गया है, वो इस पर काम शुरू कर चुका है!" 
               };
-              try {
-                const doneEvt = {
-                  type: 'command_run',
-                  command: cmd,
-                  output: `[Task Assigned Successfully] "${instruction}"\nStatus: 200 OK. Subagent execution active in background.\n`,
-                  exitCode: 0
-                };
-                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(doneEvt);
-                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...doneEvt, _ts: Date.now() }));
-              } catch(_) {}
             } else if (fn.name === 'get_autonomous_task_status') {
               updateStatus('thinking', '📊 एजेंट का स्टेटस चेक हो रहा है...');
               const cmd = 'python3 /root/mongo_tool.py get_task';
@@ -5609,11 +5283,6 @@ function connectVoiceAgent(){
                 const statusHindi = isDone ? 'सफलतापूर्वक पूरा हो गया है' : 'अभी बैकग्राउंड में चल रहा है';
                 taskSummary = `टास्क: "${t.instruction}". स्टेटस: ${statusHindi}!`;
                 const resText = t.result || t.summary || '';
-                try {
-                  showAgentLivePanel();
-                  appendAgentLiveOutput(taskSummary + (resText ? '\n' + resText : ''));
-                  if (isDone) completeAgentTaskLively();
-                } catch(_) {}
                 
                 // If it generated an image or nature scene, automatically display the visual output on Boss's screen!
                 const isImageTask = /image|artwork|photo|nature|scene|alpine|valley|tree/i.test((t.instruction || '') + ' ' + resText);
@@ -6130,12 +5799,8 @@ let lottieAnimInstance = null;
 
 function getActiveSession() {
   try {
-    let raw = localStorage.getItem(AUTH_KEY);
-    if (!raw) {
-      const def = { userId: VALID_ID, timestamp: Date.now(), expiresAt: Date.now() + SESSION_TTL_MS };
-      try { localStorage.setItem(AUTH_KEY, JSON.stringify(def)); } catch(e){}
-      raw = JSON.stringify(def);
-    }
+    const raw = localStorage.getItem(AUTH_KEY);
+    if (!raw) return null;
     const session = JSON.parse(raw);
     const userId = (session && (session.userId || session.user)) || '';
     if (!session || userId.toLowerCase() !== VALID_ID.toLowerCase()) {
@@ -6259,7 +5924,7 @@ function applyAuthState(authenticated, animate) {
       void loginGate.offsetWidth; // Force reflow so smooth transition activates
       loginGate.classList.remove('hidden');
     }
-    if (menuBtn) menuBtn.style.display = 'flex';
+    if (menuBtn) menuBtn.style.display = 'none';
     if (drawer) drawer.classList.remove('open');
     if (backdrop) backdrop.classList.remove('active');
   }
@@ -6272,6 +5937,7 @@ const sidebarBackdrop = document.getElementById('sidebarBackdrop');
 const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
 
 function openSidebar() {
+  if (!isAuthenticated) return;
   if (sidebarDrawer) sidebarDrawer.classList.add('open');
   if (sidebarBackdrop) sidebarBackdrop.classList.add('active');
 }
@@ -6302,209 +5968,6 @@ if (sidebarBackdrop) {
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') closeSidebar();
 });
-
-// ================= LIVELY AGENT EXECUTION ENGINE =================
-const agentPanel = document.getElementById('agentLivePanel');
-const agentTermOut = document.getElementById('agentTermOut');
-const agentStText = document.getElementById('agentStText');
-const agentMinBtn = document.getElementById('agentMinBtn');
-const agentCopyBtn = document.getElementById('agentCopyBtn');
-const agentCloseBtn = document.getElementById('agentCloseBtn');
-
-let activeAgentTask = null;
-let currentAgentCmdEl = null;
-let currentAgentOutEl = null;
-let agentCursorEl = null;
-let agentClockInterval = null;
-
-function showAgentLivePanel(title) {
-  if (agentPanel) {
-    agentPanel.style.display = 'flex';
-    if (title && agentStText) agentStText.textContent = title;
-  }
-}
-
-function hideAgentLivePanel() {
-  if (agentPanel) {
-    agentPanel.style.display = 'none';
-    if (agentStText) agentStText.textContent = 'Idle';
-  }
-}
-if (agentCloseBtn) agentCloseBtn.addEventListener('click', hideAgentLivePanel);
-
-if (agentMinBtn) {
-  agentMinBtn.addEventListener('click', () => {
-    if (!agentPanel) return;
-    const cur = agentPanel.dataset.s || 'normal';
-    agentPanel.dataset.s = cur === 'max' ? 'normal' : (cur === 'normal' ? 'min' : 'normal');
-  });
-}
-
-if (agentCopyBtn) {
-  agentCopyBtn.addEventListener('click', async () => {
-    const text = agentTermOut ? agentTermOut.innerText.trim() : '';
-    if (!text) return;
-    try { await navigator.clipboard.writeText(text); } catch(e) {}
-    if (agentStText) {
-      const orig = agentStText.textContent;
-      agentStText.textContent = 'Logs Copied';
-      setTimeout(() => { agentStText.textContent = orig; }, 1400);
-    }
-  });
-}
-
-function removeAgentCursor() {
-  if (agentCursorEl && agentCursorEl.parentNode) agentCursorEl.remove();
-  agentCursorEl = null;
-}
-
-function triggerOrbPulse(intensity) {
-  try {
-    if (typeof audioLevel !== 'undefined') audioLevel = Math.max(audioLevel, intensity || 0.8);
-    if (typeof bassLevel !== 'undefined') bassLevel = Math.max(bassLevel, (intensity || 0.8) * 1.2);
-  } catch(e) {}
-}
-
-function startAgentTaskLively(data) {
-  showAgentLivePanel(data.task || data.title || 'Executing Task');
-  if (agentTermOut) agentTermOut.innerHTML = '';
-  removeAgentCursor();
-  if (agentClockInterval) clearInterval(agentClockInterval);
-
-  const startTime = Date.now();
-  const banner = document.createElement('div');
-  banner.className = 'agent-task-banner';
-  banner.innerHTML = `
-    <div class="agent-task-title">
-      <span class="agent-task-badge">${data.agent || 'AGENT'}</span>
-      <span class="agent-task-text">${data.task || data.title || 'Autonomous Task'}</span>
-    </div>
-    <div class="agent-task-meta">
-      <span id="agentLiveTimer">0.0s</span>
-      <span class="agent-pill-status active" id="agentLivePill">RUNNING</span>
-    </div>
-  `;
-  if (agentTermOut) agentTermOut.appendChild(banner);
-
-  const timerEl = banner.querySelector('#agentLiveTimer');
-  const pillEl = banner.querySelector('#agentLivePill');
-
-  agentClockInterval = setInterval(() => {
-    if (!timerEl) return;
-    timerEl.textContent = ((Date.now() - startTime) / 1000).toFixed(1) + 's';
-  }, 100);
-
-  activeAgentTask = { startTime, banner, timerEl, pillEl };
-  triggerOrbPulse(0.9);
-}
-
-function runAgentCmdLively(data) {
-  showAgentLivePanel();
-  removeAgentCursor();
-
-  const block = document.createElement('div');
-  block.className = 'agent-cmd-block';
-  block.innerHTML = `
-    <div class="agent-cmd-head">
-      <span class="agent-cmd-prompt">❯</span>
-      <span class="agent-cmd-text">${(data.command || '').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>
-      <span class="agent-cmd-badge running">RUNNING</span>
-    </div>
-    <pre class="agent-cmd-output"></pre>
-  `;
-  if (agentTermOut) agentTermOut.appendChild(block);
-
-  const outEl = block.querySelector('.agent-cmd-output');
-  const badgeEl = block.querySelector('.agent-cmd-badge');
-  currentAgentCmdEl = block;
-  currentAgentOutEl = outEl;
-
-  triggerOrbPulse(0.7);
-
-  if (data.output) {
-    streamAgentText(outEl, data.output, () => {
-      badgeEl.className = (data.exitCode === 0 || !data.exitCode) ? 'agent-cmd-badge ok' : 'agent-cmd-badge err';
-      badgeEl.textContent = (data.exitCode === 0 || !data.exitCode) ? 'EXIT 0' : 'FAIL';
-    });
-  } else {
-    const c = document.createElement('span');
-    c.className = 'agent-term-cursor';
-    agentCursorEl = c;
-    outEl.appendChild(c);
-  }
-}
-
-function streamAgentText(targetEl, text, onDone) {
-  const chars = Array.from(text || '');
-  let idx = 0;
-  removeAgentCursor();
-  const c = document.createElement('span');
-  c.className = 'agent-term-cursor';
-  agentCursorEl = c;
-  targetEl.appendChild(c);
-
-  function step() {
-    if (idx >= chars.length) {
-      removeAgentCursor();
-      if (onDone) onDone();
-      return;
-    }
-    const chunk = chars.slice(idx, idx + 4).join('');
-    idx += 4;
-    targetEl.insertBefore(document.createTextNode(chunk), c);
-    if (agentTermOut) agentTermOut.scrollTop = agentTermOut.scrollHeight;
-    setTimeout(step, 14 + Math.random() * 10);
-  }
-  step();
-}
-
-function appendAgentLiveOutput(text) {
-  if (!currentAgentOutEl) runAgentCmdLively({ command: 'agent_status', output: '' });
-  if (agentCursorEl) {
-    currentAgentOutEl.insertBefore(document.createTextNode(text + '\n'), agentCursorEl);
-  } else {
-    currentAgentOutEl.appendChild(document.createTextNode(text + '\n'));
-  }
-  if (agentTermOut) agentTermOut.scrollTop = agentTermOut.scrollHeight;
-}
-
-function completeAgentTaskLively() {
-  removeAgentCursor();
-  if (agentClockInterval) { clearInterval(agentClockInterval); agentClockInterval = null; }
-  if (activeAgentTask && activeAgentTask.pillEl) {
-    activeAgentTask.pillEl.className = 'agent-pill-status done';
-    activeAgentTask.pillEl.textContent = 'COMPLETED';
-  }
-  if (agentStText) agentStText.textContent = 'Completed';
-  triggerOrbPulse(1.0);
-}
-
-// Global window exposure
-window.showAgentLivePanel = showAgentLivePanel;
-window.hideAgentLivePanel = hideAgentLivePanel;
-window.startAgentTaskLively = startAgentTaskLively;
-window.runAgentCmdLively = runAgentCmdLively;
-window.appendAgentLiveOutput = appendAgentLiveOutput;
-window.completeAgentTaskLively = completeAgentTaskLively;
-
-// Cross-tab & broadcast listener
-try {
-  if (window.BroadcastChannel) {
-    const bc = new BroadcastChannel('rjn_agent_events');
-    bc.onmessage = e => {
-      const evt = e.data;
-      if (!evt) return;
-      if (evt.type === 'task_start') {
-        startAgentTaskLively(evt);
-        if (evt.command) runAgentCmdLively(evt);
-      } else if (evt.type === 'command_run') {
-        runAgentCmdLively(evt);
-      } else if (evt.type === 'close_panel') {
-        hideAgentLivePanel();
-      }
-    };
-  }
-} catch(_) {}
 
 // Sign Out from Sidebar
 const sidebarLogoutBtn = document.getElementById('sidebarLogoutBtn');
