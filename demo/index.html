@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="color-scheme" content="dark">
-<title>Holo AI · Silent 3D Orb Demo</title>
+<title>Holo AI · Holographic Console</title>
 <style>
 :root{--bg:#05070d;--glass:rgba(10,14,22,.74);--bd:rgba(255,255,255,.07);--tx:#e6ecf5;--mu:#7d8aa0;--ac:#8ab4ff;--ok:#5ee0a0;
 --mono:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;
@@ -21,8 +21,6 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(48vmin
 .ui>*{pointer-events:auto}
 .pill{align-self:center;display:inline-flex;align-items:center;gap:9px;padding:7px 14px;border-radius:999px;background:var(--glass);border:1px solid var(--bd);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);font-size:12px;font-weight:600;letter-spacing:.02em}
 .pill small{font-family:var(--mono);font-size:10px;color:var(--mu);font-weight:400}
-.pill a{color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
-.pill a:hover{color:var(--ac)}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px rgba(94,224,160,.6)}
 .stage{flex:1 1 auto;min-height:0;margin:10px 0 8px;pointer-events:none}
 .console{height:40%;display:flex;flex-direction:column;max-width:720px;width:100%;align-self:center;background:var(--glass);border:1px solid var(--bd);border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.5);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);overflow:hidden}
@@ -33,6 +31,18 @@ body::before{content:"";position:fixed;inset:0;background:radial-gradient(48vmin
 .console[data-s="min"] #out,.console[data-s="min"] .chips{display:none}
 .console[data-s="min"] .hd{border-bottom:0}
 .ib:disabled{opacity:.3;pointer-events:none}
+.tools{position:absolute;top:12px;right:14px;z-index:10}
+.tb{width:38px;height:38px;border-radius:50%;border:1px solid var(--bd);background:var(--glass);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);color:var(--tx);display:grid;place-items:center;cursor:pointer;transition:all .18s ease}
+.tb:hover{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.08)}
+.pop{position:absolute;top:46px;right:0;width:246px;padding:14px;border-radius:18px;background:rgba(12,17,27,.94);border:1px solid var(--bd);box-shadow:0 20px 50px rgba(0,0,0,.6);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+.pop[hidden]{display:none}
+.pl{margin:0 0 8px;font-family:var(--mono);font-size:11px;color:var(--mu)}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}.row:last-child{margin-bottom:0}
+.opt{padding:5px 11px;border-radius:999px;border:1px solid var(--bd);background:rgba(255,255,255,.04);color:var(--tx);font:inherit;font-size:11.5px;cursor:pointer;transition:all .15s}
+.opt.on{background:rgba(138,180,255,.22);border-color:rgba(138,180,255,.6);color:#fff}
+.sw{width:30px;height:30px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;transition:transform .15s}
+.sw.on{border-color:#fff;transform:scale(1.08)}
+:is(.tb,.opt,.sw):focus-visible{box-shadow:0 0 0 2px rgba(138,180,255,.7)}
 .hd{display:flex;align-items:center;justify-content:space-between;padding:9px 12px 9px 16px;border-bottom:1px solid var(--bd)}
 .st{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--mu)}
 .st .dot{width:6px;height:6px}.st.busy .dot{background:var(--ac);box-shadow:0 0 8px rgba(138,180,255,.7);animation:bp 1s ease-in-out infinite}
@@ -89,15 +99,14 @@ input::placeholder{color:var(--mu)}
 <symbol id="x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
 <symbol id="dn" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
 <symbol id="upc" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+<symbol id="sl" viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></symbol>
 <symbol id="ov" viewBox="0 0 24 24"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol>
 <symbol id="ar" viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></symbol>
 <symbol id="qu" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/></symbol>
 <symbol id="py" viewBox="0 0 24 24"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4M14 5l-4 14"/></symbol>
 <symbol id="heart" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></symbol>
 <symbol id="star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></symbol>
-<symbol id="flower" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4zm6 6a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4zm-12 0a4 4 0 0 1 4 4 4 4 0 0 1-4 4 4 4 0 0 1-4-4 4 4 0 0 1 4-4z"/></symbol>
 <symbol id="galaxy" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M12 3a9 9 0 0 1 9 9 9 9 0 0 1-9 9 9 9 0 0 1-9-9 9 9 0 0 1 9-9z"/><path d="M16 12a4 4 0 1 1-4-4"/></symbol>
-<symbol id="dna" viewBox="0 0 24 24"><path d="M3 15c6-6 12 0 18-6M3 9c6 6 12 0 18 6M9 9v6M15 9v6"/></symbol>
 <symbol id="sphere" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/></symbol>
 </svg>
 
@@ -112,6 +121,29 @@ input::placeholder{color:var(--mu)}
   
   <div class="stage" id="stage"></div>
 
+  <div class="tools">
+    <button class="tb" id="tb" type="button" aria-label="Customize orb" aria-expanded="false"><svg class="i"><use href="#sl"/></svg></button>
+    <div class="pop" id="pop" hidden>
+      <p class="pl">3D Shape</p>
+      <div class="row" id="shapes">
+        <button class="opt on" data-s="sphere" type="button">Sphere</button>
+        <button class="opt" data-s="heart" type="button">Heart</button>
+        <button class="opt" data-s="star" type="button">Star</button>
+        <button class="opt" data-s="torus" type="button">Torus</button>
+        <button class="opt" data-s="galaxy" type="button">Galaxy</button>
+        <button class="opt" data-s="dna" type="button">DNA</button>
+        <button class="opt" data-s="cube" type="button">Cube</button>
+      </div>
+      <p class="pl">Colour Theme</p>
+      <div class="row" id="cols">
+        <button class="sw on" data-c="ice" type="button" aria-label="Ice" style="background:linear-gradient(135deg,#94c2ff,#cdadff)"></button>
+        <button class="sw" data-c="ember" type="button" aria-label="Ember" style="background:linear-gradient(135deg,#ffb86b,#ff739a)"></button>
+        <button class="sw" data-c="mint" type="button" aria-label="Mint" style="background:linear-gradient(135deg,#80f2cc,#80c2ff)"></button>
+        <button class="sw" data-c="violet" type="button" aria-label="Violet" style="background:linear-gradient(135deg,#c299ff,#f599e6)"></button>
+      </div>
+    </div>
+  </div>
+
   <section class="console" data-s="normal" aria-label="Chat console">
     <div class="hd">
       <div class="st" id="st"><i class="dot"></i><span id="stt">Ready</span></div>
@@ -122,20 +154,18 @@ input::placeholder{color:var(--mu)}
         <button class="ib" id="clear" type="button"><svg class="i"><use href="#trash"/></svg>Clear</button>
       </div>
     </div>
-    <div id="out" aria-live="polite"><div class="empty">Ask something, or tap a chip below to transform the 3D orb.</div></div>
+    <div id="out" aria-live="polite"><div class="empty">Ask something, or customize the 3D orb using the slider icon above.</div></div>
     <div class="chips">
       <button class="chip chip-accent" data-k="ar" type="button"><svg class="i"><use href="#ar"/></svg>Architecture Site</button>
       <button class="chip" data-k="heart" type="button"><svg class="i"><use href="#heart"/></svg>Heart</button>
       <button class="chip" data-k="star" type="button"><svg class="i"><use href="#star"/></svg>Star</button>
-      <button class="chip" data-k="flower" type="button"><svg class="i"><use href="#flower"/></svg>Flower</button>
       <button class="chip" data-k="galaxy" type="button"><svg class="i"><use href="#galaxy"/></svg>Galaxy</button>
-      <button class="chip" data-k="dna" type="button"><svg class="i"><use href="#dna"/></svg>DNA</button>
       <button class="chip" data-k="sphere" type="button"><svg class="i"><use href="#sphere"/></svg>Orb</button>
       <button class="chip" data-k="ov" type="button"><svg class="i"><use href="#ov"/></svg>Overview</button>
       <button class="chip" data-k="qu" type="button"><svg class="i"><use href="#qu"/></svg>Quantum State</button>
       <button class="chip" data-k="py" type="button"><svg class="i"><use href="#py"/></svg>Python Pipeline</button>
     </div>
-    <form id="f"><input id="q" placeholder="Ask anything or type shape name (e.g. heart, star, galaxy)…" autocomplete="off" aria-label="Message"><button class="send" type="submit" aria-label="Send"><svg class="i"><use href="#send"/></svg></button></form>
+    <form id="f"><input id="q" placeholder="Ask anything, change shape or color (e.g. heart, star, ember)…" autocomplete="off" aria-label="Message"><button class="send" type="submit" aria-label="Send"><svg class="i"><use href="#send"/></svg></button></form>
   </section>
 </div>
 
@@ -177,133 +207,14 @@ const isField=t=>t&&(t.tagName==="INPUT"||t.tagName==="TEXTAREA");
 document.addEventListener("contextmenu",e=>{if(!isField(e.target))e.preventDefault()});
 document.addEventListener("selectstart",e=>{if(!isField(e.target))e.preventDefault()});
 const $=s=>document.querySelector(s);
-const rnd=Math.random;
 
-/* ---------- 3D Mathematical Shape Generators ---------- */
-const N=58000;
-
-function normalize(a){
-  const mn=[1e9,1e9,1e9],mx=[-1e9,-1e9,-1e9];
-  for(let i=0;i<N;i++)for(let c=0;c<3;c++){
-    const v=a[i*3+c];if(v<mn[c])mn[c]=v;if(v>mx[c])mx[c]=v;
-  }
-  const ct=[(mn[0]+mx[0])/2,(mn[1]+mx[1])/2,(mn[2]+mx[2])/2];
-  let m2=0;
-  for(let i=0;i<N;i++){
-    const x=a[i*3]-=ct[0],y=a[i*3+1]-=ct[1],z=a[i*3+2]-=ct[2];
-    const d=x*x+y*y+z*z;if(d>m2)m2=d;
-  }
-  const s=1/Math.sqrt(m2||1);
-  for(let i=0;i<N*3;i++)a[i]*=s;
-  return a;
-}
-
-function genSphere(){
-  const out=new Float32Array(N*3),ga=Math.PI*(3-Math.sqrt(5));
-  for(let i=0;i<N;i++){
-    const y=1-2*(i+.5)/N,rr=Math.sqrt(1-y*y),th=i*ga;
-    out[i*3]=Math.cos(th)*rr;
-    out[i*3+1]=y;
-    out[i*3+2]=Math.sin(th)*rr;
-  }
-  return out;
-}
-
-function genHeart(){
-  const out=new Float32Array(N*3);let i=0;
-  while(i<N){
-    const X=(rnd()*2-1)*1.3,Y=(rnd()*2-1)*.8,Z=(rnd()*2-1)*1.3-.05;
-    const a=X*X+2.25*Y*Y+Z*Z-1,v=a*a*a-X*X*Z*Z*Z-.1125*Y*Y*Z*Z*Z;
-    if(v<0&&v>-.25){out[i*3]=X;out[i*3+1]=Z;out[i*3+2]=Y;i++;}
-  }
-  return normalize(out);
-}
-
-function genStar(){
-  const out=new Float32Array(N*3);
-  for(let i=0;i<N;i++){
-    const angle=rnd()*Math.PI*2;
-    const rBase=0.52+0.45*Math.cos(5*angle);
-    const r=Math.pow(rnd(),0.5)*rBase;
-    const z=(rnd()-0.5)*0.28*(1.0-r);
-    out[i*3]=r*Math.sin(angle);
-    out[i*3+1]=r*Math.cos(angle);
-    out[i*3+2]=z;
-  }
-  return normalize(out);
-}
-
-function genFlower(){
-  const out=new Float32Array(N*3);
-  for(let i=0;i<N;i++){
-    const u=rnd(),th=rnd()*6.2832*3;
-    const r=Math.pow(u,0.6)*0.9;
-    const petal=0.7+0.3*Math.cos(6*th);
-    const y=(1.0-Math.pow(r/0.9,1.5))*0.4+Math.sin(th*3)*0.08;
-    out[i*3]=r*petal*Math.cos(th);
-    out[i*3+1]=y-0.2;
-    out[i*3+2]=r*petal*Math.sin(th);
-  }
-  return normalize(out);
-}
-
-function genGalaxy(){
-  const out=new Float32Array(N*3);
-  for(let i=0;i<N;i++){
-    const arm=((rnd()*2)|0)*Math.PI;
-    const dist=Math.pow(rnd(),0.7)*1.2;
-    const angle=dist*3.5+arm+(rnd()-0.5)*0.35;
-    const spread=Math.exp(-dist*1.5)*0.18+0.03;
-    out[i*3]=dist*Math.cos(angle)+(rnd()-0.5)*spread;
-    out[i*3+1]=(rnd()-0.5)*spread*0.7;
-    out[i*3+2]=dist*Math.sin(angle)+(rnd()-0.5)*spread;
-  }
-  return normalize(out);
-}
-
-function genDNA(){
-  const out=new Float32Array(N*3),P=18.85,r=.4;
-  for(let i=0;i<N;i++){
-    if(rnd()<0.7){
-      const t=rnd()*2-1,a=t*P+(rnd()<.5?0:Math.PI);
-      out[i*3]=r*Math.cos(a)+(rnd()-.5)*.05;
-      out[i*3+1]=t*1.2+(rnd()-.5)*.05;
-      out[i*3+2]=r*Math.sin(a)+(rnd()-.5)*.05;
-    }else{
-      const t=(((rnd()*28)|0)/28)*2-1,a=t*P,u=rnd()*2-1;
-      out[i*3]=r*Math.cos(a)*u;
-      out[i*3+1]=t*1.2;
-      out[i*3+2]=r*Math.sin(a)*u;
-    }
-  }
-  return normalize(out);
-}
-
-function genCube(){
-  const out=new Float32Array(N*3);
-  for(let i=0;i<N;i++){
-    const face=(rnd()*6)|0;
-    const u=rnd()*2-1,v=rnd()*2-1;
-    if(face===0){out[i*3]=1;out[i*3+1]=u;out[i*3+2]=v;}
-    else if(face===1){out[i*3]=-1;out[i*3+1]=u;out[i*3+2]=v;}
-    else if(face===2){out[i*3]=u;out[i*3+1]=1;out[i*3+2]=v;}
-    else if(face===3){out[i*3]=u;out[i*3+1]=-1;out[i*3+2]=v;}
-    else if(face===4){out[i*3]=u;out[i*3+1]=v;out[i*3+2]=1;}
-    else{out[i*3]=u;out[i*3+1]=v;out[i*3+2]=-1;}
-  }
-  return normalize(out);
-}
-
-/* ---------- WebGL Orb with Morphing Shader ---------- */
+/* ---------- WebGL orb with Morphing & Palettes ---------- */
 const cv=$("#gl"),stage=$("#stage"),shapeBadge=$("#shapeBadge");
 const gl=cv.getContext("webgl",{antialias:false,alpha:true,powerPreference:"high-performance"});
 let rotX=.15,rotY=0,vX=0,vY=0,zoom=1,zT=1,pulse=0,waveT=9,energy=0,baseR=150,cxPx=0,cyPx=0,offs=0,dpr=1,tap=[0,0,1];
-let morph=1.0;
-
+const N=58000;
 const VS=`
-attribute vec3 aFrom;
-attribute vec3 aTo;
-attribute float aSeed;
+attribute vec3 aPos,aTgt;
 uniform float uTime,uRotX,uRotY,uPulse,uWaveT,uEnergy,uR,uOffset,uDpr,uMorph;
 uniform vec2 uRes; uniform vec3 uTap;
 varying float vA,vC;
@@ -332,13 +243,10 @@ float snoise(vec3 v){
  return 42.*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
 }
 void main(){
- float m=clamp((uMorph-aSeed*0.42)/0.58,0.,1.);
- m=m*m*(3.-2.*m);
- vec3 n=mix(aFrom,aTo,m);
- float t=uTime;
+ float mp=uMorph*uMorph*(3.-2.*uMorph);vec3 n=mix(aPos,aTgt,mp);float t=uTime;
  float n1=snoise(n*1.7+vec3(0.,t*.22,t*.13));
  float n2=snoise(n*3.4-vec3(t*.18,0.,t*.1));
- float d=acos(clamp(dot(n,uTap),-1.,1.));
+ float d=acos(clamp(dot(normalize(n+1e-5),uTap),-1.,1.));
  float f=d-uWaveT*2.2;
  float wave=sin(f*7.)*exp(-abs(f)*1.7)*uPulse;
  float r=1.+(n1*.055+n2*.02)*(1.+uEnergy*.7)+wave*.07;
@@ -352,56 +260,21 @@ void main(){
  gl_PointSize=(.9+dep*1.4)*uDpr;
  vA=.2+.8*dep+wave*.12;vC=n1*.5+.5;
 }`;
-const FS=`precision mediump float;varying float vA,vC;
+const FS=`precision mediump float;varying float vA,vC;uniform vec3 uC1,uC2;
 void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;
  float a=smoothstep(.5,0.,d)*vA*.75;
- vec3 c=mix(vec3(.58,.76,1.),vec3(.8,.68,1.),vC);gl_FragColor=vec4(c*a,a);}`;
-
-let U={},prog,bFrom,bTo,bSeed;
-const curFrom=new Float32Array(N*3);
-const curTo=new Float32Array(N*3);
-const seeds=new Float32Array(N);
-
+ vec3 c=mix(uC1,uC2,vC);gl_FragColor=vec4(c*a,a);}`;
+let U={},prog,bufA,bufT,locA,locT,curArr;
 if(gl){
   const sh=(t,s)=>{const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o};
   prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(prog);gl.useProgram(prog);
-  
-  const initSphere=genSphere();
-  curFrom.set(initSphere);
-  curTo.set(initSphere);
-  for(let i=0;i<N;i++)seeds[i]=rnd();
-
-  bFrom=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bFrom);gl.bufferData(gl.ARRAY_BUFFER,curFrom,gl.DYNAMIC_DRAW);
-  const locFrom=gl.getAttribLocation(prog,"aFrom");gl.enableVertexAttribArray(locFrom);gl.vertexAttribPointer(locFrom,3,gl.FLOAT,false,0,0);
-
-  bTo=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bTo);gl.bufferData(gl.ARRAY_BUFFER,curTo,gl.DYNAMIC_DRAW);
-  const locTo=gl.getAttribLocation(prog,"aTo");gl.enableVertexAttribArray(locTo);gl.vertexAttribPointer(locTo,3,gl.FLOAT,false,0,0);
-
-  bSeed=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,bSeed);gl.bufferData(gl.ARRAY_BUFFER,seeds,gl.STATIC_DRAW);
-  const locSeed=gl.getAttribLocation(prog,"aSeed");gl.enableVertexAttribArray(locSeed);gl.vertexAttribPointer(locSeed,1,gl.FLOAT,false,0,0);
-
-  ["uTime","uRotX","uRotY","uPulse","uWaveT","uEnergy","uR","uOffset","uDpr","uMorph","uRes","uTap"].forEach(n=>U[n]=gl.getUniformLocation(prog,n));
+  const a=new Float32Array(N*3),ga=Math.PI*(3-Math.sqrt(5));
+  for(let i=0;i<N;i++){const y=1-2*(i+.5)/N,rr=Math.sqrt(1-y*y),th=i*ga;a[i*3]=Math.cos(th)*rr;a[i*3+1]=y;a[i*3+2]=Math.sin(th)*rr}
+  bufA=gl.createBuffer();bufT=gl.createBuffer();curArr=a;gl.bindBuffer(gl.ARRAY_BUFFER,bufA);gl.bufferData(gl.ARRAY_BUFFER,a,gl.STATIC_DRAW);gl.bindBuffer(gl.ARRAY_BUFFER,bufT);gl.bufferData(gl.ARRAY_BUFFER,a,gl.STATIC_DRAW);
+  locA=gl.getAttribLocation(prog,"aPos");locT=gl.getAttribLocation(prog,"aTgt");gl.enableVertexAttribArray(locA);gl.enableVertexAttribArray(locT);gl.bindBuffer(gl.ARRAY_BUFFER,bufA);gl.vertexAttribPointer(locA,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,bufT);gl.vertexAttribPointer(locT,3,gl.FLOAT,false,0,0);
+  ["uTime","uRotX","uRotY","uPulse","uWaveT","uEnergy","uR","uOffset","uDpr","uRes","uTap","uMorph","uC1","uC2"].forEach(n=>U[n]=gl.getUniformLocation(prog,n));
   gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE,gl.ONE,gl.ONE);
 }
-
-function morphTo(newPoints,label){
-  if(!gl||!newPoints)return;
-  if(shapeBadge)shapeBadge.textContent=label||"3D Orb";
-  for(let i=0;i<N;i++){
-    let m=Math.min(1,Math.max(0,(morph-seeds[i]*0.42)/0.58));
-    m=m*m*(3-2*m);
-    for(let c=0;c<3;c++){
-      const k=i*3+c;
-      curFrom[k]=curFrom[k]*(1-m)+curTo[k]*m;
-    }
-  }
-  curTo.set(newPoints);
-  morph=0;
-  gl.bindBuffer(gl.ARRAY_BUFFER,bFrom);gl.bufferData(gl.ARRAY_BUFFER,curFrom,gl.DYNAMIC_DRAW);
-  gl.bindBuffer(gl.ARRAY_BUFFER,bTo);gl.bufferData(gl.ARRAY_BUFFER,curTo,gl.DYNAMIC_DRAW);
-  energy=1.0;pulse=0.9;waveT=0;
-}
-
 function layout(){
   dpr=Math.min(window.devicePixelRatio||1,2);
   cv.width=Math.round(innerWidth*dpr);cv.height=Math.round(innerHeight*dpr);
@@ -434,61 +307,88 @@ function doTap(x,y){
   let y1=vy*cx+vz*sx,z1=-vy*sx+vz*cx;
   tap=[vx*cy-z1*sy,y1,vx*sy+z1*cy];pulse=1;waveT=0;
 }
+
+/* orb shapes + colours */
+const GA=Math.PI*(3-Math.sqrt(5)),TAU=Math.PI*2,R1=.7548776662,R2=.569840291;
+const SH={
+ sphere:i=>{const y=1-2*(i+.5)/N,r=Math.sqrt(1-y*y),t=i*GA;return[Math.cos(t)*r,y,Math.sin(t)*r]},
+ torus:i=>{const a=((i*R1)%1)*TAU,b=((i*R2)%1)*TAU,q=.7+.3*Math.cos(b);return[q*Math.cos(a),.3*Math.sin(b),q*Math.sin(a)]},
+ cube:i=>{const f=i%6,u=(((i*R1)%1)*2-1)*.64,v=(((i*R2)%1)*2-1)*.64,s=f%2?.64:-.64;return f<2?[s,u,v]:f<4?[u,s,v]:[u,v,s]},
+ galaxy:i=>{const u=(i*R1)%1,v=(i*R2)%1,w=(i*.6180339887)%1,p=Math.pow(u,.6),t=p*5.5+(i%3)*2.0944+(v-.5)*.8;return[Math.cos(t)*p,(w-.5)*.1*(1.15-p),Math.sin(t)*p]},
+ heart:i=>{const t=((i*R1)%1)*TAU,u=((i*R2)%1)*Math.PI;const x=16*Math.pow(Math.sin(u),3)*Math.sin(t)/18;const y=(13*Math.cos(u)-5*Math.cos(2*u)-2*Math.cos(3*u)-Math.cos(4*u))/18;const z=16*Math.pow(Math.sin(u),3)*Math.cos(t)/18;return[x*.9,y*.9+.1,z*.45]},
+ star:i=>{const a=((i*R1)%1)*TAU,r0=0.52+0.45*Math.cos(5*a);const r=Math.pow((i*R2)%1,0.5)*r0;const z=(((i*.6180339887)%1)-0.5)*0.28*(1.0-r);return[r*Math.sin(a),r*Math.cos(a),z]},
+ dna:i=>{const t=((i*R1)%1)*2-1,a=t*18.85+(i%2===0?0:Math.PI);const r=0.42;return[r*Math.cos(a),t*1.1,r*Math.sin(a)]}
+};
+const PAL={ice:[[.58,.76,1],[.8,.68,1]],ember:[[1,.72,.42],[1,.45,.58]],mint:[[.5,.95,.8],[.5,.76,1]],violet:[[.76,.6,1],[.96,.6,.9]]};
+let col1=[...PAL.ice[0]],col2=[...PAL.ice[1]],tc=PAL.ice,morph=0,morphing=false,pending=null,curShape="sphere";
+function stepOrb(){
+  for(let k=0;k<3;k++){col1[k]+=(tc[0][k]-col1[k])*.06;col2[k]+=(tc[1][k]-col2[k])*.06}
+  if(morphing){morph+=.022;if(morph>=1){morph=0;morphing=false;curArr=pending;gl.bindBuffer(gl.ARRAY_BUFFER,bufA);gl.bufferData(gl.ARRAY_BUFFER,curArr,gl.STATIC_DRAW)}}
+}
+function setShape(name){
+  if(!gl||morphing||name===curShape||!SH[name])return false;
+  const arr=new Float32Array(N*3);for(let i=0;i<N;i++){const p=SH[name](i);arr[i*3]=p[0];arr[i*3+1]=p[1];arr[i*3+2]=p[2]}
+  pending=arr;gl.bindBuffer(gl.ARRAY_BUFFER,bufT);gl.bufferData(gl.ARRAY_BUFFER,arr,gl.STATIC_DRAW);
+  morph=0;morphing=true;curShape=name;energy=Math.max(energy,.7);pulse=Math.max(pulse,.6);waveT=0;
+  if(shapeBadge)shapeBadge.textContent=name.charAt(0).toUpperCase()+name.slice(1);
+  document.querySelectorAll("#shapes .opt").forEach(x=>x.classList.toggle("on",x.dataset.s===name));
+  return true;
+}
+function setColor(name){
+  if(!PAL[name])return false;
+  tc=PAL[name];
+  document.querySelectorAll("#cols .sw").forEach(x=>x.classList.toggle("on",x.dataset.c===name));
+  pulse=Math.max(pulse,.5);waveT=0;energy=Math.max(energy,.4);
+  return true;
+}
+
 const t0=performance.now();
 function frame(now){
   if(gl){
     if(!down&&ptrs.size===0){rotY+=vY+.0012;rotX+=vX;vY*=.95;vX*=.95}
     rotX=Math.max(-1.15,Math.min(1.15,rotX));
-    zoom+=(zT-zoom)*.12;pulse*=.975;waveT+=.012;energy*=.965;
-    if(morph<1.0)morph=Math.min(1.0,morph+0.024);
+    zoom+=(zT-zoom)*.12;pulse*=.975;waveT+=.012;energy*=.965;stepOrb();
     gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform1f(U.uTime,(now-t0)/1000);gl.uniform1f(U.uRotX,rotX);gl.uniform1f(U.uRotY,rotY);
     gl.uniform1f(U.uPulse,pulse);gl.uniform1f(U.uWaveT,waveT);gl.uniform1f(U.uEnergy,energy);
     gl.uniform1f(U.uR,baseR*zoom);gl.uniform1f(U.uOffset,offs);gl.uniform1f(U.uDpr,dpr);
-    gl.uniform1f(U.uMorph,morph);
-    gl.uniform2f(U.uRes,innerWidth,innerHeight);gl.uniform3f(U.uTap,tap[0],tap[1],tap[2]);
+    gl.uniform2f(U.uRes,innerWidth,innerHeight);gl.uniform3f(U.uTap,tap[0],tap[1],tap[2]);gl.uniform1f(U.uMorph,morph);gl.uniform3fv(U.uC1,col1);gl.uniform3fv(U.uC2,col2);
     gl.drawArrays(gl.POINTS,0,N);
   }
   smoothScroll();requestAnimationFrame(frame);
 }
 
-/* ---------- chat console & shape router ---------- */
+/* ---------- chat console ---------- */
 const out=$("#out"),stEl=$("#st"),stt=$("#stt");
 let sid=0,userScrolled=false,statusT;
 const setStatus=(busy,txt)=>{stEl.classList.toggle("busy",busy);stt.textContent=txt||(busy?"Responding":"Ready")};
 ["wheel","touchstart"].forEach(ev=>out.addEventListener(ev,()=>{userScrolled=true},{passive:true}));
 function smoothScroll(){if(userScrolled)return;const m=out.scrollHeight-out.clientHeight,d=m-out.scrollTop;if(Math.abs(d)>.5)out.scrollTop+=d*.15}
-
-const SHAPE_MAP={
-  heart:{fn:genHeart,name:"Heart",reply:"Transitioning 58,000 starlight particles to an algebraic 3D cardioid heart manifold. Drag to inspect from any angle."},
-  star:{fn:genStar,name:"Star",reply:"Particles reorganized into a 5-pointed 3D stellated cosmic star structure."},
-  flower:{fn:genFlower,name:"Flower",reply:"Particles blooming into a parametric 3D geometric lotus flower."},
-  galaxy:{fn:genGalaxy,name:"Galaxy",reply:"Forming a logarithmic double-spiral galaxy with relativistic core distribution."},
-  dna:{fn:genDNA,name:"DNA Helix",reply:"Synthesizing a 3D double helix spiral with molecular nucleotide cross-rungs."},
-  cube:{fn:genCube,name:"Cube",reply:"Particle manifold bound to a 3D wireframe tesseract cube boundary."},
-  sphere:{fn:genSphere,name:"Sphere",reply:"Restoring particles back to the balanced 3D geodesic starlight sphere with Simplex noise waves."}
-};
-
 const TEXT_REPLIES={
  ov:"Holo AI is an interactive 3D neural interface running silently in your browser. The orb above is drawn live on your GPU with 58,000 starlight particles, and the console below streams its answers word by word. Drag the orb to rotate it, tap for an energy pulse, and pinch to zoom.",
  ar:"The SAAI Autonomous AI Architecture is a 7-layer constitutional stack: Cognitive Core, 478 MCP Tools across 14 Servers, Redundant 4-Tier Memory, Real-time Reflection Loop, Async Event Routing, Multi-LLM Parliament, and Sovereign Security. Opening the architectural showcase card now.",
  qu:"A qubit exists in a normalized linear superposition |ψ⟩ = α|0⟩ + β|1⟩. Measuring it collapses the state to one outcome, with probabilities set by the amplitudes. Like the orb, it looks calm and coherent from far away, and fluid up close.",
- py:"A clean Python async stream pipeline: ingest tokens non-blocking via asyncio, validate at the boundaries, and yield progressive tokens directly to the client without thread locks."
+ py:"A clean Python pipeline has four stages: ingest, validate, transform, and store. Keep each stage a pure function, log only at the boundaries, and test the transform on a small fixture before you connect any real input or output.",
+ heart:"Transitioning 58,000 starlight particles to an algebraic 3D cardioid heart manifold. Drag to inspect the curves from any angle.",
+ star:"Particles reorganized into a 5-pointed 3D stellated cosmic star structure.",
+ galaxy:"Forming a logarithmic double-spiral galaxy with relativistic core distribution.",
+ sphere:"Restoring particles back to the balanced 3D geodesic starlight sphere with Simplex noise waves."
 };
-const L={
-  ov:"Overview",ar:"Architecture Site",qu:"Quantum State",py:"Python Pipeline",
-  heart:"Heart",star:"Star",flower:"Flower",galaxy:"Galaxy",dna:"DNA Helix",sphere:"Default Orb"
-};
+const L={ov:"Overview",ar:"Architecture Site",qu:"Quantum State",py:"Python Pipeline",heart:"Heart",star:"Star",galaxy:"Galaxy",sphere:"Default Orb"};
 
-function checkShapeMatch(str){
+function checkIntent(str){
   const s=(str||"").toLowerCase();
-  if(/\b(heart|dil)\b|हार्ट|दिल/i.test(s))return"heart";
-  if(/\b(star|sitara|tara)\b|तारा|सितारा|स्टार/i.test(s))return"star";
-  if(/\b(flower|gulab|phool|rose)\b|फूल|गुलाब|कमल/i.test(s))return"flower";
-  if(/\b(galaxy|universe|spiral)\b|गैलेक्सी|ब्रह्मांड/i.test(s))return"galaxy";
-  if(/\b(dna|helix)\b|डीएनए/i.test(s))return"dna";
-  if(/\b(cube|box)\b|क्यूब|डिब्बा/i.test(s))return"cube";
-  if(/\b(sphere|orb|ball|circle|gola)\b|गोला|ऑर्ब/i.test(s))return"sphere";
+  if(/\b(heart|dil)\b|हार्ट|दिल/i.test(s))return{type:"shape",val:"heart"};
+  if(/\b(star|sitara|tara)\b|तारा|सितारा|स्टार/i.test(s))return{type:"shape",val:"star"};
+  if(/\b(galaxy|universe|spiral)\b|गैलेक्सी|ब्रह्मांड/i.test(s))return{type:"shape",val:"galaxy"};
+  if(/\b(dna|helix)\b|डीएनए/i.test(s))return{type:"shape",val:"dna"};
+  if(/\b(torus|donut)\b|डोनट/i.test(s))return{type:"shape",val:"torus"};
+  if(/\b(cube|box)\b|क्यूब|डिब्बा/i.test(s))return{type:"shape",val:"cube"};
+  if(/\b(sphere|orb|ball|circle|gola)\b|गोला|ऑर्ब/i.test(s))return{type:"shape",val:"sphere"};
+  if(/\b(ice|blue|cyan)\b/i.test(s))return{type:"col",val:"ice"};
+  if(/\b(ember|fire|orange|gold)\b/i.test(s))return{type:"col",val:"ember"};
+  if(/\b(mint|green|emerald)\b/i.test(s))return{type:"col",val:"mint"};
+  if(/\b(violet|purple|magenta)\b/i.test(s))return{type:"col",val:"violet"};
   return null;
 }
 
@@ -496,9 +396,10 @@ function ask(text,key){
   if(con.dataset.s==="min")setSize("normal");const em=out.querySelector(".empty");if(em)em.remove();
   const id=++sid;userScrolled=false;
   
-  const shapeKey=key&&(SHAPE_MAP[key]?key:null)||checkShapeMatch(text);
-  if(shapeKey&&SHAPE_MAP[shapeKey]){
-    morphTo(SHAPE_MAP[shapeKey].fn(),SHAPE_MAP[shapeKey].name);
+  const intent=checkIntent(text)||(key&&SH[key]?{type:"shape",val:key}:null);
+  if(intent){
+    if(intent.type==="shape")setShape(intent.val);
+    else if(intent.type==="col")setColor(intent.val);
   }
 
   const isSite=key==="ar"||/(^site$|\bsite\b|architecture|portfolio|7-layer|ecosystem)/i.test(text);
@@ -506,10 +407,10 @@ function ask(text,key){
   const a=document.createElement("div");a.className="a";out.appendChild(a);
   
   let reply="";
-  if(shapeKey&&SHAPE_MAP[shapeKey]){
-    reply=SHAPE_MAP[shapeKey].reply;
-  }else if(key&&TEXT_REPLIES[key]){
+  if(key&&TEXT_REPLIES[key]){
     reply=TEXT_REPLIES[key];
+  }else if(intent&&TEXT_REPLIES[intent.val]){
+    reply=TEXT_REPLIES[intent.val];
   }else if(isSite){
     reply=TEXT_REPLIES.ar;
   }else{
@@ -526,10 +427,9 @@ function ask(text,key){
     i++;setTimeout(step,22+Math.random()*16);
   })();
 }
-
 $("#f").addEventListener("submit",e=>{e.preventDefault();const v=$("#q").value.trim();if(!v)return;$("#q").value="";ask(v)});
 document.querySelectorAll(".chip").forEach(b=>b.addEventListener("click",()=>ask(L[b.dataset.k]||b.textContent.trim(),b.dataset.k)));
-$("#clear").addEventListener("click",()=>{sid++;out.innerHTML='<div class="empty">Ask something, or tap a chip below to transform the 3D orb.</div>';setStatus(false)});
+$("#clear").addEventListener("click",()=>{sid++;out.innerHTML='<div class="empty">Ask something, or customize the 3D orb using the slider icon above.</div>';setStatus(false)});
 $("#copy").addEventListener("click",async()=>{
   const t=out.innerText.trim();if(!t||out.querySelector(".empty"))return;
   try{await navigator.clipboard.writeText(t)}catch(e){const ta=document.createElement("textarea");ta.value=t;ta.style.cssText="position:fixed;opacity:0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(_){}ta.remove()}
@@ -550,6 +450,13 @@ function setSize(s){con.dataset.s=s;bMin.disabled=s==="min";bMax.disabled=s==="m
 bMin.addEventListener("click",()=>setSize(con.dataset.s==="max"?"normal":"min"));
 bMax.addEventListener("click",()=>setSize(con.dataset.s==="min"?"normal":"max"));
 new ResizeObserver(()=>{const r=stage.getBoundingClientRect();baseR=Math.max(60,Math.min(r.height*.36,r.width*.4));cyPx=r.top+r.height/2;offs=1-2*cyPx/innerHeight}).observe(stage);
+
+/* orb customiser popup */
+const pop=$("#pop"),tb=$("#tb");
+tb.addEventListener("click",()=>{pop.hidden=!pop.hidden;tb.setAttribute("aria-expanded",String(!pop.hidden))});
+document.addEventListener("pointerdown",e=>{if(!pop.hidden&&!e.target.closest(".tools")){pop.hidden=true;tb.setAttribute("aria-expanded","false")}});
+$("#shapes").addEventListener("click",e=>{const b=e.target.closest(".opt");if(!b)return;setShape(b.dataset.s)});
+$("#cols").addEventListener("click",e=>{const b=e.target.closest(".sw");if(!b)return;setColor(b.dataset.c)});
 
 requestAnimationFrame(frame);
 </script>
