@@ -5345,32 +5345,61 @@ function connectVoiceAgent(){
             } else if (fn.name === 'assign_autonomous_task') {
               updateStatus('thinking', '⚡ एजेंट को काम सौंपा जा रहा है...');
               const instruction = args.instruction || '';
-              const safeInstr = instruction.replace(/"/g, '\\"');
-              const cmd = `python3 /root/mongo_tool.py assign_task "${safeInstr}"`;
+              const safeSummary = instruction.length > 90 ? instruction.slice(0, 90) + '...' : instruction;
               console.log('🚀 Assigning task to background agent:', instruction);
-              // Show panel + banner immediately, cursor blinking while awaiting runner
+
+              // 1. Show panel immediately with clean agent command line & blinking cursor
               if (window._agentPanel) {
                 window._agentPanel.show();
                 window._agentPanel.start({ task: instruction, agent: 'RJN AUTONOMOUS AGENT' });
-                window._agentPanel.cmd({ command: cmd, output: '' }); // cursor blinks here
+                window._agentPanel.cmd({
+                  command: `rjn-agent execute "${safeSummary.replace(/"/g, '\\"')}"`,
+                  output: ''
+                });
+                window._agentPanel.append('[•] Registering task in Autonomous Execution Matrix...');
               }
+
+              // 2. Safe base64 encoding to prevent shell escaping/newline breakage
+              let b64 = '';
+              try {
+                b64 = btoa(unescape(encodeURIComponent(instruction)));
+              } catch(e) {
+                b64 = btoa(instruction);
+              }
+              const assignCmd = `python3 -c "import sys, base64, json; sys.path.append('/root'); from mongo_tool import assign_task; print(json.dumps(assign_task(base64.b64decode('${b64}').decode('utf-8'))))"`;
+
               const agtRaw = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ command: cmd, timeout: 20000 })
+                body: JSON.stringify({ command: assignCmd, timeout: 20000 })
               });
-              // Stream REAL stdout/stderr from cloud runner into terminal
+
+              let parsedTask = null;
+              try {
+                parsedTask = JSON.parse(agtRaw?.stdout?.trim() || '{}');
+              } catch(e) {}
+
+              const taskId = parsedTask?.task_id || '';
               if (window._agentPanel) {
-                const realOut = (agtRaw?.stdout || '') + (agtRaw?.stderr ? '\n' + agtRaw.stderr : '');
-                window._agentPanel.streamReal(realOut.trim() || '[No output returned]', agtRaw?.exitCode ?? 0);
+                if (taskId) {
+                  window._agentPanel.append(`\n[✓] Task queued in cloud database (ID: ${taskId})`);
+                  window._agentPanel.append('\n[•] Subagent worker claimed task — live execution started...');
+                  // 3. Start real-time live monitoring from MongoDB
+                  window._agentPanel.startMonitor(taskId, RAILWAY_RUNNER_URL, RUNNER_SECRET_KEY);
+                } else {
+                  const outMsg = (agtRaw?.stdout || agtRaw?.stderr || 'Task dispatched to queue.').trim();
+                  window._agentPanel.append(`\n${outMsg}`);
+                }
               }
+
               callResult = { 
                 status: "success", 
                 assigned: true, 
-                message: "टास्क एजेंट को सफलतापूर्वक सौंप दिया गया है, वो इस पर काम शुरू कर चुका है!" 
+                task_id: taskId,
+                message: "टास्क एजेंट को सफलतापूर्वक सौंप दिया गया है, वो इस पर काम शुरू कर चुका है और लाइव आउटपुट टर्मिनल में दिख रहा है!" 
               };
             } else if (fn.name === 'get_autonomous_task_status') {
               updateStatus('thinking', '📊 एजेंट का स्टेटस चेक हो रहा है...');
@@ -6312,6 +6341,15 @@ requestAnimationFrame(render);
   'use strict';
 
   /* ── Helpers ── */
+  let _pollInterval = null;
+
+  function stopLiveTaskMonitor() {
+    if (_pollInterval) {
+      clearInterval(_pollInterval);
+      _pollInterval = null;
+    }
+  }
+
   function showAgentLivePanel() {
     const p = document.getElementById('agentLivePanel');
     if (!p) return;
@@ -6319,6 +6357,7 @@ requestAnimationFrame(render);
     p.dataset.s = 'normal';
   }
   function hideAgentLivePanel() {
+    stopLiveTaskMonitor();
     const p = document.getElementById('agentLivePanel');
     if (!p) return;
     p.style.display = 'none';
@@ -6331,6 +6370,7 @@ requestAnimationFrame(render);
 
   /* ── Task banner ── */
   function startAgentTaskLively({ task, agent }) {
+    stopLiveTaskMonitor();
     const out = document.getElementById('agentTermOut');
     if (!out) return;
     out.innerHTML = '';
@@ -6473,6 +6513,85 @@ requestAnimationFrame(render);
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  /* ── Live Task Monitoring from MongoDB via Railway Runner ── */
+  function startLiveTaskMonitor(taskId, runnerUrl, secretKey) {
+    stopLiveTaskMonitor();
+    if (!taskId) return;
+
+    setAgentStatus('Running…');
+    let pollCount = 0;
+    let lastLoggedText = '';
+
+    _pollInterval = setInterval(async () => {
+      pollCount++;
+      try {
+        const resp = await safeFetchJson(`${runnerUrl}/execute`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${secretKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            command: `python3 /root/mongo_tool.py get_task ${taskId}`,
+            timeout: 15000
+          })
+        }, 18000);
+
+        let parsed = null;
+        try {
+          parsed = JSON.parse(resp?.stdout?.trim() || '{}');
+        } catch (e) {}
+
+        const task = parsed?.task;
+        if (!task) {
+          if (pollCount > 40) {
+            stopLiveTaskMonitor();
+            appendAgentLiveOutput('\n[!] Task monitoring query timed out.\n');
+            setAgentStatus('Timeout');
+          }
+          return;
+        }
+
+        // Check task.log for progress
+        if (task.log && task.log !== lastLoggedText) {
+          const diff = task.log.startsWith(lastLoggedText)
+            ? task.log.slice(lastLoggedText.length)
+            : task.log;
+          lastLoggedText = task.log;
+          if (diff.trim()) {
+            appendAgentLiveOutput('\n' + diff.trim());
+          }
+        }
+
+        // Check task status
+        if (task.status === 'completed') {
+          stopLiveTaskMonitor();
+          const duration = task.duration_seconds ? ` in ${task.duration_seconds}s` : '';
+          appendAgentLiveOutput(`\n[✓] Task finished successfully${duration}!\n`);
+          const resultText = task.result || task.summary || '';
+          if (resultText) {
+            appendAgentLiveOutput('\n' + resultText + '\n');
+          }
+          appendAgentLiveOutput('\n✓ Exit 0');
+          setAgentStatus('Done');
+        } else if (task.status === 'failed' || task.status === 'error') {
+          stopLiveTaskMonitor();
+          const errMsg = task.error || 'Execution encountered an error.';
+          appendAgentLiveOutput(`\n[✗] Task execution status: ${task.status}\n${errMsg}\n`);
+          appendAgentLiveOutput('\n✗ Exit 1');
+          setAgentStatus('Error');
+        } else if (task.status === 'in_progress') {
+          setAgentStatus('Running…');
+          if (pollCount % 5 === 0 && !task.log) {
+            appendAgentLiveOutput(`\n[•] Agent working on task... (${pollCount * 2}s)`);
+          }
+        }
+      } catch (err) {
+        console.warn('[TaskMonitor] poll error:', err);
+      }
+    }, 2000);
+  }
+
   /* ── Button listeners (after DOM ready) ── */
   document.addEventListener('DOMContentLoaded', function() {
     const closeBtn = document.getElementById('agentCloseBtn');
@@ -6507,7 +6626,9 @@ requestAnimationFrame(render);
     append: appendAgentLiveOutput,
     complete: completeAgentTaskLively,
     setStatus: setAgentStatus,
-    streamReal: streamRealOutput
+    streamReal: streamRealOutput,
+    startMonitor: startLiveTaskMonitor,
+    stopMonitor: stopLiveTaskMonitor
   };
 })();
 
