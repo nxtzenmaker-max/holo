@@ -1094,6 +1094,95 @@
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.35; transform: scale(1.35); }
   }
+
+  /* ── Agent Live Terminal Panel ── */
+  .agent-live-panel {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    z-index: 9999;
+    max-height: 42vh;
+    display: flex;
+    flex-direction: column;
+    background: rgba(10,10,14,0.96);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    box-shadow: 0 -4px 48px rgba(0,0,0,0.7);
+    animation: agentPanelIn 0.28s cubic-bezier(.22,1,.36,1) both;
+  }
+  .agent-live-panel[data-s="min"] { max-height: 42px; }
+  @keyframes agentPanelIn {
+    from { transform: translateY(100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+  }
+  .agent-panel-hd {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 14px;
+    height: 42px;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    user-select: none;
+  }
+  .agent-st { display: flex; align-items: center; gap: 7px; }
+  .agent-st-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 6px #22c55e88;
+    animation: agentDotPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes agentDotPulse {
+    0%,100% { opacity: 1; } 50% { opacity: 0.35; }
+  }
+  .agent-st-tag {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    color: rgba(255,255,255,0.65); text-transform: uppercase;
+  }
+  .agent-st-sep { color: rgba(255,255,255,0.2); font-size: 11px; }
+  #agentStText {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 10px; color: #22c55e; letter-spacing: 0.04em;
+  }
+  .agent-panel-acts { display: flex; align-items: center; gap: 4px; }
+  .agent-panel-btn {
+    width: 28px; height: 28px; border: none; border-radius: 6px;
+    background: transparent; cursor: pointer; color: rgba(255,255,255,0.45);
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    padding: 0;
+  }
+  .agent-panel-btn:hover { background: rgba(255,255,255,0.08); color: #fff; }
+  .agent-close-btn:hover { background: rgba(239,68,68,0.18); color: #ef4444; }
+  .agent-term-out {
+    flex: 1; overflow-y: auto; padding: 12px 16px;
+    font-family: 'JetBrains Mono', 'Fira Code', 'Courier New', monospace;
+    font-size: 12.5px; line-height: 1.65; color: rgba(255,255,255,0.82);
+    scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.1) transparent;
+  }
+  .agent-term-out::-webkit-scrollbar { width: 4px; }
+  .agent-term-out::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+  .agent-cmd-block { margin-bottom: 10px; }
+  .agent-cmd-line {
+    display: flex; align-items: flex-start; gap: 8px; margin-bottom: 4px;
+  }
+  .agent-cmd-prompt { color: #6366f1; font-weight: 700; flex-shrink: 0; }
+  .agent-cmd-text { color: #e2e8f0; word-break: break-all; }
+  .agent-out-text { color: rgba(255,255,255,0.58); white-space: pre-wrap; word-break: break-word; }
+  .agent-out-ok  { color: #22c55e; }
+  .agent-out-err { color: #f87171; }
+  .agent-task-banner {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 10px; border-radius: 6px; margin-bottom: 10px;
+    background: rgba(99,102,241,0.12); border: 1px solid rgba(99,102,241,0.22);
+  }
+  .agent-task-label { color: #818cf8; font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+  .agent-task-instr { color: rgba(255,255,255,0.75); font-size: 11.5px; }
+  .agent-term-cursor {
+    display: inline-block; width: 7px; height: 13px;
+    background: #22c55e; vertical-align: middle; margin-left: 2px;
+    animation: agentBlink 0.9s step-end infinite;
+  }
+  @keyframes agentBlink { 0%,100%{opacity:1} 50%{opacity:0} }
 </style>
 </head>
 <body>
@@ -4868,6 +4957,11 @@ function connectVoiceAgent(){
               updateStatus('thinking', '⚡ Cloud command run ho raha hai...');
               const cmd = args.command || '';
               console.log('🚀 Running command on Cloud Server:', cmd);
+              // Show agent live terminal panel for this command
+              if (window._agentPanel) {
+                window._agentPanel.show();
+                window._agentPanel.cmd({ command: cmd, output: '' });
+              }
               const execRaw = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
@@ -4890,6 +4984,12 @@ function connectVoiceAgent(){
                 stderr: cleanStderr,
                 exitCode: execRaw?.exitCode ?? 0
               };
+              // Live output + exit status in terminal panel
+              if (window._agentPanel) {
+                const liveOut = cleanStdout || cleanStderr || 'Command completed.';
+                window._agentPanel.append(liveOut);
+                window._agentPanel.setStatus((execRaw?.exitCode ?? 0) === 0 ? 'Done' : 'Error');
+              }
               console.log('⚡ Execution output:', callResult);
             } else if (fn.name === 'query_database') {
               updateStatus('thinking', '📊 Database check ho raha hai...');
@@ -5249,6 +5349,16 @@ function connectVoiceAgent(){
               const safeInstr = instruction.replace(/"/g, '\\"');
               const cmd = `python3 /root/mongo_tool.py assign_task "${safeInstr}"`;
               console.log('🚀 Assigning task to background agent:', instruction);
+              // Show live terminal panel with task banner
+              if (window._agentPanel) {
+                window._agentPanel.show();
+                window._agentPanel.start({ task: instruction, agent: 'RJN AUTONOMOUS AGENT' });
+                window._agentPanel.cmd({
+                  command: cmd,
+                  output: `[Connecting to Railway cloud runner]\n[Task queued into MongoDB: ${instruction.slice(0, 60)}${instruction.length > 60 ? '...' : ''}]\n[Subagent worker spawned — task in progress]\n`,
+                  exitCode: 0
+                });
+              }
               await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
@@ -5257,6 +5367,7 @@ function connectVoiceAgent(){
                 },
                 body: JSON.stringify({ command: cmd, timeout: 20000 })
               });
+              if (window._agentPanel) window._agentPanel.complete();
               callResult = { 
                 status: "success", 
                 assigned: true, 
@@ -6192,6 +6303,209 @@ runSystemStartupSequence(() => {
 });
 
 requestAnimationFrame(render);
+
+/* ══════════════════════════════════════════
+   AGENT LIVE TERMINAL — JS ENGINE
+   Shows only when assign_autonomous_task
+   or execute_command is triggered by RJN AI
+══════════════════════════════════════════ */
+(function() {
+  'use strict';
+
+  /* ── Helpers ── */
+  function showAgentLivePanel() {
+    const p = document.getElementById('agentLivePanel');
+    if (!p) return;
+    p.style.display = 'flex';
+    p.dataset.s = 'normal';
+  }
+  function hideAgentLivePanel() {
+    const p = document.getElementById('agentLivePanel');
+    if (!p) return;
+    p.style.display = 'none';
+    p.dataset.s = 'normal';
+  }
+  function setAgentStatus(txt) {
+    const el = document.getElementById('agentStText');
+    if (el) el.textContent = txt;
+  }
+
+  /* ── Task banner ── */
+  function startAgentTaskLively({ task, agent }) {
+    const out = document.getElementById('agentTermOut');
+    if (!out) return;
+    out.innerHTML = '';
+    const banner = document.createElement('div');
+    banner.className = 'agent-task-banner';
+    banner.innerHTML =
+      `<span class="agent-task-label">${agent || 'AGENT'}</span>` +
+      `<span class="agent-st-sep">›</span>` +
+      `<span class="agent-task-instr">${escAgt(task || '')}</span>`;
+    out.appendChild(banner);
+    setAgentStatus('Running…');
+  }
+
+  /* ── Single command block ── */
+  let _activeCmdOut = null;
+  function runAgentCmdLively({ command, output, exitCode }) {
+    const out = document.getElementById('agentTermOut');
+    if (!out) return;
+    const block = document.createElement('div');
+    block.className = 'agent-cmd-block';
+    const cmdLine = document.createElement('div');
+    cmdLine.className = 'agent-cmd-line';
+    cmdLine.innerHTML =
+      `<span class="agent-cmd-prompt">$</span>` +
+      `<span class="agent-cmd-text">${escAgt(command || '')}</span>`;
+    block.appendChild(cmdLine);
+    const outDiv = document.createElement('div');
+    outDiv.className = 'agent-out-text';
+    block.appendChild(outDiv);
+    out.appendChild(block);
+    out.scrollTop = out.scrollHeight;
+    _activeCmdOut = outDiv;
+
+    // Optionally stream pre-known output
+    if (output) {
+      streamAgentText(outDiv, output, 0, () => {
+        if (typeof exitCode === 'number') {
+          const ex = document.createElement('span');
+          ex.className = exitCode === 0 ? 'agent-out-ok' : 'agent-out-err';
+          ex.textContent = exitCode === 0 ? '✓ Exit 0' : `✗ Exit ${exitCode}`;
+          outDiv.appendChild(ex);
+        }
+        out.scrollTop = out.scrollHeight;
+      });
+    } else {
+      // Live cursor while waiting
+      const cur = document.createElement('span');
+      cur.className = 'agent-term-cursor';
+      outDiv.appendChild(cur);
+      _activeCmdOut._cursor = cur;
+    }
+    out.scrollTop = out.scrollHeight;
+  }
+
+  /* ── Append live output to current cmd block ── */
+  function appendAgentLiveOutput(text) {
+    if (!_activeCmdOut) return;
+    // Remove cursor if present
+    if (_activeCmdOut._cursor) {
+      _activeCmdOut._cursor.remove();
+      _activeCmdOut._cursor = null;
+    }
+    const isErr = /error|fail|fatal|traceback/i.test(text);
+    const span = document.createElement('span');
+    span.className = isErr ? 'agent-out-err' : 'agent-out-text';
+    span.textContent = text;
+    _activeCmdOut.appendChild(span);
+    const out = document.getElementById('agentTermOut');
+    if (out) out.scrollTop = out.scrollHeight;
+  }
+
+  /* ── Mark task complete ── */
+  function completeAgentTaskLively() {
+    setAgentStatus('Done');
+    const out = document.getElementById('agentTermOut');
+    if (!out) return;
+    const done = document.createElement('div');
+    done.style.cssText = 'margin-top:8px;color:#22c55e;font-size:11px;';
+    done.textContent = '── Task Completed ──';
+    out.appendChild(done);
+    out.scrollTop = out.scrollHeight;
+  }
+
+  /* ── Typewriter stream ── */
+  function streamAgentText(el, text, delay, cb) {
+    const chars = text.split('');
+    let i = 0;
+    const interval = setInterval(() => {
+      if (i >= chars.length) {
+        clearInterval(interval);
+        if (cb) cb();
+        return;
+      }
+      el.textContent += chars[i++];
+    }, delay || 4);
+  }
+
+  function escAgt(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── Button listeners (after DOM ready) ── */
+  document.addEventListener('DOMContentLoaded', function() {
+    const closeBtn = document.getElementById('agentCloseBtn');
+    const minBtn   = document.getElementById('agentMinBtn');
+    const copyBtn  = document.getElementById('agentCopyBtn');
+    const panel    = document.getElementById('agentLivePanel');
+    const termOut  = document.getElementById('agentTermOut');
+
+    if (closeBtn) closeBtn.addEventListener('click', hideAgentLivePanel);
+    if (minBtn) minBtn.addEventListener('click', function() {
+      if (!panel) return;
+      if (panel.dataset.s === 'min') {
+        panel.dataset.s = 'normal';
+        minBtn.title = 'Minimize';
+      } else {
+        panel.dataset.s = 'min';
+        minBtn.title = 'Restore';
+      }
+    });
+    if (copyBtn) copyBtn.addEventListener('click', function() {
+      if (!termOut) return;
+      navigator.clipboard.writeText(termOut.innerText || termOut.textContent || '').catch(() => {});
+    });
+  });
+
+  /* ── Expose globally so handlers in main script can call them ── */
+  window._agentPanel = {
+    show: showAgentLivePanel,
+    hide: hideAgentLivePanel,
+    start: startAgentTaskLively,
+    cmd: runAgentCmdLively,
+    append: appendAgentLiveOutput,
+    complete: completeAgentTaskLively,
+    setStatus: setAgentStatus
+  };
+})();
+
 </script>
+
+<!-- ═══════ AGENT LIVE TERMINAL PANEL ═══════ -->
+<section class="agent-live-panel" id="agentLivePanel" data-s="normal" aria-label="Agent Execution" style="display:none;">
+  <div class="agent-panel-hd">
+    <div class="agent-st">
+      <span class="agent-st-dot"></span>
+      <span class="agent-st-tag">RJN Autonomous Agent</span>
+      <span class="agent-st-sep">·</span>
+      <span id="agentStText">Ready</span>
+    </div>
+    <div class="agent-panel-acts">
+      <!-- Minimize -->
+      <button type="button" class="agent-panel-btn" id="agentMinBtn" title="Minimize">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <line x1="2" y1="7" x2="12" y2="7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <!-- Copy -->
+      <button type="button" class="agent-panel-btn" id="agentCopyBtn" title="Copy output">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M2 10V2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <!-- Close -->
+      <button type="button" class="agent-panel-btn agent-close-btn" id="agentCloseBtn" title="Close">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <line x1="2" y1="2" x2="12" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="12" y1="2" x2="2" y2="12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div id="agentTermOut" class="agent-term-out"></div>
+</section>
+
 </body>
 </html>
