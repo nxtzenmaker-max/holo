@@ -4957,10 +4957,10 @@ function connectVoiceAgent(){
               updateStatus('thinking', '⚡ Cloud command run ho raha hai...');
               const cmd = args.command || '';
               console.log('🚀 Running command on Cloud Server:', cmd);
-              // Show agent live terminal panel for this command
+              // Show panel + blinking cursor while command runs on cloud
               if (window._agentPanel) {
                 window._agentPanel.show();
-                window._agentPanel.cmd({ command: cmd, output: '' });
+                window._agentPanel.cmd({ command: cmd, output: '' }); // cursor blinks
               }
               const execRaw = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
@@ -4984,11 +4984,10 @@ function connectVoiceAgent(){
                 stderr: cleanStderr,
                 exitCode: execRaw?.exitCode ?? 0
               };
-              // Live output + exit status in terminal panel
+              // Stream REAL output line-by-line into terminal, then show exit
               if (window._agentPanel) {
-                const liveOut = cleanStdout || cleanStderr || 'Command completed.';
-                window._agentPanel.append(liveOut);
-                window._agentPanel.setStatus((execRaw?.exitCode ?? 0) === 0 ? 'Done' : 'Error');
+                const realOut = (cleanStdout || cleanStderr || 'Command completed.').trim();
+                window._agentPanel.streamReal(realOut, execRaw?.exitCode ?? 0);
               }
               console.log('⚡ Execution output:', callResult);
             } else if (fn.name === 'query_database') {
@@ -5349,17 +5348,13 @@ function connectVoiceAgent(){
               const safeInstr = instruction.replace(/"/g, '\\"');
               const cmd = `python3 /root/mongo_tool.py assign_task "${safeInstr}"`;
               console.log('🚀 Assigning task to background agent:', instruction);
-              // Show live terminal panel with task banner
+              // Show panel + banner immediately, cursor blinking while awaiting runner
               if (window._agentPanel) {
                 window._agentPanel.show();
                 window._agentPanel.start({ task: instruction, agent: 'RJN AUTONOMOUS AGENT' });
-                window._agentPanel.cmd({
-                  command: cmd,
-                  output: `[Connecting to Railway cloud runner]\n[Task queued into MongoDB: ${instruction.slice(0, 60)}${instruction.length > 60 ? '...' : ''}]\n[Subagent worker spawned — task in progress]\n`,
-                  exitCode: 0
-                });
+                window._agentPanel.cmd({ command: cmd, output: '' }); // cursor blinks here
               }
-              await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+              const agtRaw = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
@@ -5367,7 +5362,11 @@ function connectVoiceAgent(){
                 },
                 body: JSON.stringify({ command: cmd, timeout: 20000 })
               });
-              if (window._agentPanel) window._agentPanel.complete();
+              // Stream REAL stdout/stderr from cloud runner into terminal
+              if (window._agentPanel) {
+                const realOut = (agtRaw?.stdout || '') + (agtRaw?.stderr ? '\n' + agtRaw.stderr : '');
+                window._agentPanel.streamReal(realOut.trim() || '[No output returned]', agtRaw?.exitCode ?? 0);
+              }
               callResult = { 
                 status: "success", 
                 assigned: true, 
@@ -6429,6 +6428,47 @@ requestAnimationFrame(render);
     }, delay || 4);
   }
 
+  /* ── streamReal: stream actual cloud output char-by-char then show exit ── */
+  function streamRealOutput(rawText, exitCode) {
+    if (!_activeCmdOut) return;
+    // Remove blinking cursor first
+    if (_activeCmdOut._cursor) {
+      _activeCmdOut._cursor.remove();
+      _activeCmdOut._cursor = null;
+    }
+    const out = document.getElementById('agentTermOut');
+    const isErr = exitCode !== 0;
+    const span = document.createElement('span');
+    span.className = isErr ? 'agent-out-err' : 'agent-out-text';
+    span.style.whiteSpace = 'pre-wrap';
+    _activeCmdOut.appendChild(span);
+    if (out) out.scrollTop = out.scrollHeight;
+
+    // Typewriter — fast (3ms/char) for realism, skip very long outputs
+    const MAX_CHARS = 4000;
+    const text = rawText.length > MAX_CHARS
+      ? rawText.slice(0, MAX_CHARS) + '\n… [output truncated]'
+      : rawText;
+    const chars = text.split('');
+    let i = 0;
+    const iv = setInterval(() => {
+      const batch = Math.min(4, chars.length - i); // 4 chars per tick = snappy
+      for (let b = 0; b < batch; b++) span.textContent += chars[i++];
+      if (out) out.scrollTop = out.scrollHeight;
+      if (i >= chars.length) {
+        clearInterval(iv);
+        // Show exit badge
+        const ex = document.createElement('span');
+        ex.style.cssText = 'display:block;margin-top:6px;';
+        ex.className = isErr ? 'agent-out-err' : 'agent-out-ok';
+        ex.textContent = isErr ? `✗ Exit ${exitCode}` : '✓ Exit 0';
+        _activeCmdOut.appendChild(ex);
+        setAgentStatus(isErr ? 'Error' : 'Done');
+        if (out) out.scrollTop = out.scrollHeight;
+      }
+    }, 3);
+  }
+
   function escAgt(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
@@ -6466,7 +6506,8 @@ requestAnimationFrame(render);
     cmd: runAgentCmdLively,
     append: appendAgentLiveOutput,
     complete: completeAgentTaskLively,
-    setStatus: setAgentStatus
+    setStatus: setAgentStatus,
+    streamReal: streamRealOutput
   };
 })();
 
