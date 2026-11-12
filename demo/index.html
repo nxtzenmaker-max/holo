@@ -210,7 +210,7 @@ let rotX=.15,rotY=0,vX=0,vY=0,zoom=1,zT=1,pulse=0,waveT=9,energy=0,baseR=150,cxP
 const N=58000;
 const VS=`
 attribute vec3 aPos,aTgt;
-uniform float uTime,uRotX,uRotY,uPulse,uWaveT,uEnergy,uR,uOffset,uDpr,uMorph;
+uniform float uTime,uRotX,uRotY,uPulse,uWaveT,uEnergy,uR,uOffset,uDpr,uMorph,uZoom;
 uniform vec2 uRes; uniform vec3 uTap;
 varying float vA,vC;
 vec3 mod289(vec3 x){return x-floor(x*(1./289.))*289.;}
@@ -252,12 +252,14 @@ void main(){
  vec2 ndc=(p.xy*persp*uR)/(uRes*.5);ndc.y+=uOffset;
  gl_Position=vec4(ndc,-p.z*.2,1.);
  float dep=p.z*.5+.5;
- gl_PointSize=(.9+dep*1.4)*uDpr;
- vA=.2+.8*dep+wave*.12;vC=n1*.5+.5;
+ float zComp=clamp(uZoom,.45,2.2);
+ float densityComp=clamp(pow(zComp,.85),.30,1.15);
+ gl_PointSize=clamp((.7+dep*1.1)*uDpr*clamp(zComp,.7,1.25),1.,3.8);
+ vA=(.18+.62*dep+wave*.12)*densityComp;vC=n1*.5+.5;
 }`;
 const FS=`precision mediump float;varying float vA,vC;uniform vec3 uC1,uC2;
 void main(){float d=length(gl_PointCoord-.5);if(d>.5)discard;
- float a=smoothstep(.5,0.,d)*vA*.75;
+ float a=smoothstep(.5,.05,d)*vA*.55;
  vec3 c=mix(uC1,uC2,vC);gl_FragColor=vec4(c*a,a);}`;
 let U={},prog,bufA,bufT,locA,locT,curArr;
 if(gl){
@@ -267,7 +269,7 @@ if(gl){
   for(let i=0;i<N;i++){const y=1-2*(i+.5)/N,rr=Math.sqrt(1-y*y),th=i*ga;a[i*3]=Math.cos(th)*rr;a[i*3+1]=y;a[i*3+2]=Math.sin(th)*rr}
   bufA=gl.createBuffer();bufT=gl.createBuffer();curArr=a;gl.bindBuffer(gl.ARRAY_BUFFER,bufA);gl.bufferData(gl.ARRAY_BUFFER,a,gl.STATIC_DRAW);gl.bindBuffer(gl.ARRAY_BUFFER,bufT);gl.bufferData(gl.ARRAY_BUFFER,a,gl.STATIC_DRAW);
   locA=gl.getAttribLocation(prog,"aPos");locT=gl.getAttribLocation(prog,"aTgt");gl.enableVertexAttribArray(locA);gl.enableVertexAttribArray(locT);gl.bindBuffer(gl.ARRAY_BUFFER,bufA);gl.vertexAttribPointer(locA,3,gl.FLOAT,false,0,0);gl.bindBuffer(gl.ARRAY_BUFFER,bufT);gl.vertexAttribPointer(locT,3,gl.FLOAT,false,0,0);
-  ["uTime","uRotX","uRotY","uPulse","uWaveT","uEnergy","uR","uOffset","uDpr","uRes","uTap","uMorph","uC1","uC2"].forEach(n=>U[n]=gl.getUniformLocation(prog,n));
+  ["uTime","uRotX","uRotY","uPulse","uWaveT","uEnergy","uR","uOffset","uDpr","uRes","uTap","uMorph","uC1","uC2","uZoom"].forEach(n=>U[n]=gl.getUniformLocation(prog,n));
   gl.enable(gl.BLEND);gl.blendFuncSeparate(gl.SRC_ALPHA,gl.ONE,gl.ONE,gl.ONE);
 }
 function layout(){
@@ -346,7 +348,7 @@ function frame(now){
     gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform1f(U.uTime,(now-t0)/1000);gl.uniform1f(U.uRotX,rotX);gl.uniform1f(U.uRotY,rotY);
     gl.uniform1f(U.uPulse,pulse);gl.uniform1f(U.uWaveT,waveT);gl.uniform1f(U.uEnergy,energy);
-    gl.uniform1f(U.uR,baseR*zoom);gl.uniform1f(U.uOffset,offs);gl.uniform1f(U.uDpr,dpr);
+    gl.uniform1f(U.uR,baseR*zoom);gl.uniform1f(U.uOffset,offs);gl.uniform1f(U.uDpr,dpr);gl.uniform1f(U.uZoom,zoom);
     gl.uniform2f(U.uRes,innerWidth,innerHeight);gl.uniform3f(U.uTap,tap[0],tap[1],tap[2]);gl.uniform1f(U.uMorph,morph);gl.uniform3fv(U.uC1,col1);gl.uniform3fv(U.uC2,col2);
     gl.drawArrays(gl.POINTS,0,N);
   }
