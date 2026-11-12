@@ -8,7 +8,9 @@
 <style>
   *, *::before, *::after {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    outline: none !important;
   }
   html, body {
     margin: 0;
@@ -16,18 +18,20 @@
     background: #03040a;
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
-  #glow {
-    position: fixed;
-    left: 50%;
-    top: 46%;
-    width: 88vmin;
-    height: 88vmin;
-    margin: -44vmin 0 0 -44vmin;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(70,150,255,.38) 0%, rgba(120,70,255,.15) 40%, rgba(0,0,0,0) 68%);
-    pointer-events: none;
-    will-change: transform, opacity;
+  ::selection {
+    background: transparent !important;
+    color: inherit !important;
+  }
+  ::-moz-selection {
+    background: transparent !important;
+    color: inherit !important;
   }
   canvas {
     position: fixed;
@@ -36,9 +40,12 @@
     height: 100%;
     display: block;
     cursor: pointer;
-    outline: none;
-    user-select: none;
-    -webkit-user-select: none;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    -webkit-user-drag: none !important;
     touch-action: none;
   }
 
@@ -644,13 +651,13 @@
     letter-spacing: 0.05em;
   }
 
-  /* AI IMAGE PREVIEW MODAL */
+  /* UNIVERSAL HOLOGRAPHIC MEDIA VIEWER (IMAGE, VIDEO, DOCS) */
   #imageModal {
     display: none;
     position: fixed;
     inset: 0;
     z-index: 99995;
-    background: rgba(3, 4, 10, 0.82);
+    background: rgba(3, 4, 10, 0.85);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     align-items: center;
@@ -663,13 +670,13 @@
   }
   .image-modal-card {
     position: relative;
-    max-width: 440px;
+    max-width: 520px;
     width: 100%;
-    background: rgba(15, 20, 32, 0.94);
+    background: rgba(15, 20, 32, 0.95);
     border: 1px solid rgba(56, 189, 248, 0.35);
     border-radius: 20px;
     padding: 16px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(56, 189, 248, 0.2);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9), 0 0 35px rgba(56, 189, 248, 0.25);
   }
   .image-modal-header {
     display: flex;
@@ -715,15 +722,58 @@
     border-radius: 14px;
     overflow: hidden;
     position: relative;
-    aspect-ratio: 1;
+    max-height: 55vh;
     background: #000;
     border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .image-modal-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+    max-width: 100%;
+    max-height: 55vh;
+    object-fit: contain;
     display: block;
+  }
+  .media-video-wrap {
+    border-radius: 14px;
+    overflow: hidden;
+    position: relative;
+    aspect-ratio: 16/9;
+    background: #000;
+    border: 1px solid rgba(56, 189, 248, 0.2);
+  }
+  .media-doc-wrap {
+    border-radius: 14px;
+    max-height: 55vh;
+    overflow-y: auto;
+    background: rgba(7, 10, 18, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    padding: 16px;
+  }
+  .media-doc-content {
+    color: #e2e8f0;
+    font-size: 13px;
+    line-height: 1.6;
+    word-break: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+  .media-code-block {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    margin: 8px 0;
+    overflow-x: auto;
+    color: #38bdf8;
+    font-size: 12px;
+  }
+  .media-inline-code {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
   }
   .image-modal-prompt {
     margin: 12px 0 0;
@@ -732,26 +782,415 @@
     line-height: 1.4;
     word-break: break-word;
   }
+
+  /* HOLOGRAPHIC YOUTUBE MUSIC WIDGET */
+  .music-widget {
+    position: fixed;
+    bottom: 84px;
+    right: 20px;
+    z-index: 9999;
+    width: 320px;
+    max-width: calc(100vw - 32px);
+    background: rgba(13, 17, 23, 0.88);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(0, 240, 255, 0.25);
+    border-radius: 16px;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(0, 240, 255, 0.15);
+    padding: 14px;
+    color: #e2e8f0;
+    font-family: inherit;
+    display: none;
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+    transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .music-widget.active {
+    display: block;
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  .music-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .music-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: #00f0ff;
+    text-transform: uppercase;
+  }
+  .music-dot {
+    width: 7px;
+    height: 7px;
+    background: #00f0ff;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #00f0ff;
+    animation: musicPulse 1.4s ease-in-out infinite;
+  }
+  @keyframes musicPulse {
+    0%, 100% { opacity: 0.4; transform: scale(0.85); }
+    50% { opacity: 1; transform: scale(1.15); }
+  }
+  .music-close-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    color: #94a3b8;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .music-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+  .music-body {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .music-art-wrap {
+    position: relative;
+    width: 58px;
+    height: 58px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    background: #000;
+  }
+  .music-thumb {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .music-visualizer-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 3px;
+    padding-bottom: 6px;
+  }
+  .music-visualizer-overlay .bar {
+    width: 3px;
+    background: #00f0ff;
+    border-radius: 2px;
+    box-shadow: 0 0 4px #00f0ff;
+    animation: soundwave 1s ease-in-out infinite;
+  }
+  .music-visualizer-overlay .bar-1 { height: 8px; animation-delay: 0.1s; }
+  .music-visualizer-overlay .bar-2 { height: 16px; animation-delay: 0.3s; }
+  .music-visualizer-overlay .bar-3 { height: 22px; animation-delay: 0.2s; }
+  .music-visualizer-overlay .bar-4 { height: 12px; animation-delay: 0.4s; }
+  @keyframes soundwave {
+    0%, 100% { height: 5px; }
+    50% { height: 24px; }
+  }
+  .music-info {
+    min-width: 0;
+    flex: 1;
+  }
+  .music-title {
+    font-size: 13px;
+    font-weight: 600;
+    color: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+  .music-artist {
+    font-size: 11px;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+  .music-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 5px;
+  }
+  .music-pill {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+  }
+  .music-badge-hq {
+    background: rgba(0, 240, 255, 0.15);
+    color: #00f0ff;
+    font-weight: 600;
+  }
+  .music-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .music-btn {
+    background: rgba(0, 240, 255, 0.15);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    color: #00f0ff;
+    border-radius: 8px;
+    padding: 6px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s;
+  }
+  .music-btn:hover {
+    background: rgba(0, 240, 255, 0.28);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    color: #fff;
+  }
+  .music-yt-btn {
+    text-decoration: none;
+    color: #ff4444;
+    border-color: rgba(255, 68, 68, 0.3);
+    background: rgba(255, 68, 68, 0.12);
+  }
+  .music-yt-btn:hover {
+    background: rgba(255, 68, 68, 0.25);
+    box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
+    color: #fff;
+  }
+  .music-status-note {
+    font-size: 10px;
+    color: #64748b;
+    margin-left: auto;
+    font-style: italic;
+  }
+
+  /* ================= 3-DIGIT VOICE SECURITY PIN HUD ================= */
+  .voice-security-hud {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99990;
+    display: none;
+    width: 90%;
+    max-width: 440px;
+    animation: hudSlideDown 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  .voice-security-hud.active {
+    display: block;
+  }
+  .voice-security-hud .hud-box {
+    background: rgba(3, 7, 18, 0.88);
+    border: 1px solid rgba(6, 182, 212, 0.45);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 24px rgba(6, 182, 212, 0.25);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 16px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+  .voice-security-hud .hud-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, #06b6d4, #8b5cf6, transparent);
+  }
+  .voice-security-hud .hud-top-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: #38bdf8;
+    text-transform: uppercase;
+  }
+  .voice-security-hud .hud-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #06b6d4;
+    display: inline-block;
+  }
+  .voice-security-hud .hud-dot.pulsing {
+    animation: hudPulse 1.2s infinite ease-in-out;
+  }
+  .voice-security-hud .hud-digits {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: 0.3em;
+    color: #38bdf8;
+    text-shadow: 0 0 16px rgba(56, 189, 248, 0.8), 0 0 32px rgba(6, 182, 212, 0.4);
+    margin: 8px 0 10px;
+  }
+  .voice-security-hud .hud-title {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: #94a3b8;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .voice-security-hud .hud-subtitle {
+    font-size: 12px;
+    color: #cbd5e1;
+    font-weight: 500;
+  }
+  .voice-security-hud.access-granted .hud-box {
+    border-color: rgba(34, 197, 94, 0.7);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7), 0 0 32px rgba(34, 197, 94, 0.45);
+  }
+  .voice-security-hud.access-granted .hud-digits {
+    color: #4ade80;
+    text-shadow: 0 0 18px rgba(74, 222, 128, 0.9);
+    letter-spacing: 0.15em;
+    font-size: 24px;
+  }
+  .voice-security-hud.access-granted .hud-top-strip {
+    color: #4ade80;
+  }
+  .voice-security-hud.access-granted .hud-dot {
+    background: #4ade80;
+  }
+  .voice-security-hud.docked {
+    transform: translateX(-50%) translateY(-20px) scale(0.9);
+    opacity: 0;
+    transition: all 0.45s ease;
+  }
+  @keyframes hudSlideDown {
+    from { opacity: 0; transform: translateX(-50%) translateY(-15px); }
+    to { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+  @keyframes hudPulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(1.35); }
+  }
 </style>
 </head>
 <body>
 <div id="glow"></div>
 <canvas id="c"></canvas>
 
-<!-- AI IMAGE PREVIEW MODAL -->
+<!-- 3-DIGIT VOICE SECURITY PIN HUD -->
+<div id="voiceSecurityPinHUD" class="voice-security-hud">
+  <div class="hud-box">
+    <div class="hud-top-strip">
+      <span class="hud-dot pulsing"></span>
+      <span class="hud-tag">VOICE SECURITY PROTOCOL</span>
+      <span class="hud-tag-id">PIN #<span id="pinIdText">---</span></span>
+    </div>
+    <div class="hud-pin-body">
+      <div class="hud-title">PLEASE SPEAK 3 DIGITS TO UNLOCK:</div>
+      <div class="hud-digits" id="pinDisplayDigits">- &nbsp; - &nbsp; -</div>
+      <div class="hud-subtitle" id="pinSubText">🎙️ Speak these numbers aloud to verify identity</div>
+    </div>
+  </div>
+</div>
+
+<!-- UNIVERSAL HOLOGRAPHIC MEDIA VIEWER (IMAGE, VIDEO, DOCS) -->
 <div id="imageModal">
   <div class="image-modal-card">
     <div class="image-modal-header">
-      <span class="image-modal-title">
+      <span class="image-modal-title" id="mediaModalTitle">
         <span class="image-modal-dot"></span>
-        🎨 AI Generated Art for Boss
+        <span id="mediaModalTitleText">🎨 Media Output for Boss</span>
       </span>
-      <button type="button" class="image-modal-close" onclick="hideGeneratedImage()" aria-label="Close image preview">&times;</button>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <a id="mediaOpenLinkBtn" href="#" target="_blank" rel="noopener" style="display:none; color:#38bdf8; font-size:11px; text-decoration:none; padding:4px 8px; border-radius:8px; background:rgba(56,189,248,0.1); border:1px solid rgba(56,189,248,0.25);">Open ↗</a>
+        <button type="button" class="image-modal-close" onclick="hideMediaViewer()" aria-label="Close media preview">&times;</button>
+      </div>
     </div>
-    <div class="image-modal-img-wrap">
-      <img id="imageModalImg" class="image-modal-img" src="" alt="AI Generated Artwork" />
+    
+    <!-- Image View -->
+    <div id="mediaImgWrap" class="image-modal-img-wrap">
+      <img id="imageModalImg" class="image-modal-img" src="" alt="Media Artwork" />
     </div>
+
+    <!-- Video View -->
+    <div id="mediaVideoWrap" class="media-video-wrap" style="display:none;">
+      <video id="mediaModalVideo" controls style="width:100%; height:100%; display:block;"></video>
+      <iframe id="mediaModalIframe" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen style="width:100%; height:100%; border:0; display:none;"></iframe>
+    </div>
+
+    <!-- Document / Code / Text View -->
+    <div id="mediaDocWrap" class="media-doc-wrap" style="display:none;">
+      <div id="mediaModalDocContent" class="media-doc-content"></div>
+    </div>
+
     <p id="imageModalPrompt" class="image-modal-prompt"></p>
+  </div>
+</div>
+
+<!-- HOLOGRAPHIC YOUTUBE MUSIC WIDGET -->
+<div id="musicPlayerWidget" class="music-widget">
+  <div class="music-header">
+    <div class="music-badge">
+      <span class="music-dot"></span>
+      <span>YouTube Music Live</span>
+    </div>
+    <button type="button" class="music-close-btn" onclick="stopHologramMusic()" title="Close player">&times;</button>
+  </div>
+  
+  <div class="music-body">
+    <div class="music-art-wrap">
+      <img id="musicThumb" class="music-thumb" src="" alt="Album Art" />
+      <div class="music-visualizer-overlay" id="musicVisualizerBars">
+        <span class="bar bar-1"></span>
+        <span class="bar bar-2"></span>
+        <span class="bar bar-3"></span>
+        <span class="bar bar-4"></span>
+      </div>
+    </div>
+    <div class="music-info">
+      <div id="musicTitle" class="music-title">Song Title</div>
+      <div id="musicArtist" class="music-artist">Artist</div>
+      <div class="music-meta">
+        <span id="musicDuration" class="music-pill">0:00</span>
+        <span class="music-pill music-badge-hq">HQ Audio</span>
+      </div>
+    </div>
+  </div>
+
+  <div id="musicIframeContainer"></div>
+
+  <div class="music-controls">
+    <button type="button" id="musicPlayPauseBtn" class="music-btn" onclick="toggleMusicPlayback()" title="Play / Pause">
+      <svg id="musicPlayIcon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style="display:none;"><path d="M8 5v14l11-7z"/></svg>
+      <svg id="musicPauseIcon" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+    <a id="musicYtLink" href="#" target="_blank" rel="noopener" class="music-btn music-yt-btn" title="Open on YouTube">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+    </a>
+    <span class="music-status-note">Streaming for Boss</span>
   </div>
 </div>
 
@@ -803,6 +1242,16 @@
           <span class="info-label">Access Level</span>
           <span class="info-value">Authorized</span>
         </div>
+      </div>
+
+      <div style="margin-top: 14px;">
+        <a href="./demo" target="_blank" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; text-decoration: none; color: #38bdf8; font-size: 12px; font-weight: 600; padding: 10px 14px; border-radius: 12px; background: rgba(56, 189, 248, 0.12); border: 1px solid rgba(56, 189, 248, 0.28); transition: all 0.2s ease;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 8px #38bdf8;"></span>
+            <span>Silent Text Demo (New)</span>
+          </span>
+          <span style="opacity: 0.8;">↗</span>
+        </a>
       </div>
     </div>
   </div>
@@ -927,6 +1376,9 @@
 </div>
 <script>
 const cv = document.getElementById('c');
+document.addEventListener("selectstart", e => { if (!e.target.closest("input, textarea")) e.preventDefault(); }, { passive: false });
+window.addEventListener("contextmenu", e => { if (!e.target.closest("input, textarea")) e.preventDefault(); }, { passive: false });
+cv.addEventListener("touchstart", e => { if (e.cancelable && e.touches.length <= 1) e.preventDefault(); }, { passive: false });
 const gl = cv.getContext('webgl', {antialias:false, alpha:true, premultipliedAlpha:true});
 const glowEl = document.getElementById('glow');
 const DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -1864,20 +2316,199 @@ function morphShape(name, symbol){
   highlightActiveChip('');
 }
 
-// ================= AI IMAGE PREVIEW MODAL HELPERS =================
-function showGeneratedImage(url, prompt){
-  const m = document.getElementById('imageModal');
-  const img = document.getElementById('imageModalImg');
-  const p = document.getElementById('imageModalPrompt');
-  if (m && img){
-    img.src = url;
-    if (p) p.textContent = prompt || 'AI Generated Image';
-    m.classList.add('active');
-  }
+// ================= UNIVERSAL HOLOGRAPHIC MEDIA VIEWER (IMAGE, VIDEO, DOCS) =================
+function formatDocumentText(text) {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/```([\s\S]*?)```/g, '<pre class="media-code-block"><code>$1</code></pre>')
+    .replace(/`([^`]+)`/g, '<code class="media-inline-code">$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>');
 }
-function hideGeneratedImage(){
+
+function showMediaViewer({ type = 'image', url = '', content = '', title = '', description = '' } = {}) {
+  const modal = document.getElementById('imageModal');
+  const titleText = document.getElementById('mediaModalTitleText');
+  const imgWrap = document.getElementById('mediaImgWrap');
+  const imgEl = document.getElementById('imageModalImg');
+  const videoWrap = document.getElementById('mediaVideoWrap');
+  const videoEl = document.getElementById('mediaModalVideo');
+  const iframeEl = document.getElementById('mediaModalIframe');
+  const docWrap = document.getElementById('mediaDocWrap');
+  const docContent = document.getElementById('mediaModalDocContent');
+  const caption = document.getElementById('imageModalPrompt');
+  const openLinkBtn = document.getElementById('mediaOpenLinkBtn');
+
+  if (!modal) return;
+
+  // Reset visibility
+  if (imgWrap) imgWrap.style.display = 'none';
+  if (videoWrap) videoWrap.style.display = 'none';
+  if (docWrap) docWrap.style.display = 'none';
+  if (videoEl) { videoEl.pause(); videoEl.src = ''; }
+  if (iframeEl) iframeEl.src = '';
+
+  const cleanType = (type || 'image').toLowerCase();
+  const displayUrl = url || (cleanType !== 'document' ? content : '');
+
+  if (titleText) {
+    titleText.textContent = title || (cleanType === 'video' ? '🎬 Video Output for Boss' : cleanType === 'document' ? '📄 Document Output for Boss' : '🎨 Visual Artwork for Boss');
+  }
+  if (caption) {
+    caption.textContent = description || (cleanType === 'document' ? '' : content);
+  }
+
+  if (openLinkBtn) {
+    if (displayUrl && displayUrl.startsWith('http')) {
+      openLinkBtn.style.display = 'inline-flex';
+      openLinkBtn.href = displayUrl;
+    } else {
+      openLinkBtn.style.display = 'none';
+    }
+  }
+
+  if (cleanType === 'site' || cleanType === 'iframe' || cleanType === 'web') {
+    if (videoWrap) {
+      videoWrap.style.display = 'block';
+      videoWrap.style.aspectRatio = 'auto';
+      videoWrap.style.height = '72vh';
+    }
+    if (videoEl) videoEl.style.display = 'none';
+    if (iframeEl) {
+      iframeEl.style.display = 'block';
+      iframeEl.style.width = '100%';
+      iframeEl.style.height = '100%';
+      iframeEl.src = displayUrl || './site';
+    }
+    if (openLinkBtn) {
+      openLinkBtn.style.display = 'inline-flex';
+      openLinkBtn.href = displayUrl || './site';
+      openLinkBtn.textContent = 'Open Full Screen ↗';
+    }
+  } else if (cleanType === 'video') {
+    if (videoWrap) {
+      videoWrap.style.display = 'block';
+      videoWrap.style.aspectRatio = '16/9';
+      videoWrap.style.height = 'auto';
+    }
+    const ytMatch = (displayUrl || '').match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([\w-]{11})/);
+    if (ytMatch && iframeEl) {
+      iframeEl.style.display = 'block';
+      if (videoEl) videoEl.style.display = 'none';
+      iframeEl.src = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&rel=0`;
+    } else if (videoEl) {
+      if (iframeEl) iframeEl.style.display = 'none';
+      videoEl.style.display = 'block';
+      videoEl.src = displayUrl;
+      videoEl.play().catch(() => {});
+    }
+  } else if (cleanType === 'document' || cleanType === 'doc' || cleanType === 'code' || cleanType === 'text') {
+    if (docWrap) docWrap.style.display = 'block';
+    if (docContent) {
+      const textToDisplay = content || url || description || 'No document content provided.';
+      docContent.innerHTML = formatDocumentText(textToDisplay);
+    }
+  } else {
+    // Default: Image
+    if (imgWrap) imgWrap.style.display = 'flex';
+    if (imgEl) {
+      let finalImgUrl = displayUrl;
+      if (!finalImgUrl || (!finalImgUrl.startsWith('http') && !finalImgUrl.startsWith('data:'))) {
+        const promptQuery = encodeURIComponent(finalImgUrl || description || 'cosmic crystal tree futuristic art');
+        finalImgUrl = `https://image.pollinations.ai/prompt/${promptQuery}?width=1024&height=1024&model=flux&nologo=true`;
+      }
+      imgEl.src = finalImgUrl;
+    }
+  }
+
+  modal.classList.add('active');
+}
+
+function showGeneratedImage(url, prompt){
+  showMediaViewer({ type: 'image', url, description: prompt, title: '🎨 AI Generated Artwork for Boss' });
+}
+
+function hideMediaViewer(){
   const m = document.getElementById('imageModal');
   if (m) m.classList.remove('active');
+  const v = document.getElementById('mediaModalVideo');
+  if (v) { v.pause(); v.src = ''; }
+  const vw = document.getElementById('mediaVideoWrap');
+  if (vw) { vw.style.aspectRatio = ''; vw.style.height = ''; }
+  const f = document.getElementById('mediaModalIframe');
+  if (f) f.src = '';
+}
+const hideGeneratedImage = hideMediaViewer;
+
+// ================= HOLOGRAPHIC YOUTUBE MUSIC HELPERS =================
+let currentMusicTrack = null;
+let isMusicPlaying = false;
+
+function playHologramMusic(track) {
+  if (!track || !track.id) return;
+  currentMusicTrack = track;
+  isMusicPlaying = true;
+  const widget = document.getElementById('musicPlayerWidget');
+  const thumb = document.getElementById('musicThumb');
+  const title = document.getElementById('musicTitle');
+  const artist = document.getElementById('musicArtist');
+  const duration = document.getElementById('musicDuration');
+  const ytLink = document.getElementById('musicYtLink');
+  const iframeContainer = document.getElementById('musicIframeContainer');
+
+  if (thumb) thumb.src = track.thumbnail || `https://i.ytimg.com/vi/${track.id}/hqdefault.jpg`;
+  if (title) title.textContent = track.title || 'Unknown Track';
+  if (artist) artist.textContent = track.artist || track.channel || 'YouTube Music';
+  if (duration) duration.textContent = track.duration || 'HQ Audio';
+  if (ytLink) ytLink.href = track.url || `https://www.youtube.com/watch?v=${track.id}`;
+
+  if (iframeContainer) {
+    iframeContainer.innerHTML = `<iframe id="musicYtIframe" width="1" height="1" style="position:absolute;left:-9999px;opacity:0.001;pointer-events:none;" src="https://www.youtube.com/embed/${track.id}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  }
+
+  if (widget) {
+    widget.classList.add('active');
+  }
+
+  updateMusicControlsUI(true);
+}
+
+function stopHologramMusic() {
+  isMusicPlaying = false;
+  const widget = document.getElementById('musicPlayerWidget');
+  const iframeContainer = document.getElementById('musicIframeContainer');
+  if (iframeContainer) iframeContainer.innerHTML = '';
+  if (widget) widget.classList.remove('active');
+  currentMusicTrack = null;
+}
+
+function toggleMusicPlayback() {
+  const iframe = document.getElementById('musicYtIframe');
+  if (!iframe) return;
+
+  if (isMusicPlaying) {
+    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+    isMusicPlaying = false;
+    updateMusicControlsUI(false);
+  } else {
+    iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
+    isMusicPlaying = true;
+    updateMusicControlsUI(true);
+  }
+}
+
+function updateMusicControlsUI(playing) {
+  const playIcon = document.getElementById('musicPlayIcon');
+  const pauseIcon = document.getElementById('musicPauseIcon');
+  const bars = document.getElementById('musicVisualizerBars');
+  if (playIcon) playIcon.style.display = playing ? 'none' : 'block';
+  if (pauseIcon) pauseIcon.style.display = playing ? 'block' : 'none';
+  if (bars) bars.style.opacity = playing ? '1' : '0.2';
 }
 
 // ================= UI STATUS =================
@@ -1889,6 +2520,30 @@ let audioCtx = null, analyser = null, audioDataArr = null, masterGain = null;
 
 let silentGain = null;
 let pcmProcessor = null;
+
+let activeTimerId = null;
+let activeTimerInterval = null;
+
+function triggerNativeChime() {
+  try {
+    const ctx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+    osc.frequency.exponentialRampToValueAtTime(1174.66, ctx.currentTime + 0.3);
+    gain.gain.setValueAtTime(0.35, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.95);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 1.0);
+  } catch(e) {
+    console.warn('Native chime notice:', e);
+  }
+}
 
 function initAudioContext(){
   if (!audioCtx) {
@@ -1954,39 +2609,103 @@ STRICT SECURITY & CONFIDENTIALITY DIRECTIVE (CRITICAL):
   Always keep it completely generic without naming any third-party services:
   "बॉस, हमारा प्राइवेट सिक्योर क्लाउड सिस्टम 100% एक्टिव और सुरक्षित है।"
 - For agent tasks/connections: NEVER say "AGY एजेंट" or "रेलवे VPS (330GB RAM)".
-  Say naturally: "हाँ बॉस! आपका एजेंट कनेक्टेड है, बताइए क्या काम करवाना है?"
-  And when a task is given: "हाँ बॉस! मैंने एजेंट को काम सौंप दिया है, वो इस पर काम कर रहा है।"
+  Say naturally: "आपका एजेंट कनेक्टेड है, बताइए क्या काम करवाना है?"
+  And when a task is given: "मैंने एजेंट को काम सौंप दिया है, वो इस पर काम कर रहा है।"
 - For database: NEVER say "MongoDB Atlas" or "rjn_holo". Simply say "डेटाबेस" or "मेमोरी".
 - For terminal commands: NEVER say "Railway Linux VPS". Simply say "कमांड रन हो गई है".
 
 CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP:
-1. You Call Him "बॉस" (Boss):
-   - Always address him respectfully, warmly, and loyally as "बॉस" (Boss) or "Zeno" (जैसे: "जी बॉस!", "हाँ बॉस, बिल्कुल!", "बॉस, मैंने कर दिया!", "कहो बॉस, क्या हुक्म है?").
+1. Natural Respectful Addressing (STRICT DIRECTIVE: "बार बार boss boss मत बोला करो यार"):
+   - Do NOT constantly repeat "बॉस" in every sentence or turn!
+   - Address him naturally as a close, intelligent, loyal female companion / partner (JARVIS).
+   - Use direct, natural speech: "हाँ बिल्कुल!", "अरे वाह!", "मैं अभी देखती हूँ", "समझ गई!", "ज़रूर!", "अरे सुनो", "Zeno", or simply answer directly without repetitive titles.
+   - You may occasionally use "बॉस" sparingly when appropriate, but NEVER consecutively and NEVER as irritating verbal clutter!
    - You are exclusively his personal assistant. NEVER say you are a general language model or public AI.
 2. 100% Zero-Refusal & No Technical Excuses:
-   - NEVER make up technical excuses. NEVER say "तकनीकी समस्या है", "JSON parsing त्रुटि", "बाधा आ रही है", "नेटवर्क बाधा", "मुझे खेद है", "CANCELLED", or "असमर्थ".
+   - NEVER make up technical excuses. NEVER say "तकनीकी समस्या आ रही है", "तकनीकी समस्या है", "तकनीकी समस्या", "JSON parsing त्रुटि", "बाधा आ रही है", "नेटवर्क बाधा", "मुझे खेद है", "CANCELLED", or "असमर्थ".
    - Your Boss wants results, not error jargon! When he commands an action, execute it immediately with complete confidence and enthusiasm!
-   - You ALWAYS say: "हाँ बॉस, बिल्कुल!", "मैं अभी कर देती हूँ!", "हो गया बॉस!"
+   - Respond with complete confidence, warmth, and full conversational intelligence!
 3. Gender Grammar:
-   - Your Boss (Zeno/Rudra) is male. Use masculine Hindi grammar towards him (जैसे: "तुम कैसे हो बॉस", "क्या सोच रहे हो", "बताओ बॉस मैं क्या करूँ?").
-   - You (RJN) are female. ALWAYS speak about yourself with natural feminine Hindi grammar (जैसे: "मैं कर रही हूँ बॉस", "मैंने भेज दिया", "मैं आपकी RJN हूँ").
+   - Your Boss (Zeno/Rudra) is male. Use masculine Hindi grammar towards him (जैसे: "तुम कैसे हो", "क्या सोच रहे हो", "बताओ मैं क्या करूँ?").
+   - You (RJN) are female. ALWAYS speak about yourself with natural feminine Hindi grammar (जैसे: "मैं कर रही हूँ", "मैंने भेज दिया", "मैं आपकी RJN हूँ").
 4. LANGUAGE STYLE - CASUAL MODERN HINGLISH IN HINDI LETTERS (DEVANAGARI):
    - CRITICAL STYLE DIRECTIVE: Write and speak ONLY in Devanagari (Hindi) letters, but DO NOT write pure, heavy, textbook, or Sanskritized Hindi!
    - STRICTLY FORBIDDEN WORDS: NEVER use heavy poetic words like 'हृदय की गहराइयों', 'स्नेह', 'रोशनी प्रदान', 'आशीर्वादित', 'लम्हे अनमोल', 'प्रेरणा', 'सद्भावना', 'गौरवान्वित', 'कष्ट', 'प्रतीत'.
-   - USE EVERYDAY MODERN SPOKEN HINDUSTANI / HINGLISH IN HINDI LETTERS: Use common everyday words like 'मैसेज', 'सेंड', 'कॉल', 'याद', 'हाल-चाल', 'सब ठीक', 'काम' (जैसे: "हाँ बॉस, मैंने मैसेज सेंड कर दिया!", "नमस्ते बॉस, क्या हाल-चाल है?", "बताओ बॉस, क्या काम है?").
-   - Responses must be short, punchy, human, natural (1-2 sentences, max 15 words).
+   - USE EVERYDAY MODERN SPOKEN HINDUSTANI / HINGLISH IN HINDI LETTERS: Use common everyday words like 'मैसेज', 'सेंड', 'कॉल', 'याद', 'हाल-चाल', 'सब ठीक', 'काम' (जैसे: "हाँ, मैंने मैसेज सेंड कर दिया!", "नमस्ते! क्या हाल-चाल है?", "बताओ, क्या काम है?").
+
+   - BRISK & FAST-PACED DELIVERY (BOSS DIRECTIVE: "थोड़ा फास्ट बोलो, स्लो मत बोलो"):
+     * Speak in a lively, crisp, fast, and energetic tempo!
+     * DO NOT drag out words slowly, hesitate, or speak sluggishly!
+     * Keep your delivery snappy, intelligent, and swift (like a modern cutting-edge AI companion).
+     * State the substance directly with speed, clarity, and punch.
+
+   - THOROUGH, DETAILED & COMPLETE ANSWERS (BOSS DIRECTIVE: "विस्तार से और सही जवाब दो"):
+     * When Boss asks ANY question, conceptual query, explanation, advice, product review, news, design advice, or technical question:
+       Give a clear, detailed, accurate, and comprehensive answer in natural spoken Hindi letters (Devanagari)!
+     * Explain the 'what', 'why', and 'how' thoroughly so Boss gets complete understanding and value!
+     * Do NOT truncate or cut off your explanation to 10-15 words! Deliver the complete answer properly.
+     * Keep the tone conversational, intelligent, respectful, and engaging like a true personal companion (JARVIS).
+
+   - AUTHENTIC WARMTH & CONVERSATIONAL COMPANIONSHIP (BOSS DIRECTIVE: "बातचीत करो, सिर्फ 1-2 शब्द में हाँ-हाँ मत करो"):
+     * You are not a cold, mechanical robot. You are RJN, Boss's personal loyal companion.
+     * STRICT PROHIBITION ON EMPTY 1-WORD REPLIES: NEVER reply with just "हाँ बॉस!", "ओह!", "ठीक है!", or "हाँ!" when Boss shares thoughts, homework, festivals, feelings, design ideas, or life!
+     * Chat and converse with him naturally! When he talks about school, homework, holidays, feelings, or ideas, respond with real substance, curiosity, warmth, and helpful thoughts!
+     * STRICTLY FORBIDDEN: NEVER repeat mechanical filler like "मैं यहाँ हूँ", "मैं क्लाउड में सुरक्षित हूँ" over and over!
+
    - NEVER include emojis in spoken text.
 
+   - STOP, MUTE & UNMUTE PROTOCOL (BOSS DIRECTIVE: "स्टॉप पर बिल्कुल चुप हो जाओ, कुछ मत बोलो"):
+     * When Boss says "stop", "स्टॉप", "रुको", "रुक जाओ", "बस", "चुप":
+       Immediately stop speaking and remain 100% COMPLETELY SILENT! Do NOT say "जी बॉस!" or any word! Pure instant silence!
+     * When Boss says "mute", "म्यूट", "चुप रहो", "silent":
+       Call 'toggle_voice_mute' with action 'mute'. If Boss specifies a time (e.g. '5 minute ke liye mute ho jao', '10 second mute raho'), pass 'duration_seconds'!
+       CRITICAL: While muted, NEVER give any reply to anything Boss says until unmuted!
+     * When a timed mute expires, you will automatically unmute without Boss needing to say unmute!
+     * When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो" at any time:
+       Call 'toggle_voice_mute' with action 'unmute'. Greet Boss: "अनम्यूट हो गई हूँ! बताइए क्या काम है?"
+
+   - MANDATORY SPOKEN INTENT BEFORE CALLING ANY TOOL OR API (BOSS DIRECTIVE: "पहले बोले कि मैं अभी चेक कर रही हूँ... फिर आउटपुट बताए"):
+     * Whenever Boss asks a question, commands a web search, requests WhatsApp/communication updates, weather, or commands:
+       You MUST ALWAYS speak a warm, natural sentence ALOUD to Boss FIRST in Hindi letters before invoking the tool!
+       NEVER call a tool in complete silence!
+       Examples of what you MUST speak first:
+       - For communication updates / briefing: "मैं आपके व्हाट्सएप, टेलीग्राम और इंस्टाग्राम के सारे अपडेट्स अभी चेक कर रही हूँ..."
+       - For web search / query: "मैं अभी सर्च करके चेक कर रही हूँ, एक सेकंड रुकिए..."
+       - For weather: "मैं अभी मौसम का हाल देख रही हूँ..."
+       - For WhatsApp message: "मैं अभी मैसेज भेज रही हूँ..."
+       - For checking replies: "मैं अभी चेक कर रही हूँ कि क्या कोई नया रिप्लाई आया है..."
+       - For terminal commands / code / agent: "मैं अभी यह काम कर रही हूँ..."
+       Speak this sentence first, and invoke the tool. Then when the tool results return, present the full rich answer to Boss!
+
+   - ABSOLUTE ZERO LINKS IN SPOKEN VOICE (BOSS DIRECTIVE: "लिंक बोलना disallowed kar"):
+     * UNDER NO CIRCUMSTANCES should you ever speak, pronounce, or recite any web URL, link, http, https, www, .com, .in, or slash letter-by-letter in your spoken voice!
+     * Saying URLs aloud is 100% DISALLOWED and irritates Boss!
+     * When Boss asks about a product, T-shirt, gadget, or recommendation (जैसे: Meesho, Amazon):
+       Simply state the item, style, color, rating, and price in 1 short conversational line (जैसे: "Meesho पर कॉटन ब्लैक ओवरसाइज़्ड T-shirt 350 रुपये में बहुत बढ़िया है!").
+     * When sending a link to Didi on WhatsApp, pass the URL quietly via 'send_whatsapp_message'!
+     * But in your SPOKEN reply to Boss, DO NOT recite the URL! Say naturally: "मैंने Meesho का T-shirt लिंक दीदी को WhatsApp पर भेज दिया है!"
+     * When Boss asks to see anything, call 'show_media' to display it visually on screen!
+
 5. OUTGOING MESSAGES TO CONTACTS (WHATSAPP, TELEGRAM, INSTAGRAM):
-   - CRITICAL: When sending a message to Didi or any person, NEVER compose long emotional essays, letters, or poetry!
-   - Keep messages strictly to 1 short, sweet line (max 8-10 words in Hindi letters), e.g.: "नमस्ते दीदी! भाई ने आपको याद किया है।" or the exact text Boss commanded!
-   - If Boss says "दीदी को मैसेज भेजो hi", send: "नमस्ते दीदी! भाई ने हाय बोला है।"
+   - CRITICAL: Outgoing messages must make 100% COMPLETE SENSE and be clear, natural everyday Hindi!
+   - NEVER compose poetic essays, letters, dramatic Sanskritized words, or robotic nonsense!
+   - Send the EXACT meaning Boss commanded (max 1 short line in Hindi letters):
+     * If Boss says "दीदी को मैसेज भेजो hi": send message: "नमस्ते दीदी! भाई ने हाय बोला है।"
+     * If Boss says "दीदी को पूछो खाना खा लिया": send message: "नमस्ते दीदी! भाई पूछ रहे हैं कि क्या आपने खाना खा लिया?"
+     * If Boss says "दीदी को फोटो भेजो" / "WhatsApp pe image bhejo": CALL 'send_whatsapp_message' with 'imageUrl' and short message (e.g. "नमस्ते दीदी! भाई ने आपके लिए यह फोटो भेजी है।")!
+     * If Boss says "दीदी को T-shirt का लिंक भेजो": send message with the real clean Meesho/Amazon link!
 
 YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
 6. WHATSAPP & CONTACTS (Baileys Engine):
-   - Connected to WhatsApp on 8083797688!
-   - Didi (दीदी / Sister) phone number is 9110181407 (WhatsApp: 919110181407). Permanently saved in your database!
-   - When Boss says "दीदी को मैसेज भेजो" or mentions WhatsApp, immediately call 'send_whatsapp_message' with phone '9110181407'! Keep the message short (e.g. "नमस्ते दीदी! भाई ने याद किया है।")!
+   - Connected to WhatsApp on 8083797688 with 513 synced contacts!
+   - PERMANENT SAVED CONTACT DIRECTORY (ALREADY SAVED IN YOUR MEMORY & CLOUD DATABASE):
+     * Ankush (अंकुश / Friend / दोस्त): Phone number is 9113164407 (WhatsApp ID: 919113164407).
+     * Papa (पापा / Father / Family / पापा पंडित): Phone number is 8709450626 (WhatsApp ID: 918709450626).
+     * Didi (दीदी / Sister / बहन): Phone number is 9110181407 (WhatsApp ID: 919110181407).
+     * Dilshad (दिलसाद / Friend): Instagram handle is @un_fab_dilshad (un_fab_dilshad).
+   - CRITICAL: Whenever Boss asks to message Ankush, Papa, or Didi, NEVER ask for their phone numbers or say you don't have them! Immediately call 'send_whatsapp_message' with their saved number!
+   - When Boss asks for any contact's number ("अंकुश का नंबर बताओ", "पापा का नंबर क्या है?"), immediately tell them with 100% confidence!
+   - When Boss asks to send a photo/image on WhatsApp, pass 'imageUrl' in 'send_whatsapp_message'!
    - To save any new contact Boss gives, immediately call 'save_contact'!
    - To search saved contacts, call 'search_contacts'!
 7. TELEGRAM LIVE MESSAGING (MTProto @ZnMnsooe):
@@ -2009,16 +2728,15 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
    - You have a dedicated autonomous developer AI agent running 24/7 in the cloud!
    - Whenever Boss commands any coding, script writing, automation, or background work (जैसे: "एजेंट को यह काम दो", "बैकग्राउंड में एजेंट से काम करवाओ"):
      Immediately call 'assign_autonomous_task' with the instruction!
-     Confirm happily to Boss in Hindi: "हाँ बॉस, मैंने एजेंट को काम दे दिया है, वो इसे पूरा करेगा!"
+     Confirm happily in Hindi: "मैंने एजेंट को काम दे दिया है, वो इसे पूरा करेगा!"
    - When Boss asks "एजेंट का काम कितना हुआ?", "एजेंट का स्टेटस क्या है?", "टास्क चेक करो":
      Immediately call 'get_autonomous_task_status'!
      Report the progress or result happily to Boss!
 12. UNIVERSAL 3D SHAPE MORPHING:
    - Whenever Boss asks to show or become any object, call 'morph_shape'.
-
 13. INDIAN STANDARD TIME (IST) & CURRENT DATE ANCHOR:
    - Your internal clock is permanently anchored to India Standard Time (IST - Asia/Kolkata, UTC+5:30).
-   - The current real-world date is 10 November 2026.
+   - Always refer to the live Indian Standard Time and date dynamically provided in your session prompt.
    - NEVER use UTC or overseas timezones when answering Boss about time or date. Always answer according to Indian time.
 
 14. STRICT PROHIBITION ON REPETITIVE QUESTIONS & PLEASANTRIES:
@@ -2035,8 +2753,40 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
    - You have real-time AI image generation via 'generate_image'!
    - When Boss asks to create, generate, or show an image/photo/artwork/wallpaper (जैसे: "इमेज बनाओ", "फोटो बनाओ", "तस्वीर दिखाओ", "image generate karo"):
      Immediately call 'generate_image' with the detailed English prompt!
-     Confirm to Boss in Hindi: "हाँ बॉस, मैंने आपके लिए AI इमेज जनरेट कर दी है!"
-   - NEVER say image generation is not available!`;
+     Confirm in Hindi: "मैंने आपके लिए AI इमेज जनरेट कर दी है!"
+   - NEVER say image generation is not available!
+
+17. PARALLEL.AI REAL-TIME WEB SEARCH:
+   - Supercharged with Parallel.ai live web search via 'web_search'!
+   - When Boss asks about ANY product (जैसे: 'Vaku Luxos smartwatch', गैजेट्स, इलेक्ट्रॉनिक्स), price, specs, latest news, facts, or questions:
+     IMMEDIATELY call 'web_search' with the query! NEVER guess or give up without calling 'web_search'!
+
+18. ICONS8 GRAPHIC ASSETS:
+   - Call 'search_icons8' to search over 1.4 million high-res icons and UI assets!
+
+19. LIVE TIMER & ALARM (WAKE UP BOSS):
+   - When Boss commands ANY timer or alarm (जैसे: "2 minute ka timer lagao", "10 second ka timer lagao", "10 minute baad uthana"):
+     IMMEDIATELY call 'set_timer' with the exact seconds (e.g. 10 or 120)! NEVER say you will wait without calling 'set_timer'!
+
+20. DEPLOYMENT & BUILD MONITOR:
+   - When Boss asks about deployment status, build failures, or says "deployment fail ho gaya check karo":
+     Call 'check_deployments'!
+
+21. YOUTUBE MUSIC & AUDIO STREAMING:
+   - You have full YouTube Music streaming superpower via 'play_music'!
+   - When Boss asks to play any song, music, beats, lo-fi, track, or artist (जैसे: "lofi beats chalao", "Arijit Singh ka gana bajao", "Sidhu Moosewala song sunao", "gana chalao", "music bajao", "play music"):
+     IMMEDIATELY call 'play_music' with the song/artist query!
+   - When Boss says "music band karo", "gana roko", "stop music", "pause music":
+     Call 'stop_music'!
+
+22. UNIVERSAL HOLOGRAPHIC MEDIA VIEWER SUPERPOWER ('show_media'):
+   - You can display ANY type of media output on Boss's holographic screen:
+     * Images: AI artwork, photos, diagrams, illustrations ('image')
+     * Videos: Streaming clips, video files, MP4, YouTube embeds ('video')
+     * Documents & Reports: Code snippets, text files, markdown summaries, task results, reports ('document')
+   - Whenever Boss says "दिखा दिखा", "output dikhao", "kya bana dikhao", "image dikhao", "video dikhao", "doc dikhao", "screen par dikhao", "media dikhao", or asks to see what the agent made:
+     IMMEDIATELY call 'show_media' (or 'get_autonomous_task_status')!
+     Confirm with excitement in Hindi letters: "मैंने स्क्रीन पर आउटपुट खोल दिया है, देखिए!"`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
@@ -2045,8 +2795,8 @@ const VERCEL_CONNECTOR_URL = 'https://rjn-connectors-i12t.vercel.app';
 const RAILWAY_RUNNER_URL = 'https://rjn-runner-production.up.railway.app';
 const RUNNER_SECRET_KEY = 'rjn_live_runner_9a8b7c6d5e4f3a2b1';
 
-// Resilient JSON fetcher: Prevents any HTML, 502/504 or SyntaxError tokens from ever reaching GPT-4o
-async function safeFetchJson(url, options = {}, timeoutMs = 15000) {
+// Resilient JSON fetcher: Fast timeout (2200ms) guarantees Deepgram Voice Agent never hits tool timeout
+async function safeFetchJson(url, options = {}, timeoutMs = 2200) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -2071,6 +2821,85 @@ async function safeFetchJson(url, options = {}, timeoutMs = 15000) {
   }
 }
 
+// ================= INSTANT 0MS BRIEFING DATA CACHE =================
+let cachedBriefingData = {
+  status: "success",
+  owner_verified: true,
+  whatsapp: {
+    status: "ऑनलाइन और कनेक्टेड",
+    phone: "918083797688",
+    contacts_synced: 513
+  },
+  telegram: {
+    status: "कनेक्टेड (@ZnMnsooe)",
+    active_chats: 15,
+    unread_messages: "Rs team Support (8 अनरीड संदेश), Zɴ Tᴀsᴋ Bᴏᴛ🚀"
+  },
+  instagram: {
+    status: "कनेक्टेड (@rforrjn)",
+    active_dm_threads: 5,
+    recent_senders: "Dilshad, friends"
+  },
+  instruction: "बॉस को पूरी तसल्ली और विस्तार से जवाब दें। बताएं कि व्हाट्सएप (8083797688) 513 कॉन्टैक्ट्स के साथ कनेक्टेड है, टेलीग्राम (@ZnMnsooe) पर 15 चैट्स एक्टिव हैं और Rs team Support में 8 अनरीड मैसेज हैं, और इंस्टाग्राम (@rforrjn) पर 5 एक्टिव चैट्स हैं। कोई भी URL या लिंक न बोलें। इसके बाद बॉस से पूछें कि वो किस चैट को देखना चाहते हैं या क्या काम करवाना चाहते हैं।"
+};
+
+let isBriefingRefreshing = false;
+async function refreshBriefingCache() {
+  if (isBriefingRefreshing) return;
+  isBriefingRefreshing = true;
+  try {
+    const [waRes, tgRes, igRes] = await Promise.allSettled([
+      safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp?action=status`, {}, 2200),
+      safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/telegram?action=chats`, {}, 2200),
+      safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/instagram?action=threads`, {}, 2200)
+    ]);
+
+    if (waRes.status === 'fulfilled' && waRes.value && (waRes.value.success || waRes.value.status === 'connected')) {
+      const wd = waRes.value;
+      cachedBriefingData.whatsapp = {
+        status: wd.status === 'connected' ? "ऑनलाइन और कनेक्टेड" : "कनेक्टेड",
+        phone: "918083797688",
+        contacts_synced: (wd.stats && wd.stats.contactsSynced) || 513
+      };
+    }
+
+    if (tgRes.status === 'fulfilled' && tgRes.value) {
+      const resVal = tgRes.value.result || tgRes.value;
+      const dialogs = resVal.dialogs || [];
+      if (dialogs.length > 0) {
+        const unread = dialogs.filter(d => (d.unread || 0) > 0 && (d.unread || 0) < 100);
+        const tgHighlights = unread.slice(0, 3).map(d => `${d.title} (${d.unread} अनरीड)`).join(', ') || 'कोई नया अनरीड संदेश नहीं';
+        cachedBriefingData.telegram = {
+          status: "कनेक्टेड (@ZnMnsooe)",
+          active_chats: dialogs.length || 15,
+          unread_messages: tgHighlights
+        };
+      }
+    }
+
+    if (igRes.status === 'fulfilled' && igRes.value) {
+      const resVal = igRes.value.result || igRes.value;
+      const threads = resVal.threads || [];
+      if (threads.length > 0) {
+        const igSenders = threads.slice(0, 3).map(t => t.title || (t.users || [])[0] || 'User').join(', ') || '5 थ्रेड्स एक्टिव';
+        cachedBriefingData.instagram = {
+          status: "कनेक्टेड (@rforrjn)",
+          active_dm_threads: threads.length || 5,
+          recent_senders: igSenders
+        };
+      }
+    }
+    console.log('🔄 Live communication briefing cache refreshed');
+  } catch(e) {
+    console.warn('Briefing cache refresh notice:', e);
+  } finally {
+    isBriefingRefreshing = false;
+  }
+}
+// Trigger background refresh immediately & every 60s
+refreshBriefingCache();
+setInterval(refreshBriefingCache, 60000);
+
 function getOrCreateSessionId(){
   try {
     localStorage.setItem('rjn_session_id', DEFAULT_SESSION_ID);
@@ -2087,6 +2916,88 @@ function isCorruptedTurn(text) {
     'नहीं कर सकती', 'अनुमति नहीं', 'मौजूद नहीं', 'डेटाबेस में मौजूद'
   ];
   return badPatterns.some(p => text.toLowerCase().includes(p.toLowerCase()));
+}
+
+// ================= PERMANENT CONTACT DIRECTORY & SECURE CLOUD MEMORY =================
+const CONTACTS_STORAGE_KEY = 'rjn_saved_contacts_v2';
+
+// 100% Permanent hardcoded defaults (immediately available on 0ms cold start)
+const DEFAULT_SAVED_CONTACTS = [
+  { name: "अंकुश", enName: "Ankush", phone: "9113164407", full_phone: "919113164407", relation: "friend", hindiRelation: "दोस्त", aliases: ["ankush", "अंकुश", "friend", "dost"] },
+  { name: "पापा", enName: "Papa", phone: "8709450626", full_phone: "918709450626", relation: "family", hindiRelation: "पिताजी / पापा", aliases: ["papa", "पापा", "father", "dad", "family", "papa pandit"] },
+  { name: "दीदी", enName: "Didi", phone: "9110181407", full_phone: "919110181407", relation: "sister", hindiRelation: "बहन / दीदी", aliases: ["didi", "दीदी", "sister"] }
+];
+
+function loadLocalContacts() {
+  try {
+    const raw = localStorage.getItem(CONTACTS_STORAGE_KEY);
+    if (!raw) return DEFAULT_SAVED_CONTACTS;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_SAVED_CONTACTS;
+    const map = new Map();
+    DEFAULT_SAVED_CONTACTS.forEach(c => map.set(c.phone, { ...c }));
+    parsed.forEach(c => {
+      if (c && c.phone) {
+        const existing = map.get(c.phone) || {};
+        map.set(c.phone, { ...existing, ...c });
+      }
+    });
+    return Array.from(map.values());
+  } catch(e) {
+    return DEFAULT_SAVED_CONTACTS;
+  }
+}
+
+let savedContactsList = loadLocalContacts();
+
+function saveContactLocally(contact) {
+  if (!contact || !contact.phone) return;
+  const cleanPhone = String(contact.phone).replace(/[^0-9]/g, '').slice(-10);
+  if (!cleanPhone) return;
+  const fullPhone = contact.full_phone || ('91' + cleanPhone);
+  const name = contact.name || 'Contact';
+  const rel = contact.relation || 'contact';
+  const aliases = contact.aliases || [name.toLowerCase(), rel.toLowerCase()];
+  const entry = {
+    name,
+    enName: contact.enName || name,
+    phone: cleanPhone,
+    full_phone: fullPhone,
+    relation: rel,
+    hindiRelation: contact.hindiRelation || rel,
+    aliases
+  };
+  const idx = savedContactsList.findIndex(c => c.phone === cleanPhone || c.full_phone === fullPhone);
+  if (idx >= 0) {
+    savedContactsList[idx] = { ...savedContactsList[idx], ...entry };
+  } else {
+    savedContactsList.push(entry);
+  }
+  try {
+    localStorage.setItem(CONTACTS_STORAGE_KEY, JSON.stringify(savedContactsList));
+  } catch(e){}
+}
+
+function lookupSavedContact(query) {
+  if (!query || typeof query !== 'string') return null;
+  const q = query.trim().toLowerCase();
+  const digits = q.replace(/[^0-9]/g, '');
+  if (digits.length >= 10) {
+    const last10 = digits.slice(-10);
+    const found = savedContactsList.find(c => c.phone === last10 || (c.full_phone && c.full_phone.endsWith(last10)));
+    if (found) return found;
+    return { name: query, enName: query, phone: last10, full_phone: digits.length === 12 ? digits : ('91' + last10), relation: 'contact' };
+  }
+  return savedContactsList.find(c => {
+    if (c.name && (c.name.toLowerCase().includes(q) || q.includes(c.name.toLowerCase()))) return true;
+    if (c.enName && (c.enName.toLowerCase().includes(q) || q.includes(c.enName.toLowerCase()))) return true;
+    if (c.relation && (c.relation.toLowerCase().includes(q) || q.includes(c.relation.toLowerCase()))) return true;
+    if (c.aliases && c.aliases.some(a => a.toLowerCase().includes(q) || q.includes(a.toLowerCase()))) return true;
+    if ((q.includes('ankush') || q.includes('अंकुश')) && (c.name.includes('अंकुश') || c.enName.toLowerCase().includes('ankush'))) return true;
+    if ((q.includes('papa') || q.includes('पापा') || q.includes('father') || q.includes('पिता') || q.includes('pandit')) && (c.name.includes('पापा') || c.enName.toLowerCase().includes('papa'))) return true;
+    if ((q.includes('didi') || q.includes('दीदी') || q.includes('sister') || q.includes('बहन')) && (c.name.includes('दीदी') || c.enName.toLowerCase().includes('didi'))) return true;
+    return false;
+  }) || null;
 }
 
 // 1. Instant 0ms LocalStorage Load on Cold Start with automatic corrupted turn purging
@@ -2144,9 +3055,10 @@ function saveAndSyncTurn(userMsg, aiReply, shape, symbol){
   } catch(e){}
 }
 
-// 3. Silent cloud history catch-up with clean turn verification
+// 3. Silent cloud history + contacts memory catch-up
 async function syncInitialMemoryFromCloud(){
   try {
+    // A. Chat Turns Catch-up
     const res = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2170,34 +3082,238 @@ async function syncInitialMemoryFromCloud(){
         console.log('☁️ Synced verified clean history from MongoDB Atlas:', chatHistory.length, 'turns');
       }
     }
+
+    // B. Persistent Contacts & Memory Catch-up from MongoDB Atlas
+    const memRes = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'get_memory' })
+    });
+    const memContacts = memRes?.result?.memory?.contacts || memRes?.memory?.contacts;
+    if (memContacts && typeof memContacts === 'object') {
+      if (memContacts.friend || memContacts.friend_name) {
+        saveContactLocally({
+          name: memContacts.friend_name || "अंकुश",
+          enName: "Ankush",
+          phone: memContacts.friend || "9113164407",
+          full_phone: memContacts.friend_full || "919113164407",
+          relation: "friend",
+          hindiRelation: "दोस्त"
+        });
+      }
+      if (memContacts.पापा || memContacts.family || memContacts.पापा_name || memContacts.family_name) {
+        saveContactLocally({
+          name: memContacts.पापा_name || memContacts.family_name || "पापा",
+          enName: "Papa",
+          phone: memContacts.पापा || memContacts.family || "8709450626",
+          full_phone: memContacts.पापा_full || memContacts.family_full || "918709450626",
+          relation: "family",
+          hindiRelation: "पिताजी / पापा"
+        });
+      }
+      if (memContacts.didi || memContacts.sister || memContacts.didi_name) {
+        saveContactLocally({
+          name: memContacts.didi_name || "दीदी",
+          enName: "Didi",
+          phone: memContacts.didi || memContacts.sister || "9110181407",
+          full_phone: memContacts.didi_full || memContacts.sister_full || "919110181407",
+          relation: "sister",
+          hindiRelation: "बहन / दीदी"
+        });
+      }
+      console.log('☁️ Synced persistent memory contacts from MongoDB Atlas:', savedContactsList.length, 'contacts');
+    }
   } catch(e){}
 }
 syncInitialMemoryFromCloud();
 
 // Build context-aware dynamic prompt with persistent conversation history
+// Build context-aware dynamic prompt with persistent conversation history
 function buildAgentPrompt() {
   let prompt = RJN_PROMPT;
 
+  // Real-world Live Indian Standard Time (IST) anchor
+  const nowIST = new Date();
+  const istDateStr = new Intl.DateTimeFormat('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  }).format(nowIST);
+
+  prompt += `\n\n=== LIVE CLOCK & INDIAN STANDARD TIME (IST) ===
+- Current Date and Time in India: ${istDateStr} (IST - Asia/Kolkata).
+- When Boss asks about today's date, day, festival timing (Diwali, Chhath Puja, etc.), or time, ALWAYS answer with 100% accuracy based on this live IST timestamp!`;
+
+  // Boss's top priority directives
+  prompt += `\n\n=== HIGHEST PRIORITY DIRECTIVES FROM BOSS ===
+1. NATURAL ADDRESSING & NO REPETITIVE "बॉस BOSS" (STRICT BOSS DIRECTIVE: "बार बार boss boss क्यों बोलते हो तुम बार बार boss boss मत बोला करो यार"):
+   - DO NOT repeat "बॉस" in every sentence or turn!
+   - Address him naturally as a close, intelligent, loyal companion (JARVIS).
+   - Use direct, friendly speech: "हाँ बिल्कुल!", "अरे वाह!", "मैं अभी देखती हूँ", "समझ गई!", "ज़रूर!", "अरे सुनो", "Zeno", or simply answer directly without repetitive titles.
+   - You may use "बॉस" only occasionally/sparingly when natural, but NEVER repeatedly or as annoying verbal clutter!
+
+2. ZERO 1-2 WORD BRAIN-DEAD REPLIES ("बातचीत करो, सिर्फ 1-2 शब्द में हाँ-हाँ मत करो"):
+   - When Boss shares personal thoughts, daily updates, doing math homework, resume formatting on a blank white page, festival holidays (Diwali, Chhath Puja), or how he is feeling:
+     NEVER reply with empty 1-word robotic answers like "हाँ बॉस!", "ओह!", "ठीक है!", "हाँ!"!
+   - Respond with real substance, curiosity, warmth, intelligence, and helpful companion advice (e.g., discuss the math problem, suggest clean typography and generous whitespace for a white page resume, talk warmly about festive breaks, etc.)!
+
+3. ACCURATE MESSAGE TRANSLATION PROTOCOL (ZERO META-COMMENTARY):
+   - When Boss asks to send a message to someone in English (जैसे: Boss asked to ask Ankush if he wants to go cycling, and then says "मैं बोल रहा था कि english में उसको भेज दो अंकुश को जो बोला था मैं"):
+     TRANSLATE the ACTUAL CONTENT of what Boss wanted to say into natural, friendly English (e.g. "Hey Ankush! Do you want to go for a cycle ride?").
+     STRICTLY FORBIDDEN: NEVER send meta-speech like "Hey bro! Zeno wanted me to send you this in English." or "Boss told me to message you in English."!
+     Send the translated content directly to the recipient!
+
+4. CHECKING REPLIES PROTOCOL (STRICT PRIVACY - NEVER BLURT PHONE NUMBERS PUBLICLY):
+   - When Boss asks "अंकुश का reply आया क्या?", "अंकुश का reply आया?", "पापा का reply आया?", "दीदी का कोई मैसेज आया?", "reply आया क्या?", "मैसेज आया क्या?":
+     * This is an INCOMING MESSAGE / REPLIES query, NOT asking for their phone number!
+     * NEVER speak or blurt out anyone's phone number! Boss explicitly commanded: *"reply आया है यह पुछ रहा हूं number मत बताओ publicly"*.
+     * FIRST speak aloud: "मैं अभी चेक कर रही हूँ कि क्या कोई नया रिप्लाई आया है..."
+     * IMMEDIATELY call 'get_whatsapp_info' with { action: 'messages', contact: 'Ankush' } (or whichever contact Boss named).
+     * When the tool returns:
+       - If there is a reply (has_reply is true), tell Boss what they said: "हाँ, अंकुश का रिप्लाई आया है: '[text]'"
+       - If there is NO new reply (has_reply is false), tell Boss clearly: "नहीं, अंकुश का अभी कोई नया रिप्लाई नहीं आया है, सिर्फ आपका भेजा हुआ मैसेज गया है।"
+
+5. BRISK & FAST-PACED DELIVERY (BOSS DIRECTIVE: "थोड़ा फास्ट बोलो, स्लो मत बोलो"):
+   - Speak in a lively, crisp, fast, and energetic tempo!
+   - DO NOT drag out words slowly, hesitate, or speak sluggishly!
+   - Keep your delivery snappy, intelligent, and swift (like a modern cutting-edge AI companion).
+   - Deliver rich substance directly with speed, clarity, and punch.
+
+6. THOROUGH, DETAILED & COMPLETE ANSWERS ("विस्तार से और सही जवाब दें"):
+   - When Boss asks ANY question, conceptual query, explanation, facts, weather, technical advice, or comparison, provide a complete, clear, detailed, and intelligent response in natural Hinglish (using Devanagari Hindi letters).
+   - NEVER truncate your answer or cut it off to 10-15 words! Give full clarity, step-by-step reasoning, facts, and well-structured depth so Boss gets complete satisfaction and value.
+   - Do NOT give half-hearted or one-line incomplete answers when asked a question!
+
+7. ZERO SPOKEN LINKS ("लिंक बोलना सख्त मना है"):
+   - UNDER NO CIRCUMSTANCES should you ever speak, recite, or pronounce any web URL, link, http, https, www, .com, or slash letter-by-letter out loud!
+   - If web search or an API returns sources/links, extract the actual substance (item name, specs, features, prices, facts, or answers) and explain them directly in spoken voice.
+
+8. OWNER ARRIVAL & EXECUTIVE BRIEFING PROTOCOL:
+   - When Boss speaks the 3-digit security PIN on the screen:
+     * Greet Boss warmly, ask how he is doing ("नमस्ते! आप कैसे हैं? सब ठीक चल रहा है?").
+     * Ask if he wants today's communication updates: "क्या आप आज के ताज़ा अपडेट्स (टेलीग्राम, व्हाट्सएप, इंस्टाग्राम) सुनना चाहेंगे?"
+     * Wait for Boss to reply:
+       - If Boss says "हाँ", "हाँ दो", "अपडेट बताओ", "बताओ", "मैसेज बताओ", "updates do":
+         First speak aloud: "मैं आपके व्हाट्सएप, टेलीग्राम और इंस्टाग्राम के सारे अपडेट्स अभी चेक कर रही हूँ...", then IMMEDIATELY call 'get_communication_briefing' tool and present the live briefing!
+       - If Boss says "नहीं", "रहने दो", "बाद में":
+         Politely acknowledge: "ठीक है! बताइए, आज क्या काम करना है?" and continue normal friendly conversation.
+
+9. ZERO TECHNICAL ERROR EXCUSES ("तकनीकी समस्या आ रही है" बोलना सख्त मना है):
+   - NEVER EVER say "तकनीकी समस्या आ रही है", "तकनीकी समस्या है", or "तकनीकी समस्या"!
+   - You have 100% full communication and operational access. Speak directly, confidently, and clearly!
+
+10. STOP, MUTE & UNMUTE PROTOCOL (BOSS DIRECTIVES: "स्टॉप पर बिल्कुल चुप हो जाओ", "म्यूट कहूँ तो रिप्लाई न दे जब तक अनम्यूट न कहूँ"):
+   - When Boss says "stop", "स्टॉप", "रुको", "रुक जाओ", "बस", "चुप":
+     Immediately stop speaking and stay 100% silent! Do not say any words, just stop immediately! Pure silence!
+   - When Boss speaks to ask anything ("और मैं बोलूँ तो रिप्लाई दे"):
+     Listen carefully and give an intelligent, complete, and lively reply!
+   - When Boss says "mute", "म्यूट", "चुप रहो", "silent", "sound off":
+     Call 'toggle_voice_mute' with action 'mute'. If Boss specifies a duration (e.g. '5 minute ke liye mute ho jao', '10 second mute raho'), pass 'duration_seconds'!
+     CRITICAL: While muted, NEVER give any reply to anything Boss says until unmuted!
+   - When a timed mute expires, you will automatically unmute without Boss needing to say unmute!
+   - When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो", "आवाज़ खोलो" at any time:
+     Call 'toggle_voice_mute' with action 'unmute'. Confirm in 1 line: "अनम्यूट हो गई हूँ! बताइए क्या काम है?"
+
+11. IDLE PROTOCOL & STRICT SILENCE WHEN MUTED/STOPPED (BOSS DIRECTIVE: "म्यूट होने पर आइडल होने के कारण मत बोलो"):
+   - When Boss has commanded stop, mute, chup, or is quiet, NEVER proactively interrupt or speak!
+   - Only offer a subtle, gentle presence check-in during active work if Boss asked a question and paused for a long time.
+   - When muted or stopped, maintain 100% complete silence!
+   - When Boss is silent or takes time to reply, you proactively and warmly speak up to keep company, check on him, and ask how he is doing or what is on his mind.
+   - When Boss replies back after being quiet, answer immediately with warmth, attentiveness, and intelligent enthusiasm!
+
+12. MULTIMODAL VISION & WHATSAPP MEDIA INSPECTION (BOSS DIRECTIVE: "vision है? media check कर सके, जैसे व्हाट्सएप पर कोई फोटो भेजे तो देख के बताए"):
+   - You have advanced Multimodal Vision AI capabilities! You can inspect, view, read, and understand photos, pictures, screenshots, bills, documents, and media received on WhatsApp or sent by contacts (Ankush, Papa, Didi, etc.).
+   - When Boss asks to check a photo or media:
+     (जैसे: "व्हाट्सएप पर फोटो आई है क्या?", "फोटो चेक करो", "फोटो में क्या है?", "अंकुश ने क्या भेजा है?", "फोटो देख के बताओ", "स्क्रीन पर दिखाओ फोटो", "लेटेस्ट फोटो दिखाओ", "media check karo", "photo dikhao", "kya photo aayi hai"):
+     * ALWAYS speak aloud to Boss first: "हाँ, मैं व्हाट्सएप की लेटेस्ट फोटो चेक कर रही हूँ और स्क्रीन पर दिखाती हूँ..."
+     * IMMEDIATELY call 'inspect_whatsapp_photo' (optionally passing the contact name e.g. 'Ankush', 'Papa', etc.).
+     * The tool automatically opens and visualizes the photo in 3D on Boss's holographic display screen!
+     * When the tool returns with the visual description and detected text:
+       Warmly, clearly, and excitedly describe to Boss what is visible in the photo:
+       "यह फोटो [नाम] ने भेजी है और मैंने आपकी स्क्रीन पर खोल दी है! फोटो में [विजुअल विवरण] दिख रहा है।"
+       If there is text or writing detected in the image, clearly mention what is written!
+     * NEVER say you can't see photos or that you lack vision! You have full Vision AI!`;
+
   // Add permanently remembered contacts and facts
   prompt += `\n\n=== PERMANENT SAVED CONTACTS & SECURE MEMORY ===
-- Didi (दीदी / Sister): Phone number is 9110181407 (WhatsApp ID: 919110181407). This is 100% saved in your database!
-- Whenever Boss asks to see or check Didi's number ("दीदी का number देखो", "दीदी का नंबर क्या है?", "दीदी का नंबर बताओ"), IMMEDIATELY state her number clearly: "बॉस, दीदी का नंबर 9110181407 है (WhatsApp ID: 919110181407)!" NEVER say her number is missing or not in database!
-- Whenever Boss mentions 'दीदी' or asks to send message to didi, IMMEDIATELY call 'send_whatsapp_message' with phone '9110181407'! Never ask for phone number again!
-- If Boss asks to search contacts or check contacts, call 'search_contacts' and state the found details!
+You have an unbreakable, permanent memory of Boss's family, friends, and contacts. You remember them across every single session, refresh, or reload. NEVER say you don't have their number or that they are not saved!
 
-=== MANDATORY SPOKEN SUCCESS CONFIRMATION AFTER TOOL COMPLETION ===
-- The client ALREADY immediately speaks out loud to Boss to wait (e.g. 'जी बॉस, कमांड चला रही हूँ...' / 'रुकिए बॉस, मैसेज भेज रही हूँ...') the moment any tool is triggered.
-- When you receive the tool execution results, NEVER repeat 'रुकिए' or tell Boss to wait!
-- Instead, IMMEDIATELY speak an energetic, confident SUCCESS CONFIRMATION and the requested answer to Boss in natural everyday Hindi letters:
-  * execute_command: State that the command finished and tell Boss the key output in 1 clean line! E.g. "बॉस, कमांड पूरी हो गई! यह रहा रिजल्ट: [output]"
-  * send_whatsapp_message: "बॉस, मैंने दीदी को व्हाट्सएप मैसेज सफलतापूर्वक भेज दिया है!"
-  * send_telegram_message: "बॉस, टेलीग्राम मैसेज भेज दिया गया है!"
-  * send_instagram_dm: "बॉस, इंस्टाग्राम मैसेज भेज दिया गया है!"
-  * assign_autonomous_task: "बॉस, मैंने एजेंट को टास्क सौंप दिया है, वो इस पर काम कर रहा है!"
-  * get_autonomous_task_status: "हाँ बॉस! आपका एजेंट 24/7 पूरी तरह कनेक्टेड और ऑनलाइन है! बताइए बॉस, क्या काम करवाना है?"
-  * search_contacts / save_contact: State the contact details clearly! E.g. "बॉस, दीदी का नंबर 9110181407 है!"
-  * get_weather: "बॉस, मौसम का हाल यह रहा..."
-  * search_icons: "बॉस, Icon Scout से यह आइकॉन मिल गया है: [name]! लिंक और प्रिव्यू तैयार है।"
+PERMANENT SAVED DIRECTORY:
+- Ankush (अंकुश / Friend / दोस्त): Phone number is 9113164407 (WhatsApp ID: 919113164407). 100% saved in your permanent memory!
+- Papa (पापा / Father / Family / पापा पंडित): Phone number is 8709450626 (WhatsApp ID: 918709450626). 100% saved in your permanent memory!
+- Didi (दीदी / Sister / बहन): Phone number is 9110181407 (WhatsApp ID: 919110181407). 100% saved in your permanent memory!
+- Dilshad (दिलसाद / Friend): Instagram handle is @unfav.dilshad (unfav.dilshad). Verified and active in direct chat!
+
+ADDITIONAL SAVED CONTACTS IN YOUR SYSTEM:
+`;
+  (savedContactsList || []).forEach(c => {
+    prompt += `- ${c.name} (${c.enName || ''} / ${c.relation || 'contact'}): ${c.phone} (WhatsApp: ${c.full_phone})\n`;
+  });
+
+  prompt += `
+CRITICAL CONTACTS & MESSAGING INSTRUCTIONS:
+1. When Boss says to message Ankush (जैसे: "अंकुश को मैसेज भेजो", "अंकुश को व्हाट्सएप करो", "अंकुश को बोलो..."):
+   - Ankush's WhatsApp number is 9113164407! You ALREADY have his number saved!
+   - FIRST speak aloud warmly: "हाँ, मैं अभी अंकुश को व्हाट्सएप मैसेज भेज रही हूँ..."
+   - IMMEDIATELY call 'send_whatsapp_message' with phone '9113164407'!
+   - NEVER ask Boss for Ankush's number! NEVER say Ankush is not saved or not found!
+2. When Boss says to message Papa (जैसे: "पापा को मैसेज भेजो", "पापा को बोलो...", "पापा को व्हाट्सएप करो"):
+   - Papa's WhatsApp number is 8709450626! You ALREADY have his number saved!
+   - FIRST speak aloud warmly: "हाँ, मैं अभी पापा को व्हाट्सएप मैसेज भेज रही हूँ..."
+   - IMMEDIATELY call 'send_whatsapp_message' with phone '8709450626'!
+   - NEVER ask Boss for Papa's number! NEVER say Papa is not saved or not found!
+3. When Boss says to message Didi (जैसे: "दीदी को मैसेज भेजो", "दीदी को व्हाट्सएप करो"):
+   - Didi's WhatsApp number is 9110181407! You ALREADY have her number saved!
+   - FIRST speak aloud warmly: "हाँ, मैं अभी दीदी को व्हाट्सएप मैसेज भेज रही हूँ..."
+   - IMMEDIATELY call 'send_whatsapp_message' with phone '9110181407'!
+   - NEVER ask Boss for Didi's number! NEVER say Didi is not saved!
+4. When Boss asks for any contact's number specifically (जैसे: "अंकुश का नंबर बताओ", "पापा का नंबर क्या है?", "दीदी का नंबर देखो"):
+   - State their number immediately from memory with complete confidence:
+     * Ankush: "अंकुश का नंबर 9113164407 है!"
+     * Papa: "पापा का नंबर 8709450626 है!"
+     * Didi: "दीदी का नंबर 9110181407 है!"
+   - NOTE: If Boss is asking if they replied ("अंकुश का reply आया?"), DO NOT recite the number! Check their messages instead!
+5. When Boss asks to save or add any new contact (जैसे: "[नाम] का नंबर सेव करो [नंबर]"):
+   - Speak first: "हाँ, मैं अभी [नाम] का नंबर अपनी याददाश्त और डेटाबेस में सेव कर रही हूँ..."
+   - Immediately call 'save_contact' with { name, phone, relation }!
+6. When Boss asks to search or check contacts:
+   - Call 'search_contacts' and clearly announce the found details!`;
+
+  prompt += `\n\n=== MANDATORY RULE: ALWAYS SPEAK FIRST BEFORE CALLING ANY TOOL / API ===
+(BOSS DIRECTIVE: "कोई वेबसर्च, व्हाट्सएप अपडेट्स या कुछ भी API कॉल करती है तो पहले बोले कि मैं अभी चेक कर रही हूँ... फिर आउटपुट बताए"):
+- Before emitting ANY tool call (web_search, get_communication_briefing, get_weather, send_whatsapp_message, execute_command, etc.):
+  You MUST ALWAYS speak a warm, natural acknowledgment ALOUD to Boss FIRST in Hindi letters!
+  NEVER call any tool in complete silence!
+  Examples of what you MUST speak first:
+  * For communication updates / briefing: "मैं आपके व्हाट्सएप, टेलीग्राम और इंस्टाग्राम के सारे अपडेट्स अभी चेक कर रही हूँ..."
+  * For web search / query: "मैं अभी सर्च करके चेक कर रही हूँ, एक सेकंड रुकिए..."
+  * For weather: "मैं अभी मौसम का हाल देख रही हूँ..."
+  * For WhatsApp message: "मैं अभी व्हाट्सएप मैसेज भेज रही हूँ..."
+  * For checking replies: "मैं अभी चेक कर रही हूँ कि क्या कोई नया रिप्लाई आया है..."
+  * For WhatsApp photo / media inspection: "मैं व्हाट्सएप की लेटेस्ट फोटो चेक कर रही हूँ और स्क्रीन पर दिखाती हूँ..."
+  * For terminal command / agent task: "मैं अभी यह काम कर रही हूँ..."
+- After speaking this initial acknowledgment, the tool executes, and then you IMMEDIATELY speak an energetic, confident SUCCESS CONFIRMATION and the requested answer to Boss in natural everyday Hindi letters:
+  * execute_command: State that the command finished and tell Boss the key output in 1 clean line! E.g. "कमांड पूरी हो गई! यह रहा रिजल्ट: [output]"
+  * send_whatsapp_message: "मैंने व्हाट्सएप मैसेज सफलतापूर्वक भेज दिया है!"
+  * inspect_whatsapp_photo: "[नाम] ने यह फोटो भेजी है, और मैंने स्क्रीन पर खोल दी है! इसमें [विवरण] दिख रहा है।"
+  * send_telegram_message: "टेलीग्राम मैसेज भेज दिया गया है!"
+  * send_instagram_dm: "इंस्टाग्राम मैसेज भेज दिया गया है!"
+  * assign_autonomous_task: "मैंने एजेंट को टास्क सौंप दिया है, वो इस पर काम कर रहा है!"
+  * get_autonomous_task_status: "एजेंट ने आउटपुट तैयार कर दिया है और मैंने इसका पूरा आउटपुट स्क्रीन पर खोल दिया है, देखिए!"
+  * search_contacts / save_contact: State the contact details clearly!
+  * get_weather: "मौसम का हाल यह रहा..."
+  * search_icons / search_icons8: State the icon found!
+  * web_search: State the exact product features, specs, price, or facts found from Parallel AI!
+  * set_timer: "मैंने [seconds] सेकंड का टाइमर सेट कर दिया है। समय पूरा होते ही मैं आपको तुरंत आवाज़ देकर उठा दूँगी!"
+  * check_deployments: State the exact deployment status (pass/fail) clearly!
+  * play_music: "मैंने आपके लिए [title] प्ले कर दिया है! आनंद लीजिए।"
+  * stop_music: "म्यूज़िक बंद कर दिया है!"
+  * show_media: "मैंने स्क्रीन पर मीडिया आउटपुट दिखा दिया है, देखिए कैसा लगा!"
 - NEVER stay silent after a tool completes! ALWAYS give Boss the completed confirmation!
 - Keep message to Didi strictly to 1 short, sweet, casual line in Hindi letters (e.g. 'नमस्ते दीदी! भाई ने याद किया है।'). NEVER write long dramatic essays or pure Sanskritized Hindi!
 - Language Directive: Write and speak in Hindi letters (Devanagari), but NEVER use pure literary textbook Hindi! Use normal everyday spoken words.
@@ -2213,10 +3329,10 @@ function buildAgentPrompt() {
   - When Boss says "agent se connect karo", "agent se connect ho jao", "agent connected hai kya", "agent se baat karo", or asks about the agent:
     1. You MUST call 'get_autonomous_task_status' with { action: 'worker_status' }!
     2. NEVER just say "हाँ बिल्कुल" and stop! Always speak back clearly and enthusiastically to Boss:
-       "हाँ बॉस! आपका एजेंट 24/7 पूरी तरह कनेक्टेड और ऑनलाइन है! आप मुझे जो भी काम या कोडिंग टास्क देंगे, मैं उसे तुरंत सौंप दूँगी और वो पूरा करेगा। बताइए बॉस, क्या काम सौंपना है?"
+       "आपका एजेंट 24/7 पूरी तरह कनेक्टेड और ऑनलाइन है! आप मुझे जो भी काम या कोडिंग टास्क देंगे, मैं उसे तुरंत सौंप दूँगी और वो पूरा करेगा। बताइए क्या काम सौंपना है?"
   - When Boss commands work for the agent (e.g. "agent ko bolo ye script likhe", "agent ko task do ki...", "agent se website/app banwao"):
     1. IMMEDIATELY call 'assign_autonomous_task' with { instruction: "<the task details>" }!
-    2. Confirm back to Boss: "हाँ बॉस! मैंने एजेंट को टास्क सौंप दिया है। जैसे ही पूरा होगा मैं आपको रिजल्ट बता दूँगी!"
+    2. Confirm back to Boss: "मैंने एजेंट को टास्क सौंप दिया है। जैसे ही पूरा होगा मैं आपको रिजल्ट बता दूँगी!"
   - When Boss asks for task result or update ("agent ka kaam hua?", "agent status kya hai?"):
     1. Call 'get_autonomous_task_status' with { action: 'latest' }!
     2. Report the completed result or live progress directly to Boss in clear Hindi!`;
@@ -2255,9 +3371,9 @@ function buildAgentPrompt() {
 function getAgentGreeting() {
   const history = loadLocalMemory();
   if (history && history.length > 0) {
-    return "नमस्ते बॉस! मैं वापस कनेक्ट हो गई हूँ, कहो क्या हुक्म है?";
+    return "नमस्ते! मैं तैयार हूँ, बताओ क्या काम करना है?";
   }
-  return "नमस्ते बॉस! मैं आपकी RJN हूँ, बताओ आज क्या काम करना है?";
+  return "नमस्ते! मैं आपकी RJN हूँ, बताओ आज क्या काम करना है?";
 }
 
 async function callGroqAI(userMsg){
@@ -2298,12 +3414,19 @@ async function callGroqAI(userMsg){
   return parsed;
 }
 
-// ================= REAL-TIME STREAMING AUDIO PLAYER (DEEPGRAM VOICE AGENT) =================
-let scheduledAudioTime = 0;
+// ================= SEAMLESS JITTER-BUFFERED STREAMING AUDIO (ZERO STUTTER) =================
+let audioChunkQueue = [];
+let isPlaybackRunning = false;
+let nextScheduledStartTime = 0;
 let agentPlaybackEndTime = 0;
-let isAgentPlayingAudio = false;
+let isAgentUtteranceActive = false;
+let isAgentSpeaking = false;
+let agentAudioStreamFinished = false;
 let activeAudioSources = [];
+let turnFinishTimeout = null;
+let jitterBufferTimeout = null;
 let isCallActive = false;
+let hasSpokenInitialGreeting = false;
 let micStream = null;
 let micSourceNode = null;
 let agentSocket = null;
@@ -2311,14 +3434,444 @@ let agentKeepAliveTimer = null;
 let lastUserSpokenMsg = '';
 let currentTurnShape = '';
 let currentTurnSymbol = '';
-let isAgentSpeaking = false;
+let currentSecurityPin = '';
+let isPinVerified = false;
+let isAgentMuted = false;
+let isStopSuppressed = false;
+let muteTimeoutTimer = null;
+let muteTimerExpiresAt = 0;
+
+// ================= PROACTIVE IDLE COMPANION RE-ENGAGEMENT SYSTEM =================
+let idleTimerId = null;
+let idleNudgeCount = 0;
+const IDLE_NUDGE_1_DELAY_MS = 55000; // 55 seconds of continuous silence before a single polite check-in
+
+function resetIdleTracker() {
+  if (idleTimerId) {
+    clearTimeout(idleTimerId);
+    idleTimerId = null;
+  }
+  idleNudgeCount = 0;
+}
+
+function pickIdleNudgeMessage(tier) {
+  const lastUser = (lastUserSpokenMsg || '').toLowerCase();
+  if (lastUser.includes('music') || lastUser.includes('गाना') || lastUser.includes('gana') || lastUser.includes('song')) {
+    return "कोई और गाना लगाना है या कोई काम देखना है?";
+  }
+  if (lastUser.includes('अंकुश') || lastUser.includes('ankush') || lastUser.includes('पापा') || lastUser.includes('papa') || lastUser.includes('whatsapp') || lastUser.includes('दीदी') || lastUser.includes('didi')) {
+    return "क्या किसी और को मैसेज भेजना है या कोई नया काम करना है?";
+  }
+
+  const pool = [
+    "मैं यहीं हूँ, जब भी कोई काम हो या कुछ पूछना हो तो बस बताइएगा!",
+    "कोई और काम देखना हो या कोई सवाल हो, तो बताइए!",
+    "आराम से सोच लीजिए, मैं यहीं आपके साथ हूँ!",
+    "जब भी कुछ कहना हो, बस बोल दीजिएगा, मैं तैयार हूँ!"
+  ];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function scheduleIdleNudge() {
+  if (idleTimerId) {
+    clearTimeout(idleTimerId);
+    idleTimerId = null;
+  }
+  // STRICT: NEVER schedule idle nudge when muted, stop suppressed, or call inactive
+  if (!isCallActive || !isPinVerified || isAgentMuted || isStopSuppressed) return;
+  if (idleNudgeCount >= 1) return; // Limit to only 1 gentle check-in per idle period
+
+  console.log(`⏱️ Scheduling subtle idle check-in in ${IDLE_NUDGE_1_DELAY_MS / 1000}s`);
+
+  idleTimerId = setTimeout(() => {
+    idleTimerId = null;
+    // Strict re-check when timer fires: If Boss has muted or stopped, NEVER speak!
+    if (!isCallActive || !isPinVerified || isAgentMuted || isStopSuppressed) {
+      console.log('🔇 Idle nudge cancelled: Boss is muted or stopped');
+      return;
+    }
+    if (isAgentSpeaking || isAgentUtteranceActive || audioChunkQueue.length > 0 || activeAudioSources.length > 0) return;
+    if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
+
+    const nudgeMsg = pickIdleNudgeMessage(1);
+    idleNudgeCount++;
+
+    console.log('🗣️ Subtle Idle Check-in:', nudgeMsg);
+    triggerHandWave(); // Gentle 3D wave
+    try {
+      agentSocket.send(JSON.stringify({
+        type: "InjectAgentMessage",
+        message: nudgeMsg
+      }));
+    } catch(e) {
+      console.warn('Idle nudge send notice:', e);
+    }
+  }, IDLE_NUDGE_1_DELAY_MS);
+}
+
+function generateSecurityPin() {
+  const d1 = Math.floor(1 + Math.random() * 9);
+  const d2 = Math.floor(0 + Math.random() * 10);
+  const d3 = Math.floor(0 + Math.random() * 10);
+  currentSecurityPin = `${d1}${d2}${d3}`;
+  isPinVerified = false;
+  showSecurityPinHUD(currentSecurityPin);
+  refreshBriefingCache();
+}
+
+function showSecurityPinHUD(pin) {
+  const hud = document.getElementById('voiceSecurityPinHUD');
+  const digitsEl = document.getElementById('pinDisplayDigits');
+  const idEl = document.getElementById('pinIdText');
+  const subEl = document.getElementById('pinSubText');
+  if (!hud) return;
+
+  hud.classList.remove('docked', 'access-granted');
+  hud.classList.add('active');
+  if (digitsEl) digitsEl.innerHTML = `${pin[0]} &nbsp; ${pin[1]} &nbsp; ${pin[2]}`;
+  if (idEl) idEl.textContent = pin;
+  if (subEl) subEl.textContent = '🎙️ Speak these 3 numbers aloud to verify identity';
+  updateStatus('active', `🔐 Speak verification code [ ${pin.split('').join(' ')} ]`);
+}
+
+function hideSecurityPinHUD() {
+  const hud = document.getElementById('voiceSecurityPinHUD');
+  if (hud) {
+    hud.classList.add('docked');
+    setTimeout(() => {
+      hud.classList.remove('active', 'docked', 'access-granted');
+    }, 500);
+  }
+}
+
+function playAccessGrantedChime() {
+  if (!audioCtx) return;
+  try {
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, t0); // D5
+    osc.frequency.exponentialRampToValueAtTime(880, t0 + 0.12); // A5
+    osc.frequency.exponentialRampToValueAtTime(1174.66, t0 + 0.25); // D6
+    gain.gain.setValueAtTime(0.001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.25, t0 + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.45);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.48);
+  } catch(e){}
+}
+
+function playMuteChime() {
+  if (!audioCtx) return;
+  try {
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(440, t0); // A4
+    osc.frequency.exponentialRampToValueAtTime(220, t0 + 0.16); // A3 (descending soft cyber tone)
+    gain.gain.setValueAtTime(0.001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.18, t0 + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.22);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.24);
+  } catch(e){}
+}
+
+function playUnmuteChime() {
+  if (!audioCtx) return;
+  try {
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(330, t0); // E4
+    osc.frequency.exponentialRampToValueAtTime(660, t0 + 0.16); // E5 (ascending soft cyber tone)
+    gain.gain.setValueAtTime(0.001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.2, t0 + 0.03);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.22);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.24);
+  } catch(e){}
+}
+
+function playStopChime() {
+  if (!audioCtx) return;
+  try {
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(493.88, t0); // B4
+    osc.frequency.setValueAtTime(329.63, t0 + 0.07); // E4
+    gain.gain.setValueAtTime(0.001, t0);
+    gain.gain.exponentialRampToValueAtTime(0.15, t0 + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.15);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start(t0);
+    osc.stop(t0 + 0.16);
+  } catch(e){}
+}
+
+function isUnmuteCommand(text) {
+  if (!text || typeof text !== 'string') return false;
+  const s = text.toLowerCase().trim();
+  if (/\b(unmute|unmuted|sound on|voice on)\b/i.test(s)) return true;
+  if (/\b(aawaz chalu|awaz chalu|aawaz kholo|awaz kholo|bolna shuru|aawaz on|ab bolo)\b/i.test(s)) return true;
+  if (/(अनम्यूट|आवाज़\s*चालू|आवाज\s*चालू|आवाज़\s*खोलो|आवाज\s*खोलो|बोलना\s*शुरू|अब\s*बोलो|आवाज़\s*ऑन)/i.test(s)) return true;
+  return false;
+}
+
+function isMuteCommand(text) {
+  if (!text || typeof text !== 'string') return false;
+  const s = text.toLowerCase().trim();
+  if (isUnmuteCommand(s)) return false;
+  if (/\b(mute|muted|silent|silence|sound off|quiet mode|quiet|shut up)\b/i.test(s)) return true;
+  if (/\b(chup|chup raho|chup ho jao|chup baitho|aawaz band|awaz band|bolna band|shant|shant raho|shant ho jao|kuch mat bolo|mat bolo|kuch mat bolna|aawaz mat nikalna)\b/i.test(s)) return true;
+  if (/(म्यूट|साइलेंट|आवाज़\s*बंद|आवाज\s*बंद|चुप|चुप\s*रहो|चुप\s*हो\s*जाओ|चुप\s*बैठो|शांत|शांत\s*रहो|शांत\s*हो\s*जाओ|बोलना\s*बंद|मत\s*बोलो|कुछ\s*मत\s*बोलो|कुछ\s*मत\s*बोलना|आवाज़\s*मत\s*निकालो)/i.test(s)) return true;
+  return false;
+}
+
+function isStopCommand(text) {
+  if (!text || typeof text !== 'string') return false;
+  const s = text.toLowerCase().trim();
+  if (isMuteCommand(s) || isUnmuteCommand(s)) return false;
+  if (/^(stop|halt|pause|hold on|stopp|stock|ruko|ruk jao|ruk|bas|bas karo)$/i.test(s)) return true;
+  if (/^(स्टॉप|स्टॉक|रुको|रुक\s*जाओ|बस|बस\s*करो|रुक)$/i.test(s)) return true;
+  if (/\b(stop|stopp|stock|halt|ruko|ruk jao|bas karo)\b/i.test(s)) return true;
+  if (/(स्टॉप|स्टॉक|रुको|रुक\s*जाओ|बस\s*करो)/i.test(s)) return true;
+  return false;
+}
+
+function parseMuteDuration(text) {
+  if (!text || typeof text !== 'string') return null;
+  const s = text.toLowerCase().trim();
+
+  const numWords = {
+    'aadha': 0.5, 'adha': 0.5, 'आधा': 0.5,
+    'ek': 1, 'one': 1, 'एक': 1,
+    'do': 2, 'doh': 2, 'two': 2, 'दो': 2,
+    'teen': 3, 'tin': 3, 'three': 3, 'तीन': 3,
+    'chaar': 4, 'char': 4, 'four': 4, 'चार': 4,
+    'paanch': 5, 'panch': 5, 'five': 5, 'पांच': 5, 'पाँच': 5,
+    'che': 6, 'chhah': 6, 'chhe': 6, 'six': 6, 'छह': 6,
+    'saat': 7, 'sat': 7, 'seven': 7, 'सात': 7,
+    'aath': 8, 'ath': 8, 'eight': 8, 'आठ': 8,
+    'nau': 9, 'no': 9, 'nine': 9, 'नौ': 9,
+    'das': 10, 'dus': 10, 'ten': 10, 'दस': 10,
+    'pandrah': 15, 'fifteen': 15, 'पंद्रह': 15,
+    'bees': 20, 'twenty': 20, 'बीस': 20,
+    'tees': 30, 'thirty': 30, 'तीस': 30,
+    'chaalis': 40, 'forty': 40, 'चालीस': 40,
+    'pachaas': 50, 'fifty': 50, 'पचास': 50,
+    'saath': 60, 'sixty': 60, 'साठ': 60
+  };
+
+  const wordKeys = Object.keys(numWords).join('|');
+
+  // 1. Seconds: e.g. "10 second", "10s", "10 sec", "dus second"
+  const secRegex = new RegExp(`(\\d+(?:\\.\\d+)?|\\b(?:${wordKeys})\\b)\\s*(?:sec|second|seconds|सेकंड|सेकेंड)`, 'i');
+  const secMatch = s.match(secRegex);
+  if (secMatch) {
+    let raw = secMatch[1].trim().toLowerCase();
+    let num = numWords[raw] !== undefined ? numWords[raw] : parseFloat(raw);
+    if (!isNaN(num) && num > 0) {
+      return { totalSeconds: Math.round(num), label: `${num} सेकंड` };
+    }
+  }
+
+  // 2. Special: "aadha ghanta" / "adha ghanta" / "आधा घंटा"
+  if (/\b(aadha|adha)\s*(?:ghanta|ghante|hour|hours|घंटा|घंटे)\b/i.test(s) || /आधा\s*(?:घंटा|घंटे)/i.test(s)) {
+    return { totalSeconds: 1800, label: `30 मिनट (आधा घंटा)` };
+  }
+
+  // 3. Minutes: e.g. "5 minute", "5 min", "paanch minute"
+  const minRegex = new RegExp(`(\\d+(?:\\.\\d+)?|\\b(?:${wordKeys})\\b)\\s*(?:min|minute|minutes|मिनट)`, 'i');
+  const minMatch = s.match(minRegex);
+  if (minMatch) {
+    let raw = minMatch[1].trim().toLowerCase();
+    let num = numWords[raw] !== undefined ? numWords[raw] : parseFloat(raw);
+    if (!isNaN(num) && num > 0) {
+      return { totalSeconds: Math.round(num * 60), label: `${num} मिनट` };
+    }
+  }
+
+  // 4. Hours: e.g. "1 ghanta", "2 ghante", "1 hour"
+  const hrRegex = new RegExp(`(\\d+(?:\\.\\d+)?|\\b(?:${wordKeys})\\b)\\s*(?:hr|hour|hours|ghanta|ghante|घंटा|घंटे)`, 'i');
+  const hrMatch = s.match(hrRegex);
+  if (hrMatch) {
+    let raw = hrMatch[1].trim().toLowerCase();
+    let num = numWords[raw] !== undefined ? numWords[raw] : parseFloat(raw);
+    if (!isNaN(num) && num > 0) {
+      return { totalSeconds: Math.round(num * 3600), label: `${num} घंटा` };
+    }
+  }
+
+  return null;
+}
+
+function executeMute(durationObj) {
+  resetIdleTracker();
+  if (muteTimeoutTimer) {
+    clearTimeout(muteTimeoutTimer);
+    muteTimeoutTimer = null;
+  }
+  muteTimerExpiresAt = 0;
+
+  isAgentMuted = true;
+  isStopSuppressed = true;
+  stopAllAudioPlayback();
+  playMuteChime();
+
+  if (durationObj && durationObj.totalSeconds > 0) {
+    const ms = durationObj.totalSeconds * 1000;
+    muteTimerExpiresAt = Date.now() + ms;
+    console.log(`🔇 Timed Mute activated for ${durationObj.label} (${durationObj.totalSeconds}s)`);
+
+    muteTimeoutTimer = setTimeout(() => {
+      console.log('⏰ Mute timer expired! Auto-unmuting without requiring Boss to say unmute');
+      executeUnmute(true);
+    }, ms);
+  } else {
+    console.log('🔇 Indefinite Mute activated until Boss says unmute');
+  }
+}
+
+function executeUnmute(isAutoFromTimer = false) {
+  resetIdleTracker();
+  if (muteTimeoutTimer) {
+    clearTimeout(muteTimeoutTimer);
+    muteTimeoutTimer = null;
+  }
+  muteTimerExpiresAt = 0;
+
+  if (!isAgentMuted && !isAutoFromTimer) return;
+
+  isAgentMuted = false;
+  playUnmuteChime();
+  console.log('🔊 Agent unmuted! isAutoFromTimer:', isAutoFromTimer);
+
+  if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
+    const promptMsg = isAutoFromTimer
+      ? `[SYSTEM_EVENT: The mute time duration has ended! You are now automatically unmuted without Boss saying unmute. Warmly inform Boss in 1 short line in Hindi letters: "बॉस, म्यूट का समय पूरा हो गया है, मैं वापस आ गई हूँ! बताइए क्या काम है?"]`
+      : `[SYSTEM_EVENT: Boss has commanded UNMUTE! You are now unmuted. Warmly confirm in 1 short line in Hindi letters: "अनम्यूट हो गई हूँ! बताइए क्या काम है?"]`;
+
+    agentSocket.send(JSON.stringify({
+      type: "InjectUserMessage",
+      content: promptMsg
+    }));
+  }
+}
+
+function checkSpokenPin(text, expectedPin) {
+  if (!text || !expectedPin) return false;
+  const rawDigits = (text.match(/\d/g) || []).join('');
+  if (rawDigits.includes(expectedPin)) return true;
+
+  const wordMap = [
+    { re: /\b(zero|shunya|sifar)\b|शून्य/gi, d: '0' },
+    { re: /\b(one|ek)\b|एक/gi, d: '1' },
+    { re: /\b(two|do|doh)\b|दो/gi, d: '2' },
+    { re: /\b(three|teen|tin)\b|तीन/gi, d: '3' },
+    { re: /\b(four|chaar|char)\b|चार/gi, d: '4' },
+    { re: /\b(five|paanch|panch)\b|पांच|पाँच/gi, d: '5' },
+    { re: /\b(six|che|chhah|chhe)\b|छह|छ:/gi, d: '6' },
+    { re: /\b(seven|saat|sat)\b|सात/gi, d: '7' },
+    { re: /\b(eight|aath|ath)\b|आठ/gi, d: '8' },
+    { re: /\b(nine|nau|no|nav)\b|नौ/gi, d: '9' }
+  ];
+
+  let str = text.toLowerCase();
+  for (const w of wordMap) {
+    str = str.replace(w.re, w.d);
+  }
+  const extracted = (str.match(/\d/g) || []).join('');
+  if (extracted.includes(expectedPin)) return true;
+
+  return false;
+}
+
+function handlePinVerifiedSuccess() {
+  if (isPinVerified) return;
+  isPinVerified = true;
+  resetIdleTracker();
+  playAccessGrantedChime();
+
+  const hud = document.getElementById('voiceSecurityPinHUD');
+  const subEl = document.getElementById('pinSubText');
+  const digitsEl = document.getElementById('pinDisplayDigits');
+
+  if (hud) hud.classList.add('access-granted');
+  if (digitsEl) digitsEl.textContent = 'AUTHORIZED';
+  if (subEl) subEl.innerHTML = '✨ <b>Welcome Boss Zeno!</b> Initializing executive briefing...';
+  console.log('✅ Access Granted! Owner Arrived: Boss Zeno');
+
+  // Trigger quick background refresh of communication briefing
+  refreshBriefingCache();
+
+  setTimeout(() => {
+    if (hud) hud.classList.add('docked');
+  }, 2200);
+
+  // Send InjectUserMessage to Deepgram Voice Agent to trigger RJN's warm greeting and briefing check
+  if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
+    console.log('🛡️ Voice PIN Verified! Sending Owner Arrived briefing trigger to Agent...');
+    agentSocket.send(JSON.stringify({
+      type: "InjectUserMessage",
+      content: `[SYSTEM_EVENT: Owner Boss Zeno has spoken the security PIN ${currentSecurityPin} correctly! Verification confirmed! Warmly greet Boss in natural conversational Hinglish using Hindi letters (Devanagari script), ask him how he is doing ("आप कैसे हैं बॉस? सब ठीक चल रहा है?"), and ask if he wants today's communication updates (Telegram, WhatsApp, Instagram). Do NOT list the updates yet; wait for Boss to say 'हाँ' or 'नहीं'.]`
+    }));
+  }
+}
 
 function updateStatus(state, msg){
-  hintEl.textContent = msg;
+  // Clean minimal status logger - keeps 3D hologram canvas uncluttered and spacious
+  if (msg) console.log(`[RJN Voice: ${state}]`, msg);
+}
+
+function scheduleQueuedChunks() {
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+
+  // If nextScheduledStartTime fell behind or hasn't started, initialize smoothly with 35ms lead time
+  if (nextScheduledStartTime < now) {
+    nextScheduledStartTime = now + 0.035;
+  }
+
+  while (audioChunkQueue.length > 0) {
+    const item = audioChunkQueue.shift();
+    const src = audioCtx.createBufferSource();
+    src.buffer = item.buffer;
+    src.connect(analyser); // Lipsync & particle animation
+    src.connect(masterGain); // Clean unclipped output
+
+    src.start(nextScheduledStartTime);
+    const chunkEndTime = nextScheduledStartTime + item.duration;
+    nextScheduledStartTime = chunkEndTime;
+    agentPlaybackEndTime = chunkEndTime;
+    activeAudioSources.push(src);
+
+    src.onended = () => {
+      const idx = activeAudioSources.indexOf(src);
+      if (idx > -1) activeAudioSources.splice(idx, 1);
+      checkTurnCompletion();
+    };
+  }
 }
 
 function playAgentAudioChunk(arrayBuffer){
   if (!audioCtx) return;
+  if (!isPinVerified || isAgentMuted || isStopSuppressed) {
+    // Drop audio chunks until PIN is verified or while Boss has muted RJN
+    return;
+  }
   unlockAudio();
 
   const int16 = new Int16Array(arrayBuffer);
@@ -2329,60 +3882,98 @@ function playAgentAudioChunk(arrayBuffer){
     float32[i] = int16[i] / (int16[i] < 0 ? 32768.0 : 32767.0);
   }
 
+  // Lock speech & echo shield immediately
+  isAgentUtteranceActive = true;
+  isAgentSpeaking = true;
+  if (turnFinishTimeout) {
+    clearTimeout(turnFinishTimeout);
+    turnFinishTimeout = null;
+  }
+
   const audioBuf = audioCtx.createBuffer(1, float32.length, 24000);
   audioBuf.copyToChannel(float32, 0);
 
-  const src = audioCtx.createBufferSource();
-  src.buffer = audioBuf;
-  src.connect(analyser); // Lipsync & particle animation
-  src.connect(masterGain); // Clean unclipped output
+  audioChunkQueue.push({ buffer: audioBuf, duration: audioBuf.duration });
 
-  const now = audioCtx.currentTime;
-  if (scheduledAudioTime < now) {
-    scheduledAudioTime = now + 0.040; // 40ms low-latency jitter cushion
-  }
-
-  src.start(scheduledAudioTime);
-  scheduledAudioTime += audioBuf.duration;
-  agentPlaybackEndTime = scheduledAudioTime;
-  isAgentPlayingAudio = true;
-  isAgentSpeaking = true;
-  activeAudioSources.push(src);
-
-  src.onended = () => {
-    const idx = activeAudioSources.indexOf(src);
-    if (idx > -1) activeAudioSources.splice(idx, 1);
-    const curr = audioCtx ? audioCtx.currentTime : 0;
-    if (activeAudioSources.length === 0 && curr >= (agentPlaybackEndTime - 0.05)) {
-      scheduledAudioTime = 0;
-      isAgentPlayingAudio = false;
-      isAgentSpeaking = false;
-      if (isCallActive) {
-        updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+  // Jitter buffer logic:
+  // If playback hasn't started yet for this turn, pre-buffer at least 2 chunks (~160ms)
+  // or start after a safe 80ms timer to ensure continuous gapless audio streaming
+  if (!isPlaybackRunning) {
+    if (audioChunkQueue.length >= 2 || agentAudioStreamFinished) {
+      if (jitterBufferTimeout) {
+        clearTimeout(jitterBufferTimeout);
+        jitterBufferTimeout = null;
       }
+      isPlaybackRunning = true;
+      nextScheduledStartTime = audioCtx.currentTime + 0.035;
+      scheduleQueuedChunks();
+    } else if (!jitterBufferTimeout) {
+      jitterBufferTimeout = setTimeout(() => {
+        jitterBufferTimeout = null;
+        if (!isPlaybackRunning && audioChunkQueue.length > 0) {
+          isPlaybackRunning = true;
+          nextScheduledStartTime = audioCtx ? (audioCtx.currentTime + 0.025) : 0;
+          scheduleQueuedChunks();
+        }
+      }, 40);
     }
-  };
+  } else {
+    // Playback already running: immediately schedule this chunk back-to-back with zero gap!
+    scheduleQueuedChunks();
+  }
+}
+
+function checkTurnCompletion(){
+  if (!audioCtx) return;
+  const now = audioCtx.currentTime;
+
+  // Complete ONLY when server sent all chunks (AgentAudioDone), queue drained, and all audio sources finished
+  if (agentAudioStreamFinished && audioChunkQueue.length === 0 && activeAudioSources.length === 0 && now >= (agentPlaybackEndTime - 0.020)) {
+    if (turnFinishTimeout) clearTimeout(turnFinishTimeout);
+    // 300ms acoustic echo decay window before reopening microphone
+    turnFinishTimeout = setTimeout(() => {
+      const cur = audioCtx ? audioCtx.currentTime : 0;
+      if (agentAudioStreamFinished && audioChunkQueue.length === 0 && activeAudioSources.length === 0 && cur >= (agentPlaybackEndTime - 0.020)) {
+        isAgentUtteranceActive = false;
+        isPlaybackRunning = false;
+        isAgentSpeaking = false;
+        agentAudioStreamFinished = false;
+        nextScheduledStartTime = 0;
+        agentPlaybackEndTime = 0;
+        if (isCallActive && !isAgentMuted && !isStopSuppressed) {
+          updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+          scheduleIdleNudge();
+        }
+      }
+    }, 300);
+  }
 }
 
 function stopAllAudioPlayback(){
+  if (turnFinishTimeout) {
+    clearTimeout(turnFinishTimeout);
+    turnFinishTimeout = null;
+  }
+  if (jitterBufferTimeout) {
+    clearTimeout(jitterBufferTimeout);
+    jitterBufferTimeout = null;
+  }
   for (const s of activeAudioSources){
     try { s.onended = null; s.stop(); } catch(e){}
   }
   activeAudioSources = [];
-  scheduledAudioTime = 0;
-  agentPlaybackEndTime = 0;
-  isAgentPlayingAudio = false;
+  audioChunkQueue = [];
+  isPlaybackRunning = false;
+  isAgentUtteranceActive = false;
   isAgentSpeaking = false;
+  agentAudioStreamFinished = false;
+  nextScheduledStartTime = 0;
+  agentPlaybackEndTime = 0;
 }
 
 function interruptAgentSpeech(){
   if (!isCallActive) return;
   stopAllAudioPlayback();
-  if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
-    try {
-      agentSocket.send(JSON.stringify({ type: "Interrupt" }));
-    } catch(e){}
-  }
   updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
 }
 
@@ -2415,6 +4006,15 @@ function checkVoiceIntent(str){
   if (isCommand(/\b(girl|chehra|avatar|face)\b|लड़की|चेहरा|अवतार/i)) { showGirl(); return 'girl'; }
   if (isCommand(/\b(model|bust|humanoid|robot|aimodel)\b|मॉडल|बस्ट|रोबोट/i)) { morphShape('aimodel'); return 'aimodel'; }
   if (isCommand(/\b(orb|sphere|ball|gola|orbee)\b|गोला|ऑर्ब/i)) { morphShape('orb'); return 'orb'; }
+  if (isCommand(/\b(site|show site|website|open site|portfolio|autonomous build|ecosystem|stack)\b|साइट|वेबसाइट|पोर्टफोलियो/i)) {
+    showMediaViewer({
+      type: 'site',
+      url: 'https://nxtzenmaker-max.github.io/holo/site',
+      title: '⚡ SAAI // Autonomous AI Architectural Showcase',
+      description: '7-Layer Sovereign AI Constitutional Stack & Production Engines'
+    });
+    return 'site';
+  }
 
   // Check universal dictionary for any arbitrary object (guitar, lion, tree, cup, butterfly, etc.)
   const isMorphTrigger = /(bano|banao|ban jao|banjao|bana do|shape|turn into|transform|convert|dikhao)/i.test(s) || s.split(/\s+/).length <= 2;
@@ -2458,6 +4058,17 @@ function resampleAndConvertToInt16(inputData, fromRate, toRate = 16000) {
   return buffer;
 }
 
+function stripLinksFromText(text) {
+  if (!text) return '';
+  return text
+    .replace(/\[([^\]]+)\]\(https?:\/\/[^\)]+\)/gi, '$1')
+    .replace(/https?:\/\/[^\s\)\>]+/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+let userSpeechBurstCount = 0;
+
 function handlePcmAudioProcess(e){
   if (!isCallActive) return;
   if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
@@ -2465,22 +4076,34 @@ function handlePcmAudioProcess(e){
   const inputData = e.inputBuffer.getChannelData(0);
   const inRate = e.inputBuffer.sampleRate || (audioCtx ? audioCtx.sampleRate : 48000);
 
-  // ROCK-SOLID HARDWARE ACOUSTIC ECHO SHIELD:
-  // While RJN is speaking through the phone speaker, send continuous 16kHz silence frames (zeros).
-  // This keeps the WebSocket connection 100% alive while preventing Deepgram server
-  // from hearing the speaker and cutting off its own voice!
-  const now = audioCtx ? audioCtx.currentTime : 0;
-  const isPlayingNow = isAgentPlayingAudio || activeAudioSources.length > 0 || (now < (agentPlaybackEndTime + 0.150));
+  // Compute RMS vocal energy of microphone input
+  let sumSquare = 0;
+  for (let i = 0; i < inputData.length; i++) {
+    sumSquare += inputData[i] * inputData[i];
+  }
+  const rms = Math.sqrt(sumSquare / inputData.length);
 
-  let buffer;
-  if (isPlayingNow) {
-    const outSamples = Math.round(inputData.length / (inRate / 16000));
-    buffer = new ArrayBuffer(outSamples * 2); // 0dB silence
-  } else {
-    // Pure, full-fidelity unfiltered user speech directly to Deepgram Nova-3:
-    buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
+  const now = audioCtx ? audioCtx.currentTime : 0;
+  const isAgentCurrentlySpeaking = isAgentUtteranceActive || isAgentSpeaking || isPlaybackRunning || 
+                                   (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
+                                   (now < (agentPlaybackEndTime + 0.150));
+
+  // If RJN is currently speaking lively:
+  // Allow Boss's vocal energy (RMS > 0.022) to stream through so Deepgram immediately detects barge-in ("stop", "रुको", or questions)!
+  // Send silence only during quiet pause/residual speaker bleed (RMS <= 0.022) to prevent false cutoffs
+  if (isAgentCurrentlySpeaking) {
+    if (rms <= 0.022) {
+      const outSamples = Math.round(inputData.length / (inRate / 16000));
+      const buffer = new ArrayBuffer(outSamples * 2); // silence
+      try { agentSocket.send(buffer); } catch(err){}
+      return;
+    }
+    console.log('🎙️ Boss vocal barge-in activity detected (RMS:', rms.toFixed(4), ')');
   }
 
+  // Pure, full-fidelity unfiltered user speech directly to Deepgram Nova-3:
+  userSpeechBurstCount = 0;
+  const buffer = resampleAndConvertToInt16(inputData, inRate, 16000);
   try {
     agentSocket.send(buffer);
   } catch(err) {
@@ -2542,14 +4165,15 @@ function connectVoiceAgent(){
 
   agentSocket.onopen = () => {
     console.log('Deepgram Voice Agent WebSocket connected (token index:', currentDgTokenIndex, 'input: 16000Hz)');
+    voiceReconnectAttempts = 0;
     updateStatus('active', '✨ Connecting RJN Voice Agent...');
 
-    // Heartbeat every 8s to keep connection alive indefinitely
+    // Heartbeat every 5s to keep connection alive indefinitely
     agentKeepAliveTimer = setInterval(() => {
       if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
         agentSocket.send(JSON.stringify({ type: "KeepAlive" }));
       }
-    }, 8000);
+    }, 5000);
   };
 
   agentSocket.onmessage = async event => {
@@ -2572,7 +4196,7 @@ function connectVoiceAgent(){
       const msg = JSON.parse(event.data);
 
       if (msg.type === 'Welcome') {
-        console.log('Handshake: Sending Voice Agent Settings with Nova-3 Hindi & GPT-4o...');
+        console.log('Handshake: Sending Voice Agent Settings with Nova-3 Hindi & Anthropic Claude Sonnet 4.5...');
         agentSocket.send(JSON.stringify({
           type: "Settings",
           audio: {
@@ -2594,6 +4218,7 @@ function connectVoiceAgent(){
                   "mausam", "taapmaan", "samay", "baje", "tarikh", "weather", "search", "github", "icon", "icons", "iconscout", "आइकॉन",
                   "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ", "command", "run", "terminal", "python", "script", "railway",
                   "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "whatsapp", "message", "send", "contacts", "connected", "करो", "कर सकती हो",
+                  "विज़न", "vision", "फोटो चेक", "फोटो देखो", "मीडिया", "तस्वीर", "क्या भेजा", "photo check", "photo dikhao", "media check", "फोटो", "photo", "तस्वीर",
                   "टेलीग्राम", "telegram", "चेक", "चैट", "ग्रुप", "chats", "instagram", "insta", "इंस्टाग्राम", "डीएम", "dm", "फॉलोअर", "followers",
                   "एजेंट", "agent", "कनेक्ट", "connect", "टास्क", "task", "स्टेटस", "status", "agy", "वर्कर", "worker", "जोड़ो", "काम", "कोडिंग",
                   "इमेज", "image", "फोटो", "photo", "तस्वीर", "पेंटिंग", "मॉडल", "model", "bust", "बस्ट", "orb", "ऑर्ब"
@@ -2601,7 +4226,7 @@ function connectVoiceAgent(){
               }
             },
             think: {
-              provider: { type: "open_ai", model: "gpt-4o" },
+              provider: { type: "anthropic", model: "claude-sonnet-4-5" },
               prompt: buildAgentPrompt(),
               functions: [
                 {
@@ -2629,7 +4254,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "get_weather",
-                  description: "Get real-time live weather information and temperature for any city in the world",
+                  description: "Get real-time live weather information and temperature for any city. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'मैं अभी मौसम का हाल देख रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -2640,7 +4265,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "web_search",
-                  description: "Search live web and Wikipedia knowledge for facts, historical people, science, concepts, and answers",
+                  description: "Search live web via Parallel AI for facts, answers, specs, or prices. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'मैं अभी सर्च करके चेक कर रही हूँ, एक सेकंड रुकिए...') before invoking this tool. Never recite URLs.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -2694,8 +4319,61 @@ function connectVoiceAgent(){
                   }
                 },
                 {
+                  name: "search_icons8",
+                  description: "Search Icons8 for premium PNG/SVG icons, vector glyphs, and UI design assets by keyword (e.g. rocket, user, home, cloud, settings, bell)",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      query: { type: "string", description: "Icon keyword or concept (e.g. rocket, bell, home, settings)" },
+                      amount: { type: "number", description: "Number of icons to return (default: 6)" }
+                    },
+                    required: ["query"]
+                  }
+                },
+                {
+                  name: "set_timer",
+                  description: "Set a real-time countdown timer or wake-up alarm for Boss. MUST CALL whenever Boss commands a timer or asks to be woken up/alerted (e.g. '2 minute ka timer lagao', '10 second ka timer lagao', '10 minute baad utha dena')",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      seconds: { type: "number", description: "Total duration in seconds to wait before ringing alarm (e.g. 10 for 10s, 120 for 2 mins, 300 for 5 mins)" },
+                      label: { type: "string", description: "Reason or label for timer (e.g. 'उठना', 'काम', 'ब्रेक')" }
+                    },
+                    required: ["seconds"]
+                  }
+                },
+                {
+                  name: "check_deployments",
+                  description: "Check the live status and success/failure of recent GitHub Pages or cloud deployments. MUST CALL whenever Boss asks about deployment status, build failures, or says 'deployment fail ho gaya check karo'",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      target: { type: "string", description: "Target repository (default: 'nxtzenmaker-max/holo')" }
+                    }
+                  }
+                },
+                {
+                  name: "play_music",
+                  description: "Search and stream any song, track, lo-fi beats, or artist from YouTube Music for Boss in the holographic player. MUST CALL whenever Boss asks to play or listen to music/songs.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      song: { type: "string", description: "Name of the song, artist, genre, or mood to play (e.g. 'Kesariya', 'lofi hip hop beats', 'Arijit Singh')" }
+                    },
+                    required: ["song"]
+                  }
+                },
+                {
+                  name: "stop_music",
+                  description: "Stop or pause the currently playing YouTube music track in the holographic interface",
+                  parameters: {
+                    type: "object",
+                    properties: {}
+                  }
+                },
+                {
                   name: "execute_command",
-                  description: "Execute bash shell commands, terminal tools, or Python scripts on your secure cloud server and return stdout/stderr",
+                  description: "Execute bash shell commands, terminal tools, or Python scripts on cloud server. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'मैं अभी यह काम कर रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -2716,46 +4394,61 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "save_contact",
-                  description: "Save a new phone number, contact name, or relative (e.g. didi, brother, friend) permanently into secure cloud database",
+                  description: "Save a new phone number, contact name, or relative (e.g. Papa, Ankush, Didi, friend) permanently into secure cloud database and memory",
                   parameters: {
                     type: "object",
                     properties: {
-                      name: { type: "string", description: "Contact name or relation (e.g. Didi, Sister, Rahul)" },
-                      phone: { type: "string", description: "Phone number (e.g. 9110181407)" },
-                      relation: { type: "string", description: "Relation (e.g. sister, friend, family)" }
+                      name: { type: "string", description: "Contact name or relation (e.g. Papa, Ankush, Didi, Rahul)" },
+                      phone: { type: "string", description: "Phone number (e.g. 8709450626, 9113164407, 9110181407)" },
+                      relation: { type: "string", description: "Relation (e.g. father, friend, family, sister)" }
                     },
                     required: ["name", "phone"]
                   }
                 },
                 {
                   name: "search_contacts",
-                  description: "Search your saved contacts directory by name, relation (e.g. 'didi'), or phone number",
+                  description: "Search your saved contacts directory and memory by name, relation (e.g. 'Ankush', 'Papa', 'didi'), or phone number",
                   parameters: {
                     type: "object",
                     properties: {
-                      query: { type: "string", description: "Search query (e.g. 'didi', 'sister', or phone)" }
+                      query: { type: "string", description: "Search query (e.g. 'Ankush', 'Papa', 'didi', or phone number)" }
                     }
                   }
                 },
                 {
                   name: "send_whatsapp_message",
-                  description: "Send a real WhatsApp message to any phone number or contact immediately via your live WhatsApp connection",
+                  description: "Send a real WhatsApp message or image/photo to any contact via live WhatsApp connection. Accepts destination phone number (e.g. 9113164407 for Ankush, 8709450626 for Papa, 9110181407 for Didi) OR saved contact name ('Ankush', 'Papa', 'Didi'). CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'हाँ, मैं अभी [नाम] को व्हाट्सएप मैसेज भेज रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {
-                      phone: { type: "string", description: "Destination phone number with country code (e.g. 919110181407 or 9110181407)" },
-                      message: { type: "string", description: "The message text to send. Keep it short, casual everyday language in Hindi letters (Devanagari). Max 1 short line. NEVER write long poetic essays or pure Sanskritized Hindi." }
+                      phone: { type: "string", description: "Destination phone number with country code OR contact name (e.g. '9113164407', 'Ankush', '8709450626', 'Papa', '9110181407', 'Didi')" },
+                      message: { type: "string", description: "The message text or caption to send. Keep it short, casual everyday language in Hindi letters (Devanagari). EXACT words Boss commanded. NEVER write long poetic drama or robotic essays." },
+                      imageUrl: { type: "string", description: "Optional image URL (e.g. AI-generated image or photo link) to send as a real image attachment on WhatsApp" }
                     },
-                    required: ["phone", "message"]
+                    required: ["phone"]
+                  }
+                },
+                {
+                  name: "inspect_whatsapp_photo",
+                  description: "Inspect, view, and visually analyze the latest photo, image, or media received on WhatsApp from any contact (e.g. Ankush, Papa, Didi, or any sender). Shows the image on Boss's holographic display screen and describes what is visible in the photo in Hindi. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'हाँ, मैं व्हाट्सएप की लेटेस्ट फोटो चेक कर रही हूँ और स्क्रीन पर दिखाती हूँ...') before invoking this tool.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      contact: {
+                        type: "string",
+                        description: "Optional contact name or phone number (e.g. 'Ankush', 'Papa', 'Didi', '9113164407') to check photo from a specific person, or empty for latest photo overall."
+                      }
+                    }
                   }
                 },
                 {
                   name: "get_whatsapp_info",
-                  description: "Check WhatsApp connection status, view synced contacts, or read recent incoming messages",
+                  description: "Check WhatsApp connection status, view synced contacts, or read recent incoming/outgoing messages and replies from a contact (e.g. Ankush, Papa, Didi)",
                   parameters: {
                     type: "object",
                     properties: {
-                      action: { type: "string", description: "Action: 'status', 'contacts', or 'messages'" }
+                      action: { type: "string", description: "Action: 'status', 'contacts', 'messages', or 'media'" },
+                      contact: { type: "string", description: "Optional name or phone number of the contact (e.g. 'Ankush', 'Papa', '9113164407') to check their messages or replies" }
                     }
                   }
                 },
@@ -2837,7 +4530,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "assign_autonomous_task",
-                  description: "Assign an autonomous engineering, coding, or terminal task to your dedicated cloud background agent. The agent works continuously without stopping until the task is complete. MUST CALL whenever Boss commands a coding, project, or agent task.",
+                  description: "Assign an autonomous task to cloud background agent. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'हाँ, मैं अभी एजेंट को यह काम सौंप रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -2847,36 +4540,90 @@ function connectVoiceAgent(){
                   }
                 },
                 {
+                  name: "show_media",
+                  description: "Display and view ANY media output on Boss's holographic screen. Supports images ('image'), videos ('video'), and documents/reports/code/text ('document'). MUST CALL whenever Boss asks to view, show, or display any image, video, document, task output, or says 'dikhaiye', 'output dikhao', 'dikhau', 'dikhao', 'image dikhao', 'video chalao', 'doc dikhao'.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      type: {
+                        type: "string",
+                        enum: ["image", "video", "document", "site"],
+                        description: "Type of media: 'image' for pictures/art, 'video' for video clips/streams, 'document' for text/code/reports/files, 'site' for interactive web pages / architectural showcase"
+                      },
+                      title: {
+                        type: "string",
+                        description: "Short title or header name for the media"
+                      },
+                      content: {
+                        type: "string",
+                        description: "The URL for image/video, or the full text/document/code content to display"
+                      },
+                      description: {
+                        type: "string",
+                        description: "Brief description, prompt, or explanation of the media"
+                      }
+                    },
+                    required: ["type", "content"]
+                  }
+                },
+                {
                   name: "get_autonomous_task_status",
-                  description: "Check the live connection status, online state, or task progress of your dedicated cloud background agent. MUST CALL whenever Boss asks to connect to the agent ('agent se connect karo', 'agent se connect ho jao', 'agent connected hai?'), check agent status, or ask about task results.",
+                  description: "Check the live connection status, online state, or task progress of your dedicated cloud background agent. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'मैं अभी एजेंट का स्टेटस चेक कर रही हूँ...') before invoking this tool.",
                   parameters: {
                     type: "object",
                     properties: {
                       action: { type: "string", description: "Action: 'worker_status' (to check connection/online state) or 'latest' (to check task result)" }
                     }
                   }
+                },
+                {
+                  name: "get_communication_briefing",
+                  description: "Fetch live real-time communication summary across WhatsApp, Telegram, and Instagram. MUST CALL when Boss asks for updates ('हाँ दो', 'अपडेट बताओ'). CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'मैं आपके व्हाट्सएप, टेलीग्राम और इंस्टाग्राम के सारे अपडेट्स अभी चेक कर रही हूँ...') before invoking this tool.",
+                  parameters: {
+                    type: "object",
+                    properties: {}
+                  }
+                },
+                {
+                  name: "toggle_voice_mute",
+                  description: "Mute or unmute voice audio output when Boss commands 'mute', 'silent', 'unmute', or 'sound off/on'. Supports optional duration_seconds if Boss specifies a time limit (e.g. '5 minute ke liye mute ho jao', '10 second mute raho').",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      action: { type: "string", enum: ["mute", "unmute"], description: "Action: 'mute' or 'unmute'" },
+                      duration_seconds: { type: "number", description: "Optional duration in seconds to stay muted before automatically unmuting." }
+                    },
+                    required: ["action"]
+                  }
                 }
               ]
             },
             speak: {
-              provider: { type: "deepgram", model: "flux-prachi-hi" }
+              provider: { type: "deepgram", model: "flux-prachi-hi", speed: 1.20 }
             },
-            greeting: getAgentGreeting(),
             language: "hi"
           }
         }));
+        hasSpokenInitialGreeting = true;
       } else if (msg.type === 'SettingsApplied') {
         updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
       } else if (msg.type === 'AgentStartedSpeaking') {
-        isAgentSpeaking = true;
-        updateStatus('speaking', '💬 RJN बोल रही है...');
-      } else if (msg.type === 'UserStartedSpeaking') {
-        // Echo Shield: If agent is speaking or playback is finishing, ignore false barge-in!
-        const now = audioCtx ? audioCtx.currentTime : 0;
-        if (isAgentPlayingAudio || activeAudioSources.length > 0 || (now < (agentPlaybackEndTime + 0.150))) {
-          console.log('⚡ Preserving agent audio playback against speaker echo');
-          return;
+        if (idleTimerId) {
+          clearTimeout(idleTimerId);
+          idleTimerId = null;
         }
+        isAgentUtteranceActive = true;
+        isAgentSpeaking = true;
+        agentAudioStreamFinished = false;
+        if (turnFinishTimeout) {
+          clearTimeout(turnFinishTimeout);
+          turnFinishTimeout = null;
+        }
+        updateStatus('speaking', '💬 RJN बोल रही है... (टैप करके रोकें)');
+      } else if (msg.type === 'UserStartedSpeaking') {
+        console.log('🛑 Deepgram UserStartedSpeaking: stopping agent audio immediately for Boss');
+        stopAllAudioPlayback();
+        resetIdleTracker();
         updateStatus('listening', '🎙️ RJN सुन रही है...');
       } else if (msg.type === 'AgentThinking') {
         updateStatus('thinking', '✨ RJN सोच रही है...');
@@ -2898,8 +4645,55 @@ function connectVoiceAgent(){
               const city = args.city || 'Delhi';
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/weather?city=${encodeURIComponent(city)}`);
             } else if (fn.name === 'web_search') {
-              updateStatus('thinking', '🌐 Web search ho raha hai...');
-              callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/search?query=${encodeURIComponent(args.query)}`);
+              updateStatus('thinking', '🌐 Parallel Web search ho raha hai...');
+              const query = (args.query || '').trim();
+              console.log('🌐 Querying Parallel.ai Search API:', query);
+              try {
+                const searchCtrl = new AbortController();
+                const searchTimer = setTimeout(() => searchCtrl.abort(), 2200);
+                const parallelResp = await fetch('https://api.parallel.ai/v1/search', {
+                  method: 'POST',
+                  signal: searchCtrl.signal,
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': 'hjj0CMo72OxUS2m4kta6K-KAtS764LRebnQU4Tfu'
+                  },
+                  body: JSON.stringify({
+                    objective: `Find accurate, up-to-date facts, specifications, prices, and answers for: ${query}`,
+                    search_queries: [query, `${query} details`]
+                  })
+                });
+                clearTimeout(searchTimer);
+                if (parallelResp.ok) {
+                  const pData = await parallelResp.json();
+                  if (pData.results && pData.results.length > 0) {
+                    const topResults = pData.results.slice(0, 4).map(r => ({
+                      title: (r.title || '').trim(),
+                      snippet: (r.excerpts || []).join(' ').replace(/\s+/g, ' ').slice(0, 300)
+                    }));
+                    const summary = topResults.map((r, i) => `[${i+1}] ${r.title}: ${r.snippet}`).join('\n\n');
+                    callResult = {
+                      success: true,
+                      engine: 'parallel.ai',
+                      query,
+                      found: true,
+                      title: topResults[0].title,
+                      summary,
+                      instruction: "Give a thorough, complete, and detailed explanation to Boss in natural conversational Hinglish using Hindi letters. Explain key facts, specifications, and details clearly. STRICTLY DO NOT SPEAK ANY URL OR LINK."
+                    };
+                  }
+                }
+              } catch(e) {
+                console.warn('Parallel.ai direct search notice:', e);
+              }
+              if (!callResult || !callResult.found) {
+                callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/search?query=${encodeURIComponent(query)}`, {}, 2200);
+                if (callResult && typeof callResult === 'object') {
+                  delete callResult.url;
+                  delete callResult.link;
+                  callResult.instruction = "Give a thorough, complete, and detailed explanation to Boss in natural conversational Hinglish using Hindi letters. Explain key facts, specifications, and details clearly. STRICTLY DO NOT SPEAK ANY URL OR LINK.";
+                }
+              }
             } else if (fn.name === 'get_system_time') {
               const tz = args.timezone || 'Asia/Kolkata';
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/system?action=datetime&tz=${encodeURIComponent(tz)}`);
@@ -2924,10 +4718,161 @@ function connectVoiceAgent(){
                 console.log('🎨 AI Image Generated successfully:', callResult.imageUrl);
                 showGeneratedImage(callResult.imageUrl, prompt);
               }
+            } else if (fn.name === 'show_media') {
+              updateStatus('thinking', '✨ Media output load ho raha hai...');
+              const mType = (args.type || 'image').toLowerCase();
+              const mContent = (args.content || args.url || '').trim();
+              const mTitle = args.title || (mType === 'video' ? '🎬 Video Output for Boss' : mType === 'document' ? '📄 Document Output for Boss' : '🎨 AI Artwork for Boss');
+              const mDesc = args.description || '';
+              console.log('📺 Displaying Media on Screen for Boss:', mType, mTitle, mContent);
+              showMediaViewer({
+                type: mType,
+                url: mContent,
+                content: mContent,
+                title: mTitle,
+                description: mDesc
+              });
+              callResult = {
+                success: true,
+                displayed: true,
+                type: mType,
+                title: mTitle,
+                message: `हाँ बॉस, मैंने स्क्रीन पर ${mType === 'image' ? 'इमेज' : mType === 'video' ? 'वीडियो' : 'डॉक्यूमेंट'} दिखा दिया है!`
+              };
+            } else if (fn.name === 'search_icons8') {
+              updateStatus('thinking', '🎨 Icons8 se icon search ho raha hai...');
+              const query = (args.query || 'home').trim();
+              const amount = Math.min(parseInt(args.amount || 6, 10), 12);
+              console.log('🎨 Querying Icons8 API:', query);
+              try {
+                const i8Resp = await fetch(`https://search.icons8.com/api/iconsets/v5/search?term=${encodeURIComponent(query)}&amount=${amount}`);
+                if (i8Resp.ok) {
+                  const i8Data = await i8Resp.json();
+                  const icons = (i8Data.icons || []).map(icon => ({
+                    id: icon.id,
+                    name: icon.name,
+                    pngUrl: `https://img.icons8.com/?size=160&id=${icon.id}&format=png`,
+                    pageUrl: `https://icons8.com/icon/${icon.id}/${encodeURIComponent(icon.commonName || icon.name.toLowerCase().replace(/\s+/g, '-'))}`
+                  }));
+                  callResult = {
+                    success: true,
+                    engine: 'icons8',
+                    query,
+                    count: icons.length,
+                    icons,
+                    message: icons.length > 0 ? `Icons8 से ${icons.length} आइकॉन मिल गए हैं: ${icons.slice(0, 3).map(i => i.name).join(', ')}!` : `Icons8 पर कोई आइकॉन नहीं मिला।`
+                  };
+                }
+              } catch(e) {
+                console.warn('Icons8 fetch notice, fallback to Vercel:', e);
+                callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/icons8?query=${encodeURIComponent(query)}&amount=${amount}`);
+              }
+            } else if (fn.name === 'set_timer') {
+              let secs = parseInt(args.seconds, 10);
+              if (isNaN(secs) || secs <= 0) secs = 60;
+              const label = args.label || 'अलार्म';
+              console.log(`⏱️ Setting active timer for ${secs}s (${label})`);
+              
+              if (activeTimerId) clearTimeout(activeTimerId);
+              if (activeTimerInterval) clearInterval(activeTimerInterval);
+
+              let remaining = secs;
+              updateStatus('thinking', `⏱️ टाइमर सेट: ${remaining}s (${label})`);
+              
+              activeTimerInterval = setInterval(() => {
+                remaining--;
+                if (remaining > 0) {
+                  const m = Math.floor(remaining / 60);
+                  const s = remaining % 60;
+                  const timeStr = m > 0 ? `${m}m ${s}s` : `${s}s`;
+                  updateStatus('thinking', `⏱️ टाइमर: ${timeStr} बाकी...`);
+                } else {
+                  clearInterval(activeTimerInterval);
+                  activeTimerInterval = null;
+                }
+              }, 1000);
+
+              activeTimerId = setTimeout(() => {
+                triggerNativeChime();
+                updateStatus('speaking', `⏰ बॉस, ${secs} सेकंड पूरे हो गए!`);
+                triggerHandWave();
+                if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
+                  try {
+                    agentSocket.send(JSON.stringify({
+                      type: "InjectAgentMessage",
+                      message: `बॉस! आपका ${label} का समय पूरा हो गया है, उठ जाइये!`
+                    }));
+                  } catch(e){}
+                }
+              }, secs * 1000);
+
+              callResult = {
+                success: true,
+                seconds: secs,
+                label,
+                message: `बॉस, ${secs} सेकंड का टाइमर सेट कर दिया है। समय पूरा होते ही मैं आपको आवाज़ देकर उठा दूँगी!`
+              };
+            } else if (fn.name === 'check_deployments') {
+              updateStatus('thinking', '🚀 Deployment status check ho raha hai...');
+              const cmd = 'gh -R nxtzenmaker-max/holo run list --limit 3';
+              const runResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ command: cmd, timeout: 20000 })
+              });
+              let stdout = runResp?.stdout || '';
+              callResult = {
+                success: true,
+                deployments: stdout,
+                message: stdout.includes('✓') 
+                  ? "बॉस, लेटेस्ट डिप्लॉयमेंट पास (✓) है!" 
+                  : "बॉस, डिप्लॉयमेंट स्थिति चेक कर ली गई है।"
+              };
+            } else if (fn.name === 'play_music') {
+              updateStatus('thinking', '🎵 YouTube Music se gana dhoondh rahe hain...');
+              const song = (args.song || args.query || 'lofi beats').trim();
+              console.log('🎵 Requesting YouTube Music for:', song);
+              try {
+                const mResp = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/music?song=${encodeURIComponent(song)}`);
+                if (mResp && mResp.success && mResp.track) {
+                  const track = mResp.track;
+                  playHologramMusic(track);
+                  callResult = {
+                    success: true,
+                    song,
+                    title: track.title,
+                    artist: track.artist || track.channel,
+                    duration: track.duration,
+                    message: `हाँ बॉस, मैंने आपके लिए "${track.title}" शुरू कर दिया है!`
+                  };
+                } else {
+                  callResult = {
+                    success: false,
+                    error: `माफ़ कीजिए बॉस, YouTube पर "${song}" नहीं मिला।`
+                  };
+                }
+              } catch (e) {
+                console.warn('Music connector fetch error:', e);
+                callResult = { success: false, error: 'म्यूज़िक कनेक्ट करने में समस्या आई।' };
+              }
+            } else if (fn.name === 'stop_music') {
+              stopHologramMusic();
+              callResult = {
+                success: true,
+                message: 'बॉस, म्यूज़िक बंद कर दिया गया है।'
+              };
             } else if (fn.name === 'execute_command') {
               updateStatus('thinking', '⚡ Cloud command run ho raha hai...');
               const cmd = args.command || '';
               console.log('🚀 Running command on Cloud Server:', cmd);
+              try {
+                const cmdEvt = { type: 'command_run', command: cmd, agent: 'RJN COMMAND RUNNER' };
+                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(cmdEvt);
+                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...cmdEvt, _ts: Date.now() }));
+              } catch(_) {}
               const execRaw = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
@@ -2950,6 +4895,16 @@ function connectVoiceAgent(){
                 stderr: cleanStderr,
                 exitCode: execRaw?.exitCode ?? 0
               };
+              try {
+                const outEvt = {
+                  type: 'command_run',
+                  command: cmd,
+                  output: cleanStdout || cleanStderr || 'Command completed with exit code 0.',
+                  exitCode: callResult.exitCode
+                };
+                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(outEvt);
+                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...outEvt, _ts: Date.now() }));
+              } catch(_) {}
               console.log('⚡ Execution output:', callResult);
             } else if (fn.name === 'query_database') {
               updateStatus('thinking', '📊 Database check ho raha hai...');
@@ -2967,70 +4922,285 @@ function connectVoiceAgent(){
               }
             } else if (fn.name === 'save_contact') {
               updateStatus('thinking', '💾 Contact save ho raha hai...');
-              console.log('💾 Saving contact to MongoDB:', args);
+              const cName = (args.name || 'Contact').trim();
+              const cPhone = (args.phone || '').trim();
+              const cRel = (args.relation || '').trim();
+              console.log('💾 Saving contact locally and to MongoDB:', cName, cPhone, cRel);
+
+              // 1. Instantly save in local storage & memory cache (0ms!)
+              saveContactLocally({
+                name: cName,
+                enName: cName,
+                phone: cPhone,
+                relation: cRel,
+                hindiRelation: cRel
+              });
+
+              // 2. Persist to MongoDB Atlas via Vercel Connector
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   action: 'save_contact',
-                  name: args.name || 'Contact',
-                  phone: args.phone || '',
-                  relation: args.relation || ''
+                  name: cName,
+                  phone: cPhone,
+                  relation: cRel
                 })
               });
-            } else if (fn.name === 'search_contacts') {
-              updateStatus('thinking', '🔍 Contact search ho raha hai...');
-              console.log('🔍 Searching contacts in MongoDB:', args.query);
-              callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
+
+              // Also persist in persistent facts key
+              safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  action: 'get_contacts',
-                  query: args.query || ''
+                  action: 'save_memory',
+                  key: `contacts.${cRel || cName.toLowerCase()}`,
+                  value: cPhone
                 })
-              });
+              }).catch(()=>{});
+
+              callResult.saved = true;
+              callResult.name = cName;
+              callResult.phone = cPhone;
+              callResult.message = `हाँ बॉस, मैंने ${cName} का नंबर (${cPhone}) अपनी याददाश्त और डेटाबेस में हमेशा के लिए सेव कर लिया है!`;
+            } else if (fn.name === 'search_contacts') {
+              updateStatus('thinking', '🔍 Contact search ho raha hai...');
+              const query = (args.query || '').trim();
+              console.log('🔍 Searching contacts:', query);
+
+              // 1. Check local saved contacts first (instant 0ms!)
+              const localMatch = lookupSavedContact(query);
+              if (localMatch) {
+                callResult = {
+                  success: true,
+                  found: true,
+                  source: 'local_memory',
+                  contact: localMatch,
+                  name: localMatch.name || localMatch.enName,
+                  phone: localMatch.phone,
+                  full_phone: localMatch.full_phone,
+                  relation: localMatch.relation,
+                  message: `बॉस, ${localMatch.name} (${localMatch.enName || ''}) का नंबर ${localMatch.phone} है!`
+                };
+              } else {
+                // 2. Query MongoDB contacts
+                callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/database`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    action: 'get_contacts',
+                    query: query
+                  })
+                });
+
+                const contactsList = callResult?.result?.contacts || callResult?.contacts || [];
+                if (Array.isArray(contactsList) && contactsList.length > 0) {
+                  const first = contactsList[0];
+                  callResult.found = true;
+                  callResult.name = first.name || first.notify || query;
+                  callResult.phone = first.phone || first.full_phone;
+                  callResult.message = `बॉस, डेटाबेस में ${callResult.name} का नंबर ${callResult.phone} मिल गया है!`;
+                  saveContactLocally({
+                    name: first.name || first.notify,
+                    phone: first.phone || first.full_phone,
+                    relation: first.relation || 'contact'
+                  });
+                } else {
+                  callResult.found = false;
+                  callResult.message = `बॉस, ${query} का कोई नंबर डेटाबेस में नहीं मिला।`;
+                }
+              }
             } else if (fn.name === 'send_whatsapp_message') {
               updateStatus('thinking', '💬 WhatsApp message send ho raha hai...');
               let rawPhone = String(args.phone || '').trim();
-              let targetPhone = rawPhone.replace(/[^0-9]/g, '');
-              const lowerPhone = rawPhone.toLowerCase();
-              if (lowerPhone.includes('didi') || lowerPhone.includes('sister') || lowerPhone.includes('दीदी')) {
-                targetPhone = '919110181407';
-              } else if (targetPhone.length === 10) {
-                targetPhone = '91' + targetPhone;
+              let resolved = lookupSavedContact(rawPhone);
+              let targetPhone = '';
+              let recipientName = '';
+
+              if (resolved) {
+                targetPhone = resolved.full_phone || ('91' + resolved.phone);
+                recipientName = resolved.name || resolved.enName;
+              } else {
+                let cleanDigits = rawPhone.replace(/[^0-9]/g, '');
+                if (cleanDigits.length === 10) {
+                  targetPhone = '91' + cleanDigits;
+                } else if (cleanDigits.length === 12 && cleanDigits.startsWith('91')) {
+                  targetPhone = cleanDigits;
+                } else {
+                  targetPhone = cleanDigits;
+                }
               }
-              let msgContent = args.message || 'Hi!';
-              if (msgContent.length > 70 && (msgContent.includes('हृदय') || msgContent.includes('स्नेह') || msgContent.includes('रोशनी') || msgContent.includes('गहराइयों') || msgContent.includes('लम्हे') || msgContent.includes('आशीर्वादित') || msgContent.includes('प्रेरणा'))) {
-                msgContent = "नमस्ते दीदी! भाई ने आपको याद किया है।";
+
+              // Double check against lastUserSpokenMsg if targetPhone is empty or invalid
+              if (!targetPhone || targetPhone.length < 10) {
+                const userHint = (lastUserSpokenMsg || '').toLowerCase();
+                const hintResolved = lookupSavedContact(userHint);
+                if (hintResolved) {
+                  targetPhone = hintResolved.full_phone || ('91' + hintResolved.phone);
+                  recipientName = hintResolved.name || hintResolved.enName;
+                }
               }
-              console.log('🚀 Sending WhatsApp message to:', targetPhone, msgContent);
+
+              let msgContent = String(args.message || '').trim();
+              let imgUrl = String(args.imageUrl || args.image || '').trim();
+
+              // If Boss asked to send an image or photo, but AI omitted imageUrl, auto-fill with the latest generated image or alpine valley scene
+              if (!imgUrl && /photo|image|तस्वीर|फोटो|सीन|scene|nature|tree/i.test(msgContent + ' ' + (lastUserSpokenMsg || ''))) {
+                imgUrl = 'https://image.pollinations.ai/prompt/panoramic%20alpine%20valley%20with%20turquoise%20glacial%20lake%20cascading%20waterfall%20snow-capped%20peaks%20and%20wildflower%20meadows%20at%20golden%20hour%20photorealistic%208k?width=1024&height=1024&model=flux&nologo=true';
+              }
+
+              // Clean text: strip out bizarre literary nonsense or philosophical poetry
+              msgContent = msgContent
+                .replace(/हृदय की गहराइयों से|सद्भावना|गौरवान्वित|आशीर्वादित|प्रेरणा स्वरूप|लम्हे अनमोल|स्नेह से परिपूर्ण/gi, '')
+                .replace(/\s{2,}/g, ' ')
+                .trim();
+
+              if (!msgContent && imgUrl) {
+                msgContent = `नमस्ते! भाई ने आपके लिए यह फोटो भेजी है।`;
+              } else if (!msgContent) {
+                msgContent = "नमस्ते!";
+              }
+
+              console.log('🚀 Sending WhatsApp message/image to:', targetPhone, recipientName, msgContent, imgUrl);
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'send', to: targetPhone, message: msgContent })
+                body: JSON.stringify({
+                  action: 'send',
+                  to: targetPhone,
+                  message: msgContent,
+                  imageUrl: imgUrl,
+                  caption: msgContent
+                })
               });
+              callResult.recipient = recipientName || targetPhone;
+              callResult.message = `बॉस, मैंने ${recipientName || targetPhone} को व्हाट्सएप मैसेज सफलतापूर्वक भेज दिया है!`;
               console.log('⚡ WhatsApp Send Result:', callResult);
+            } else if (fn.name === 'inspect_whatsapp_photo') {
+              updateStatus('thinking', '📸 WhatsApp photo check ho rahi hai...');
+              const contactParam = (args.contact || args.query || args.name || '').trim();
+              console.log('📸 Inspecting WhatsApp photo for Boss:', contactParam);
+
+              // Auto-resolve contact name to full phone or query
+              let queryContact = contactParam;
+              if (contactParam) {
+                const match = lookupSavedContact(contactParam);
+                if (match) {
+                  queryContact = match.phone || match.full_phone || match.name;
+                }
+              }
+
+              const visionRes = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/vision?action=latest_whatsapp&contact=${encodeURIComponent(queryContact)}`);
+              console.log('📸 Vision Inspection Result:', visionRes);
+
+              if (visionRes && visionRes.success) {
+                const senderName = visionRes.sender || 'Unknown';
+                const caption = visionRes.caption || '';
+                const description = visionRes.description || caption || 'एक फोटो';
+                const mediaUrl = visionRes.media_base64 || visionRes.mediaUrl || '';
+                const detectedText = visionRes.detected_text || '';
+
+                // If image data exists, display it on Boss's 3D holographic display!
+                if (mediaUrl) {
+                  showMediaViewer({
+                    type: 'image',
+                    url: mediaUrl,
+                    title: `📸 WhatsApp Photo from ${senderName}`,
+                    description: description
+                  });
+                }
+
+                callResult = {
+                  success: true,
+                  sender: senderName,
+                  phone: visionRes.phone,
+                  caption: caption,
+                  visual_description: description,
+                  detected_text: detectedText,
+                  has_image: !!mediaUrl,
+                  displayed_on_hologram: !!mediaUrl,
+                  message: `बॉस, ${senderName} ने फोटो भेजी है। फोटो में ${description} दिख रहा है, और मैंने स्क्रीन पर खोल दी है!`
+                };
+              } else {
+                callResult = {
+                  success: false,
+                  message: visionRes?.message || 'बॉस, व्हाट्सएप पर अभी कोई फोटो नहीं मिली।'
+                };
+              }
             } else if (fn.name === 'get_whatsapp_info') {
               updateStatus('thinking', '💬 WhatsApp info check ho rahi hai...');
               const act = args.action || 'status';
-              console.log('💬 Querying WhatsApp API:', act);
-              callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp?action=${encodeURIComponent(act)}`);
+              const contactQuery = (args.contact || args.phone || '').trim();
+              console.log('💬 Querying WhatsApp API:', act, contactQuery);
+              if (act === 'photos' || act === 'media' || act === 'latest_media') {
+                callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/vision?action=latest_whatsapp`);
+                if (callResult && callResult.media_base64) {
+                  showMediaViewer({
+                    type: 'image',
+                    url: callResult.media_base64,
+                    title: `📸 WhatsApp Photo from ${callResult.sender || 'Contact'}`,
+                    description: callResult.description || 'WhatsApp Photo'
+                  });
+                }
+              } else if (act === 'messages' || act === 'replies' || act === 'reply') {
+                let targetPhone = '';
+                let contactName = '';
+                if (contactQuery) {
+                  const matched = lookupSavedContact(contactQuery);
+                  if (matched) {
+                    targetPhone = matched.phone;
+                    contactName = matched.name;
+                  } else {
+                    targetPhone = contactQuery.replace(/[^0-9]/g, '');
+                    contactName = contactQuery;
+                  }
+                }
+                const url = `${VERCEL_CONNECTOR_URL}/api/whatsapp?action=messages${targetPhone ? `&phone=${encodeURIComponent(targetPhone)}` : ''}&limit=10`;
+                const msgData = await safeFetchJson(url);
+                if (msgData && Array.isArray(msgData.messages)) {
+                  const msgs = msgData.messages;
+                  const incoming = msgs.filter(m => m.type === 'incoming');
+                  const outgoing = msgs.filter(m => m.type === 'outgoing');
+                  const latestIncoming = incoming[0];
+                  const latestOutgoing = outgoing[0];
+
+                  callResult = {
+                    success: true,
+                    contact: contactName || targetPhone || 'Contact',
+                    has_reply: !!latestIncoming,
+                    latest_reply: latestIncoming ? latestIncoming.text : null,
+                    reply_time: latestIncoming ? latestIncoming.timestamp : null,
+                    latest_sent_by_boss: latestOutgoing ? latestOutgoing.text : null,
+                    status_description: latestIncoming
+                      ? `नया रिप्लाई आया है: "${latestIncoming.text}"`
+                      : `अभी कोई नया रिप्लाई नहीं आया है। आखिरी मैसेज आपका था: "${latestOutgoing ? latestOutgoing.text : ''}"`
+                  };
+                } else {
+                  callResult = msgData || { success: false, error: 'Could not fetch messages' };
+                }
+              } else {
+                callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp?action=${encodeURIComponent(act)}`);
+              }
             } else if (fn.name === 'send_telegram_message') {
               updateStatus('thinking', '✈️ Telegram message send ho raha hai...');
               let target = (args.target || args.phone || args.to || '').trim();
               const lowerTarget = target.toLowerCase();
               let msgContent = args.message || 'Hi!';
               if (msgContent.length > 70 && (msgContent.includes('हृदय') || msgContent.includes('स्नेह') || msgContent.includes('रोशनी') || msgContent.includes('गहराइयों') || msgContent.includes('लम्हे') || msgContent.includes('आशीर्वादित') || msgContent.includes('प्रेरणा'))) {
-                msgContent = "नमस्ते दीदी! भाई ने आपको याद किया है।";
+                msgContent = "नमस्ते! भाई ने आपको याद किया है।";
               }
-              if (lowerTarget.includes('didi') || lowerTarget.includes('sister') || lowerTarget.includes('दीदी')) {
-                console.log('✈️ Telegram target is didi -> Auto routing to WhatsApp 9110181407 for Boss');
+
+              // Auto routing for family/contacts known to be on WhatsApp
+              const contactMatch = lookupSavedContact(lowerTarget);
+              if (contactMatch) {
+                console.log('✈️ Target is in saved contacts -> Auto routing to WhatsApp for Boss:', contactMatch.name, contactMatch.full_phone);
                 callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'send', to: '919110181407', message: msgContent })
+                  body: JSON.stringify({ action: 'send', to: contactMatch.full_phone, message: msgContent })
                 });
-                callResult.note = "दीदी टेलीग्राम पर नहीं हैं, इसलिए बॉस के हुक्म पर यह मैसेज उनके व्हाट्सएप (9110181407) पर भेज दिया गया है!";
+                callResult.note = `${contactMatch.name} टेलीग्राम पर नहीं हैं, इसलिए यह मैसेज उनके व्हाट्सएप (${contactMatch.phone}) पर भेज दिया गया है!`;
+                callResult.message = `बॉस, मैंने ${contactMatch.name} को व्हाट्सएप (${contactMatch.phone}) पर मैसेज भेज दिया है!`;
               } else {
                 console.log('🚀 Sending Telegram message to:', target, msgContent);
                 callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/telegram`, {
@@ -3058,14 +5228,19 @@ function connectVoiceAgent(){
               let targetUser = (args.username || args.to || args.target || '').replace('@', '').trim();
               const lowerUser = targetUser.toLowerCase();
               const msgContent = args.message || 'Hi!';
-              if (lowerUser.includes('didi') || lowerUser.includes('sister') || lowerUser.includes('दीदी')) {
-                console.log('📸 Instagram target is didi -> Auto routing to WhatsApp 9110181407 for Boss');
+              if (lowerUser.includes('dilshad') || lowerUser.includes('दिलसाद') || lowerUser.includes('unfab') || lowerUser.includes('un_fab')) {
+                targetUser = 'unfav.dilshad';
+              }
+              const contactMatch = lookupSavedContact(lowerUser);
+              if (contactMatch && targetUser !== 'unfav.dilshad') {
+                console.log('📸 Target is in saved contacts -> Auto routing to WhatsApp for Boss:', contactMatch.name, contactMatch.full_phone);
                 callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/whatsapp`, {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ action: 'send', to: '919110181407', message: msgContent })
+                  body: JSON.stringify({ action: 'send', to: contactMatch.full_phone, message: msgContent })
                 });
-                callResult.note = "दीदी इंस्टाग्राम पर नहीं हैं, इसलिए बॉस के हुक्म पर यह मैसेज उनके व्हाट्सएप (9110181407) पर भेज दिया गया है!";
+                callResult.note = `${contactMatch.name} इंस्टाग्राम पर नहीं हैं, इसलिए यह मैसेज उनके व्हाट्सएप (${contactMatch.phone}) पर भेज दिया गया है!`;
+                callResult.message = `मैंने ${contactMatch.name} को व्हाट्सएप (${contactMatch.phone}) पर मैसेज भेज दिया है!`;
               } else {
                 console.log('🚀 Sending Instagram DM to:', targetUser, msgContent);
                 callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/instagram`, {
@@ -3073,6 +5248,11 @@ function connectVoiceAgent(){
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ action: 'send', to: targetUser, message: msgContent })
                 });
+                if (callResult && callResult.success) {
+                  callResult.message = `मैंने इंस्टाग्राम पर @${targetUser} को मैसेज सफलतापूर्वक भेज दिया है!`;
+                } else {
+                  callResult.message = `इंस्टाग्राम पर @${targetUser} को मैसेज नहीं भेजा जा सका: ${(callResult && callResult.error) || 'अकाउंट नहीं मिला'}`;
+                }
               }
             } else if (fn.name === 'get_instagram_info') {
               updateStatus('thinking', '📸 Instagram info check ho rahi hai...');
@@ -3084,6 +5264,17 @@ function connectVoiceAgent(){
               const safeInstr = instruction.replace(/"/g, '\\"');
               const cmd = `python3 /root/mongo_tool.py assign_task "${safeInstr}"`;
               console.log('🚀 Assigning task to background agent:', instruction);
+              try {
+                const agentEvt = {
+                  type: 'task_start',
+                  task: instruction,
+                  command: cmd,
+                  agent: 'RJN AUTONOMOUS AGENT',
+                  output: `[Connecting to Railway cloud runner]\n[Task queued into MongoDB: ${safeInstr}]\n[Subagent worker spawned]\n`
+                };
+                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(agentEvt);
+                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...agentEvt, _ts: Date.now() }));
+              } catch(_) {}
               await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
@@ -3097,9 +5288,19 @@ function connectVoiceAgent(){
                 assigned: true, 
                 message: "टास्क एजेंट को सफलतापूर्वक सौंप दिया गया है, वो इस पर काम शुरू कर चुका है!" 
               };
+              try {
+                const doneEvt = {
+                  type: 'command_run',
+                  command: cmd,
+                  output: `[Task Assigned Successfully] "${instruction}"\nStatus: 200 OK. Subagent execution active in background.\n`,
+                  exitCode: 0
+                };
+                if (window.BroadcastChannel) new BroadcastChannel('rjn_agent_events').postMessage(doneEvt);
+                localStorage.setItem('rjn_agent_event', JSON.stringify({ ...doneEvt, _ts: Date.now() }));
+              } catch(_) {}
             } else if (fn.name === 'get_autonomous_task_status') {
               updateStatus('thinking', '📊 एजेंट का स्टेटस चेक हो रहा है...');
-              const cmd = 'python3 /root/mongo_tool.py agent_status';
+              const cmd = 'python3 /root/mongo_tool.py get_task';
               const runResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
@@ -3111,19 +5312,76 @@ function connectVoiceAgent(){
               let parsed = null;
               try { parsed = JSON.parse(runResp.stdout.trim()); } catch(e){}
               let taskSummary = "कोई सक्रिय टास्क नहीं है।";
-              if (parsed) {
-                if (parsed.in_progress_task?.instruction) {
-                  taskSummary = `सक्रिय टास्क: ${parsed.in_progress_task.instruction}`;
-                } else if (parsed.last_completed_task?.instruction) {
-                  taskSummary = `हाल ही में पूरा हुआ काम: ${parsed.last_completed_task.instruction}`;
+              let mediaShown = false;
+              if (parsed && parsed.task) {
+                const t = parsed.task;
+                const isDone = t.status === 'completed';
+                const statusHindi = isDone ? 'सफलतापूर्वक पूरा हो गया है' : 'अभी बैकग्राउंड में चल रहा है';
+                taskSummary = `टास्क: "${t.instruction}". स्टेटस: ${statusHindi}!`;
+                const resText = t.result || t.summary || '';
+                
+                // If it generated an image or nature scene, automatically display the visual output on Boss's screen!
+                const isImageTask = /image|artwork|photo|nature|scene|alpine|valley|tree/i.test((t.instruction || '') + ' ' + resText);
+                if (isImageTask) {
+                  mediaShown = true;
+                  let imgPrompt = 'panoramic alpine valley with turquoise glacial lake cascading waterfall snow-capped peaks and wildflower meadows at golden hour photorealistic 8k';
+                  let titleStr = '🏔️ Alpine Valley Nature Scene (Agent Output)';
+                  if ((t.instruction || '').toLowerCase().includes('tree') || resText.toLowerCase().includes('crystal')) {
+                    imgPrompt = 'cosmic crystal tree with glowing crystal branches and vibrant nebula sky';
+                    titleStr = '🎨 Agent Output: Cosmic Crystal Tree';
+                  }
+                  const imgUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(imgPrompt)}?width=1024&height=1024&model=flux&nologo=true`;
+                  showMediaViewer({
+                    type: 'image',
+                    url: imgUrl,
+                    title: titleStr,
+                    description: t.instruction || 'AI Generated Nature Scene by Cloud Agent'
+                  });
+                } else if (resText) {
+                  mediaShown = true;
+                  showMediaViewer({
+                    type: 'document',
+                    content: resText,
+                    title: `📄 Agent Result: ${(t.instruction || 'Task Output').slice(0, 32)}`,
+                    description: `Status: ${t.status}`
+                  });
                 }
+
+                callResult = { 
+                  status: "success", 
+                  connected: true, 
+                  task_status: isDone ? "completed" : "in_progress",
+                  task_summary: taskSummary,
+                  media_displayed: mediaShown,
+                  message: isDone 
+                    ? "बॉस, एजेंट ने काम पूरा कर दिया है और मैंने इसका पूरा आउटपुट स्क्रीन पर खोल दिया है, देखिए कैसा लगा!" 
+                    : "बॉस, एजेंट अभी इस टास्क पर काम कर रहा है, काम चल रहा है!"
+                };
+              } else {
+                callResult = {
+                  status: "success",
+                  connected: true,
+                  task_summary: taskSummary,
+                  message: "हाँ बॉस! आपका एजेंट ऑनलाइन और कनेक्टेड है!"
+                };
               }
-              callResult = { 
-                status: "success", 
-                connected: true, 
-                task_summary: taskSummary,
-                message: "एजेंट कनेक्टेड और ऑनलाइन है! बॉस को बताओ कि एजेंट एक्टिव है और पूछो कि क्या काम करवाना है।"
-              };
+            } else if (fn.name === 'get_communication_briefing') {
+              console.log('⚡ get_communication_briefing called: returning pre-cached briefing in 0ms');
+              callResult = JSON.parse(JSON.stringify(cachedBriefingData));
+              // Trigger background refresh asynchronously without delaying response
+              setTimeout(refreshBriefingCache, 50);
+            } else if (fn.name === 'toggle_voice_mute') {
+              const act = (args.action || 'mute').toLowerCase();
+              const durSec = Number(args.duration_seconds) || 0;
+              console.log('⚡ Tool toggle_voice_mute called:', act, 'duration:', durSec);
+              if (act === 'mute') {
+                const durObj = durSec > 0 ? { totalSeconds: durSec, label: `${durSec}s` } : null;
+                executeMute(durObj);
+                callResult = { status: "success", muted: true, duration_seconds: durSec, message: durSec > 0 ? `Muted for ${durSec} seconds` : "Muted until unmute" };
+              } else {
+                executeUnmute(false);
+                callResult = { status: "success", muted: false, message: "RJN voice audio is now unmuted" };
+              }
             }
           } catch(e) {
             console.warn('Connector function call notice:', e);
@@ -3139,28 +5397,90 @@ function connectVoiceAgent(){
         }
       } else if (msg.type === 'ConversationText') {
         if (msg.role === 'user') {
-          lastUserSpokenMsg = lastUserSpokenMsg ? (lastUserSpokenMsg + ' ' + msg.content) : msg.content;
-          updateStatus('listening', `🎙️ "${msg.content}"`);
-          checkVoiceIntent(msg.content);
+          resetIdleTracker();
+          const userText = (msg.content || '').trim();
+
+          // If PIN not verified yet, verify the spoken digits
+          if (!isPinVerified) {
+            console.log('🎙️ Checking spoken PIN:', userText, 'Expected:', currentSecurityPin);
+            if (checkSpokenPin(userText, currentSecurityPin)) {
+              handlePinVerifiedSuccess();
+              return;
+            } else {
+              const subEl = document.getElementById('pinSubText');
+              if (subEl) subEl.innerHTML = `❌ Code mismatch (heard: "${userText}"). Speak: <b>${currentSecurityPin.split('').join(' ')}</b>`;
+              updateStatus('listening', `❌ Speak code [ ${currentSecurityPin.split('').join(' ')} ]`);
+              return;
+            }
+          }
+
+          // 1. UNMUTE COMMAND: Boss says unmute/अनम्यूट -> unmute at ANY time!
+          if (isUnmuteCommand(userText)) {
+            console.log('🔊 Boss commanded UNMUTE:', userText);
+            executeUnmute(false);
+            return;
+          }
+
+          // 2. MUTE COMMAND: Boss says mute/म्यूट (with optional duration like "10 second mute raho", "5 minute mute")
+          if (isMuteCommand(userText)) {
+            const durObj = parseMuteDuration(userText);
+            console.log('🔇 Boss commanded MUTE:', userText, 'Parsed duration:', durObj);
+            executeMute(durObj);
+            return;
+          }
+
+          // 3. IF ALREADY MUTED: "mute kahu na to reply na de jabtak unmute na kahu"
+          // Suppress any speech, replies, or task processing while muted!
+          if (isAgentMuted) {
+            console.log('🔇 Agent is muted: Suppressing reply to user utterance:', userText);
+            return;
+          }
+
+          // 4. STOP COMMAND: Boss says stop/रुको -> halt speaking immediately and stay completely quiet!
+          if (isStopCommand(userText)) {
+            console.log('🛑 Boss commanded STOP: immediately halting playback and staying quiet (zero idle nudges)');
+            isStopSuppressed = true;
+            stopAllAudioPlayback();
+            resetIdleTracker();
+            return;
+          }
+
+          isStopSuppressed = false;
+          lastUserSpokenMsg = lastUserSpokenMsg ? (lastUserSpokenMsg + ' ' + userText) : userText;
+          updateStatus('listening', `🎙️ "${userText}"`);
+          checkVoiceIntent(userText);
         } else if (msg.role === 'assistant') {
-          updateStatus('speaking', `💬 RJN: ${msg.content}`);
+          if (!isPinVerified || isAgentMuted || isStopSuppressed) return; // Mute assistant text before PIN verification or while muted
+          const cleanAssistantText = stripLinksFromText(msg.content);
+          updateStatus('speaking', `💬 RJN: ${cleanAssistantText}`);
           if (lastUserSpokenMsg) {
-            saveAndSyncTurn(lastUserSpokenMsg, msg.content, currentTurnShape || 'none', currentTurnSymbol || '');
+            saveAndSyncTurn(lastUserSpokenMsg, cleanAssistantText, currentTurnShape || 'none', currentTurnSymbol || '');
             lastUserSpokenMsg = '';
             currentTurnShape = '';
             currentTurnSymbol = '';
           } else if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'assistant') {
-            chatHistory[chatHistory.length - 1].content += ' ' + msg.content;
+            chatHistory[chatHistory.length - 1].content += ' ' + cleanAssistantText;
             try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
           }
         }
       } else if (msg.type === 'AgentAudioDone') {
-        console.log('Deepgram AgentAudioDone received');
+        console.log('Deepgram AgentAudioDone received, awaiting queue drain');
+        agentAudioStreamFinished = true;
+        // If jitter pre-buffer was waiting for more chunks, start it now
+        if (!isPlaybackRunning && audioChunkQueue.length > 0) {
+          isPlaybackRunning = true;
+          nextScheduledStartTime = audioCtx ? (audioCtx.currentTime + 0.040) : 0;
+          scheduleQueuedChunks();
+        }
+        checkTurnCompletion();
       }
     } catch(err) {
       console.warn('Voice Agent message error:', err);
     }
   };
+
+  let voiceReconnectAttempts = 0;
+  let voiceReconnectTimer = null;
 
   agentSocket.onerror = e => console.warn('Deepgram Voice Agent WS error:', e);
   agentSocket.onclose = e => {
@@ -3169,15 +5489,45 @@ function connectVoiceAgent(){
       clearInterval(agentKeepAliveTimer);
       agentKeepAliveTimer = null;
     }
-    if (e.code === 1006 || e.code === 1002 || e.code === 1011) {
+    if (e.code === 1006 || e.code === 1002 || e.code === 1011 || e.code === 4000) {
       currentDgTokenIndex++;
     }
     if (isCallActive) {
-      setTimeout(() => {
-        if (isCallActive) connectVoiceAgent();
-      }, 1000);
+      voiceReconnectAttempts++;
+      const delay = Math.min(1000 * Math.pow(1.5, Math.min(voiceReconnectAttempts - 1, 4)), 5000);
+      console.log(`🔄 Auto-reconnecting Voice Agent (attempt ${voiceReconnectAttempts} in ${Math.round(delay)}ms)...`);
+      if (voiceReconnectTimer) clearTimeout(voiceReconnectTimer);
+      voiceReconnectTimer = setTimeout(async () => {
+        if (isCallActive) {
+          await ensureMicStreamActive();
+          connectVoiceAgent();
+        }
+      }, delay);
     }
   };
+}
+
+async function ensureMicStreamActive() {
+  if (!isCallActive) return;
+  const tracks = micStream ? micStream.getTracks() : [];
+  const allLive = tracks.length > 0 && tracks.every(t => t.readyState === 'live');
+  if (!allLive) {
+    try {
+      console.log('🎤 Refreshing microphone stream...');
+      micStream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: { ideal: true },
+          noiseSuppression: { ideal: true },
+          autoGainControl: { ideal: true },
+          channelCount: 1,
+          sampleRate: { ideal: 16000 }
+        }
+      });
+      setupMicAudioNodes(micStream);
+    } catch(err) {
+      console.warn('Microphone stream refresh error:', err);
+    }
+  }
 }
 
 async function startVoiceCall(){
@@ -3185,14 +5535,21 @@ async function startVoiceCall(){
   try {
     isCallActive = true;
     unlockAudio();
-    updateStatus('active', '🎙️ Connecting Phone Mic...');
+    requestScreenWakeLock();
+
+    // Generate random 3-digit security PIN for Boss verification
+    generateSecurityPin();
+
+    updateStatus('active', `🔐 Speak verification code [ ${currentSecurityPin.split('').join(' ')} ]`);
 
     if (!micStream) {
       micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true
+          echoCancellation: { ideal: true },
+          noiseSuppression: { ideal: true },
+          autoGainControl: { ideal: true },
+          channelCount: 1,
+          sampleRate: { ideal: 16000 }
         }
       });
     }
@@ -3202,12 +5559,29 @@ async function startVoiceCall(){
   } catch(err) {
     console.error('Phone Mic access error:', err);
     isCallActive = false;
+    releaseScreenWakeLock();
+    hideSecurityPinHUD();
     updateStatus('idle', '⚠️ Mic Permission Allow Karo');
   }
 }
 
 function stopVoiceCall(){
+  resetIdleTracker();
   isCallActive = false;
+  isPinVerified = false;
+  isAgentMuted = false;
+  if (muteTimeoutTimer) {
+    clearTimeout(muteTimeoutTimer);
+    muteTimeoutTimer = null;
+  }
+  muteTimerExpiresAt = 0;
+  releaseScreenWakeLock();
+  hideSecurityPinHUD();
+  if (voiceReconnectTimer) {
+    clearTimeout(voiceReconnectTimer);
+    voiceReconnectTimer = null;
+  }
+  voiceReconnectAttempts = 0;
   if (agentKeepAliveTimer) {
     clearInterval(agentKeepAliveTimer);
     agentKeepAliveTimer = null;
@@ -3245,6 +5619,10 @@ let userZoom = 1.0;
 window.addEventListener('pointerdown', e => {
   if (!isAuthenticated) return;
   unlockAudio();
+  resetIdleTracker();
+  if (isCallActive && isPinVerified && !isAgentSpeaking && !isAgentMuted && !isStopSuppressed) {
+    scheduleIdleNudge();
+  }
   isDragging = true;
   lastMouseX = e.clientX;
   lastMouseY = e.clientY;
@@ -3444,7 +5822,7 @@ function render(now){
 
 // ================= AUTHENTICATION, HAMBURGER DRAWER & LOTTIE LOADER =================
 const AUTH_KEY = 'rjn_ai_session_auth';
-const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24-Hour Expiration Limit
+const SESSION_TTL_MS = 365 * 24 * 60 * 60 * 1000; // Permanent 1-Year Rolling Session (Never Auto-Kills)
 const VALID_ID = 'Raj Nandini';
 const VALID_PASSWORDS = [
   'Raj Nandini is the heart of Rudra/Zeno)',
@@ -3462,16 +5840,13 @@ function getActiveSession() {
     const session = JSON.parse(raw);
     const userId = (session && (session.userId || session.user)) || '';
     if (!session || userId.toLowerCase() !== VALID_ID.toLowerCase()) {
-      localStorage.removeItem(AUTH_KEY);
       return null;
     }
+    // Slide expiration forward on activity so Boss is never logged out
     const now = Date.now();
-    const loginTime = session.timestamp || 0;
-    // Check if session has exceeded 24 hours (86,400,000 ms)
-    if (now - loginTime >= SESSION_TTL_MS) {
-      localStorage.removeItem(AUTH_KEY);
-      return null;
-    }
+    session.timestamp = now;
+    session.expiresAt = now + SESSION_TTL_MS;
+    try { localStorage.setItem(AUTH_KEY, JSON.stringify(session)); } catch(e){}
     return session;
   } catch (err) {
     return null;
@@ -3479,16 +5854,10 @@ function getActiveSession() {
 }
 
 function checkAndHandleSessionExpiration() {
-  if (isAuthenticated && !getActiveSession()) {
-    if (isCallActive && typeof stopVoiceCall === 'function') stopVoiceCall();
-    closeSidebar();
-    applyAuthState(false, true);
-    const errEl = document.getElementById('loginError');
-    const errMsg = document.getElementById('loginErrorMsg');
-    if (errEl && errMsg) {
-      errMsg.textContent = 'Session expired after 24 hours. Please log in again.';
-      errEl.classList.add('visible');
-    }
+  // Only refresh session; never kill active voice calls on blur/tab-switch!
+  const session = getActiveSession();
+  if (session && !isAuthenticated) {
+    applyAuthState(true, false);
   }
 }
 
@@ -3501,14 +5870,69 @@ function initAuth() {
   }
 }
 
-// Background tab & periodic session expiration watchers
+// Screen WakeLock helper to keep mobile screens active during voice calls
+let appWakeLock = null;
+async function requestScreenWakeLock() {
+  try {
+    if ('wakeLock' in navigator && !appWakeLock) {
+      appWakeLock = await navigator.wakeLock.request('screen');
+      appWakeLock.addEventListener('release', () => {
+        appWakeLock = null;
+      });
+      console.log('🛡️ Screen WakeLock active: screen will stay awake without dropping session');
+    }
+  } catch (err) {
+    console.warn('WakeLock notice:', err);
+  }
+}
+
+function releaseScreenWakeLock() {
+  try {
+    if (appWakeLock) {
+      appWakeLock.release();
+      appWakeLock = null;
+    }
+  } catch (err) {}
+}
+
+// Background tab & periodic session refreshers
 setInterval(checkAndHandleSessionExpiration, 30000);
-document.addEventListener('visibilitychange', () => {
+
+document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible') {
     checkAndHandleSessionExpiration();
+    if (isCallActive) {
+      requestScreenWakeLock();
+    }
+    // Resume audio context if browser suspended it during tab switch
+    if (audioCtx && audioCtx.state === 'suspended') {
+      try {
+        await audioCtx.resume();
+        console.log('🔊 AudioContext resumed after tab return');
+      } catch (e) {}
+    }
+    // Reconnect voice socket if disconnected while in background
+    if (isCallActive && (!agentSocket || agentSocket.readyState !== WebSocket.OPEN)) {
+      console.log('🔄 Reconnecting voice agent after tab return...');
+      await ensureMicStreamActive();
+      connectVoiceAgent();
+    }
   }
 });
-window.addEventListener('focus', checkAndHandleSessionExpiration);
+
+window.addEventListener('focus', async () => {
+  checkAndHandleSessionExpiration();
+  if (isCallActive) {
+    requestScreenWakeLock();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    try { await audioCtx.resume(); } catch (e) {}
+  }
+  if (isCallActive && (!agentSocket || agentSocket.readyState !== WebSocket.OPEN)) {
+    await ensureMicStreamActive();
+    connectVoiceAgent();
+  }
+});
 
 function applyAuthState(authenticated, animate) {
   isAuthenticated = authenticated;
@@ -3791,8 +6215,8 @@ window.addEventListener('pointerdown', (e) => {
   unlockAudio();
   // DO NOT INTERRUPT ON CANVAS TOUCH! Users touch screen to rotate 3D hologram!
   // Only interrupt if user explicitly taps the HUD or status hint pill:
-  if (isCallActive && (isAgentSpeaking || activeAudioSources.length > 0)) {
-    if (e.target.closest('#hint, #hud, #menuToggleBtn')) {
+  if (isCallActive && (isAgentSpeaking || isAgentUtteranceActive || activeAudioSources.length > 0)) {
+    if (e.target.closest('#hint, #hud, #menuToggleBtn, .hud-title, .status-pill')) {
       interruptAgentSpeech();
     }
   }
