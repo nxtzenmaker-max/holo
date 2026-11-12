@@ -8,7 +8,9 @@
 <style>
   *, *::before, *::after {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    outline: none !important;
   }
   html, body {
     margin: 0;
@@ -16,18 +18,20 @@
     background: #03040a;
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-tap-highlight-color: transparent !important;
   }
-  #glow {
-    position: fixed;
-    left: 50%;
-    top: 46%;
-    width: 88vmin;
-    height: 88vmin;
-    margin: -44vmin 0 0 -44vmin;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(70,150,255,.38) 0%, rgba(120,70,255,.15) 40%, rgba(0,0,0,0) 68%);
-    pointer-events: none;
-    will-change: transform, opacity;
+  ::selection {
+    background: transparent !important;
+    color: inherit !important;
+  }
+  ::-moz-selection {
+    background: transparent !important;
+    color: inherit !important;
   }
   canvas {
     position: fixed;
@@ -36,9 +40,12 @@
     height: 100%;
     display: block;
     cursor: pointer;
-    outline: none;
-    user-select: none;
-    -webkit-user-select: none;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    -webkit-user-drag: none !important;
     touch-action: none;
   }
 
@@ -1369,6 +1376,9 @@
 </div>
 <script>
 const cv = document.getElementById('c');
+document.addEventListener("selectstart", e => { if (!e.target.closest("input, textarea")) e.preventDefault(); }, { passive: false });
+window.addEventListener("contextmenu", e => { if (!e.target.closest("input, textarea")) e.preventDefault(); }, { passive: false });
+cv.addEventListener("touchstart", e => { if (e.cancelable && e.touches.length <= 1) e.preventDefault(); }, { passive: false });
 const gl = cv.getContext('webgl', {antialias:false, alpha:true, premultipliedAlpha:true});
 const glowEl = document.getElementById('glow');
 const DPR = Math.min(window.devicePixelRatio || 1, 2);

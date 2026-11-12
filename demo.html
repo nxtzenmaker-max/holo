@@ -7,7 +7,9 @@
 <style>
   *, *::before, *::after {
     box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    outline: none !important;
   }
   html, body {
     margin: 0;
@@ -18,6 +20,20 @@
     background: #06080e;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #e2e8f0;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    user-select: none !important;
+    -webkit-touch-callout: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+  }
+  ::selection {
+    background: transparent !important;
+    color: inherit !important;
+  }
+  ::-moz-selection {
+    background: transparent !important;
+    color: inherit !important;
   }
 
   /* Soft, non-aggressive ambient lighting centered behind the Orb */
@@ -36,7 +52,7 @@
     z-index: 1;
   }
 
-  /* 3D WebGL Particle Canvas */
+  /* 3D WebGL Particle Canvas - Pure 3D, Zero Touch Selection Highlight */
   canvas#c {
     position: fixed;
     inset: 0;
@@ -44,14 +60,19 @@
     height: 100%;
     display: block;
     cursor: grab;
-    outline: none;
-    user-select: none;
-    -webkit-user-select: none;
+    outline: none !important;
+    -webkit-tap-highlight-color: transparent !important;
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    user-select: none !important;
+    -webkit-user-drag: none !important;
     touch-action: none;
     z-index: 2;
   }
-  canvas#c:active {
+  canvas#c:active, canvas#c:focus {
     cursor: grabbing;
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   /* Top Minimalist Navigation Bar */
@@ -130,50 +151,50 @@
     color: #f8fafc;
   }
 
-  /* Refined, Minimal Console BELOW the Orb */
+  /* Refined, Airy, Minimal Floating Console BELOW the Orb */
   .console-wrapper {
     position: fixed;
-    bottom: 18px;
+    bottom: 14px;
     left: 50%;
     transform: translateX(-50%);
-    width: min(92vw, 740px);
-    max-height: 46vh;
+    width: min(90vw, 680px);
+    max-height: 38vh;
     display: flex;
     flex-direction: column;
-    background: rgba(12, 16, 24, 0.88);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 18px;
-    box-shadow: 0 24px 50px -10px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 255, 255, 0.03);
+    background: rgba(10, 14, 22, 0.76);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 16px;
+    box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.03);
     z-index: 20;
     overflow: hidden;
-    transition: border-color 0.25s ease;
+    transition: border-color 0.25s ease, max-height 0.3s ease;
   }
   .console-wrapper.active-stream {
     border-color: rgba(56, 189, 248, 0.35);
   }
 
-  /* Console Header */
+  /* Console Header - Slim & Clean */
   .console-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 16px;
-    background: rgba(18, 24, 36, 0.55);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 7px 14px;
+    background: rgba(14, 19, 28, 0.5);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   }
   .console-status {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 11.5px;
+    gap: 7px;
+    font-size: 11px;
     font-weight: 500;
     color: #94a3b8;
   }
   .status-light {
-    width: 6.5px;
-    height: 6.5px;
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: #10b981;
     transition: background 0.25s;
@@ -185,36 +206,36 @@
   .console-tools {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
   }
   .tool-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 4px;
     background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.07);
     color: #94a3b8;
-    font-size: 11.5px;
-    padding: 4px 9px;
-    border-radius: 6px;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 5px;
     cursor: pointer;
     transition: all 0.15s ease;
   }
   .tool-btn:hover {
     color: #f1f5f9;
-    border-color: rgba(255, 255, 255, 0.18);
-    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.07);
   }
 
-  /* Scrollable Text Body */
+  /* Scrollable Text Body - Balanced Airy Height */
   .console-body {
     flex: 1 1 auto;
     overflow-y: auto;
-    padding: 14px 18px;
-    font-size: 13.5px;
-    line-height: 1.62;
+    padding: 9px 14px;
+    font-size: 12.8px;
+    line-height: 1.55;
     color: #e2e8f0;
-    max-height: 230px;
+    max-height: 140px;
   }
   .console-body::-webkit-scrollbar {
     width: 4px;
@@ -338,11 +359,12 @@
   /* Quick Chips Row */
   .chips-row {
     display: flex;
-    gap: 6px;
-    padding: 8px 14px;
+    gap: 5px;
+    padding: 5px 11px;
     overflow-x: auto;
     white-space: nowrap;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    background: rgba(8, 12, 18, 0.35);
   }
   .chips-row::-webkit-scrollbar {
     height: 0;
@@ -351,17 +373,18 @@
     flex: 0 0 auto;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
     background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.07);
     color: #94a3b8;
-    font-size: 11.5px;
+    font-size: 11px;
     font-weight: 500;
-    padding: 4px 10px;
-    border-radius: 8px;
+    padding: 3.5px 9px;
+    border-radius: 9999px;
     cursor: pointer;
     transition: all 0.15s ease;
     user-select: none;
+    -webkit-user-select: none;
   }
   .chip svg {
     opacity: 0.7;
@@ -376,21 +399,21 @@
     opacity: 1;
   }
 
-  /* Input Bar */
+  /* Input Bar - Sleek & Compact */
   .console-input-bar {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px 10px 12px;
-    background: rgba(12, 16, 24, 0.95);
+    gap: 7px;
+    padding: 6px 10px 7px 10px;
+    background: rgba(10, 14, 22, 0.85);
   }
   .input-field {
     flex: 1;
     background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 10px;
-    padding: 9px 13px;
-    font-size: 13px;
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 9px;
+    padding: 7px 11px;
+    font-size: 12.5px;
     color: #f8fafc;
     outline: none;
     transition: border-color 0.2s;
@@ -424,15 +447,25 @@
 
   .orb-hint {
     position: fixed;
-    top: 58px;
+    top: 50px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 11px;
+    font-size: 10.5px;
     color: rgba(148, 163, 184, 0.45);
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     pointer-events: none;
     z-index: 5;
     text-align: center;
+    background: rgba(15, 23, 42, 0.45);
+    padding: 3px 11px;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    animation: hintFadeOut 4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  @keyframes hintFadeOut {
+    0%, 65% { opacity: 1; transform: translateX(-50%) translateY(0); }
+    100% { opacity: 0; transform: translateX(-50%) translateY(-6px); pointer-events: none; }
   }
 
   @keyframes pulseDot {
@@ -442,14 +475,15 @@
 
   @media (max-width: 640px) {
     .console-wrapper {
-      width: 95vw;
+      width: 92vw;
       bottom: 10px;
-      max-height: 52vh;
+      max-height: 36vh;
+      border-radius: 14px;
     }
     .console-body {
-      max-height: 180px;
-      padding: 10px 14px;
-      font-size: 12.8px;
+      max-height: 115px;
+      padding: 7px 11px;
+      font-size: 12px;
     }
     .hud-title {
       font-size: 12px;
@@ -1095,8 +1129,30 @@ let pointerDownX = 0, pointerDownY = 0, pointerDownTime = 0;
 let userZoom = 1.0, morph = 1.0;
 let tapPulseEnergy = 0;
 
+// Prevent browser blue selection box and tap-callout on drag/touch-hold
+document.addEventListener('selectstart', e => {
+  if (!e.target.closest('input, textarea')) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+window.addEventListener('contextmenu', e => {
+  if (!e.target.closest('input, textarea')) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+cv.addEventListener('touchstart', e => {
+  if (e.cancelable && e.touches.length <= 1) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
 window.addEventListener('pointerdown', e => {
-  if (e.target.closest('#consoleWrapper, .top-hud')) return;
+  if (e.target.closest('#consoleWrapper, .top-hud, .site-preview-modal')) return;
+  if (e.cancelable && e.pointerType === 'touch' && e.target === cv) {
+    e.preventDefault();
+  }
   isDragging = true;
   lastMouseX = e.clientX;
   lastMouseY = e.clientY;
@@ -1224,21 +1280,21 @@ function render(now) {
   glowEl.style.transform = `scale(${glowScale})`;
   glowEl.style.opacity = glowOpacity;
 
-  // Responsive scale & vertical offset positioning
+  // Responsive scale & vertical offset positioning - Spacious holographic balance
   const aspect = W / H;
   let scX = 1.0, scY = 1.0;
-  let offsetY = 0.28;
+  let offsetY = 0.16;
 
   if (aspect < 1.0) {
-    const mobileFit = 0.58;
+    const mobileFit = 0.44; // Sleek proportion, zero congestion with top HUD
     scX = mobileFit;
     scY = mobileFit * aspect;
-    offsetY = 0.32;
+    offsetY = 0.18; // Balanced breathing room above console
   } else {
-    const desktopFit = 0.65;
+    const desktopFit = 0.52;
     scX = desktopFit / aspect;
     scY = desktopFit;
-    offsetY = 0.26;
+    offsetY = 0.14;
   }
 
   scX *= userZoom;
@@ -1688,10 +1744,8 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     streamLivelyResponse(
-      `**Holo AI // Test Interface Ready**\n\n` +
-      `• **3D Particle Orb:** Active above. Touch or drag to rotate.\n` +
-      `• **Silent Architecture:** Audio voice output is disabled for pure visual and textual evaluation.\n` +
-      `• **Interaction:** Select an option from the chips below or type a query in the input bar.`,
+      `**Holo AI // Silent Interface Ready**\n\n` +
+      `3D Neural Orb is active above. Touch or drag to rotate. Select a mode below or enter any query to test live streaming.`,
       null
     );
   }, 350);
