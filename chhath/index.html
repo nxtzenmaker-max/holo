@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>छठी मईया • CHHATH PUJA | The Eternal Song of Sun & Stream</title>
+  
+  <meta name="description" content="An aesthetic, human-crafted guide to Chhath Puja Mahaparv: 4-day rituals, astronomical Arghya Muhurat scheduler, authentic Khasta Thekua recipes, virtual floating diyas on the Ganges, and community prayers.">
+  <meta name="keywords" content="Chhath Puja, Chhath 2026, Sandhya Arghya, Usha Arghya, Nahay Khay, Kharna, Thekua Recipe, Rasiya, Sharda Sinha Geet, Ganga Ghat">
+
+  <!-- Google Web Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Rozha+One&family=Yatra+One&display=swap" rel="stylesheet">
+
+  <!-- PWA & Mobile Web Capabilities -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#f59e0b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Chhath Puja">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/interactive.css">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2246%22 fill=%22%23f59e0b%22/><text y=%2265%22 font-size=%2255%22 x=%2222%22>🪔</text></svg>">
+</head>
+
+<body data-theme="dusk">
+
+  <!-- TOP VEDIC SHLOKA BANNER -->
+  <aside class="top-shloka-banner" aria-label="Sacred Chant">
+    <span class="om-symbol">ॐ</span>
+    <span>॥ ॐ ह्रीं ह्रीं सूर्याय सहस्रकिरणाय ऐं वांछित फलम् देहि देहि स्वाहा ॥ जय छठी मईया</span>
+    <span class="om-symbol">ॐ</span>
+  </aside>
+
+  <!-- SITE HEADER / NAVIGATION -->
+  <header class="site-header">
+    <div class="nav-container">
+      <a href="#hero" class="brand-logo" aria-label="Chhath Puja Home">
+        <div class="brand-sun-icon" aria-hidden="true">☀️</div>
+        <div class="brand-text">
+          <span class="brand-hi">छठी मईया</span>
+          <span class="brand-en">Chhath Mahaparv</span>
+        </div>
+      </a>
+
+      <nav class="main-nav" id="primary-navigation" aria-label="Main Navigation">
+        <a href="#rituals" class="nav-link">4-Day Rituals</a>
+        <a href="#scheduler" class="nav-link">Muhurat & Calendar</a>
+        <a href="#virtual-ghat-section" class="nav-link">Virtual Ghat</a>
+        <a href="#supa-explorer" class="nav-link">Bamboo Supa</a>
+        <a href="#recipes" class="nav-link">Sacred Recipes</a>
+        <a href="#folk-geet" class="nav-link">Chhath Geet</a>
+        <a href="#community-wall" class="nav-link">Prarthana Wall</a>
+        <a href="#ghat-finder" class="nav-link">Ghat Directory</a>
+        <a href="#checklist" class="nav-link">Vrati Checklist</a>
+
+        <!-- Mobile Drawer Theme Switcher -->
+        <div style="border-top: 1px solid var(--border-subtle); padding-top: 1rem; width: 100%; display: flex; flex-direction: column; gap: 0.6rem;">
+          <span style="font-size: 0.78rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Atmosphere Mode:</span>
+          <div class="theme-switcher" style="width: 100%; justify-content: space-between;">
+            <button class="theme-btn" data-time="dawn">🌅 Bhor</button>
+            <button class="theme-btn" data-time="noon">☀️ Noon</button>
+            <button class="theme-btn active" data-time="dusk">🌇 Sanjha</button>
+            <button class="theme-btn" data-time="night">🌌 Night</button>
+          </div>
+        </div>
+
+        <!-- Mobile Quick Cloud Actions -->
+        <div style="display: flex; gap: 0.5rem; width: 100%; padding-top: 0.5rem;">
+          <button onclick="document.getElementById('open-card-gen-btn').click()" class="btn-secondary-glass" style="flex:1; justify-content: center; font-size: 0.82rem; padding: 0.5rem;">
+            ✨ Create E-Card
+          </button>
+          <button onclick="window.cloudSyncManager ? window.cloudSyncManager.shareFestivalWish() : null" class="btn-secondary-glass" style="flex:1; justify-content: center; font-size: 0.82rem; padding: 0.5rem;">
+            📲 Share Festival
+          </button>
+        </div>
+      </nav>
+
+      <div class="header-actions">
+        <!-- Live Cloud Connectivity Status -->
+        <div class="cloud-status-pill online" id="cloud-status-badge" title="Connects seamlessly to the cloud • Zero Node server required">
+          <span class="status-pulse-dot online"></span>
+          <span class="status-text">Cloud Sync</span>
+        </div>
+
+        <!-- Soundscape Master Toggle -->
+        <button id="soundscape-master-toggle" class="soundscape-btn" title="Listen to Sacred River & Tanpura Ambience">
+          <span id="soundscape-icon">🔈</span>
+          <span class="sound-wave" id="soundscape-wave" aria-hidden="true">
+            <span class="sound-bar"></span>
+            <span class="sound-bar"></span>
+            <span class="sound-bar"></span>
+          </span>
+          <span class="sound-label">River Sound</span>
+        </button>
+
+        <!-- Theme / Time of Day Switcher (Desktop) -->
+        <div class="theme-switcher" role="group" aria-label="Atmospheric Sky Theme">
+          <button class="theme-btn" data-time="dawn" title="Bhorva (Dawn / Usha Arghya)">🌅 Bhor</button>
+          <button class="theme-btn" data-time="noon" title="Dopahar (Noon Sunlight)">☀️ Noon</button>
+          <button class="theme-btn active" data-time="dusk" title="Sanjha Ghat (Sunset Arghya)">🌇 Sanjha</button>
+          <button class="theme-btn" data-time="night" title="Tara (Midnight Ganges)">🌌 Night</button>
+        </div>
+
+        <!-- Light a Diya CTA -->
+        <button id="open-diya-modal-btn" class="cta-header-btn">
+          <span>🪔</span>
+          <span>Light Diya</span>
+        </button>
+
+        <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Open Navigation Menu">
+          ☰
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section class="hero-section" id="hero">
+      <div class="hero-background-wrapper">
+        <img src="assets/images/chhath_hero.jpg" alt="Devotee standing in the sacred Ganges offering Sandhya Arghya at sunset" class="hero-bg-img">
+        <div class="hero-gradient-overlay"></div>
+      </div>
+
+      <div class="container hero-content">
+        <div class="hero-top-badge">
+          <span>॥ आस्था, पवित्रता एवं प्रकृति वंदना का महापर्व ॥</span>
+        </div>
+
+        <h1 class="hero-title">
+          The Eternal Song of the <br>
+          <span class="highlight-text">Sun & Holy Stream</span>
+        </h1>
+
+        <p class="hero-subtitle">
+          An ancient Vedic communion of four days without middlemen or idols. Standing waist-deep in the flowing waters, devotees bow to both the setting and rising Sun with handmade bamboo supa, pure cow ghee, and unwavering devotion.
+        </p>
+
+        <div class="hero-cta-group">
+          <button onclick="document.getElementById('open-diya-modal-btn').click()" class="btn-primary-golden">
+            <span>🪔</span>
+            <span>Float a Sacred Diya on the Ganges</span>
+          </button>
+          <button onclick="document.getElementById('open-card-gen-btn').click()" class="btn-primary-golden" style="background: linear-gradient(135deg, #ea580c 0%, #b45309 100%);">
+            <span>✨</span>
+            <span>Create Blessing Card & Cloud Share</span>
+          </button>
+          <a href="#rituals" class="btn-secondary-glass">
+            <span>📜</span>
+            <span>Explore 4-Day Rituals</span>
+          </a>
+          <a href="#scheduler" class="btn-secondary-glass">
+            <span>⏳</span>
+            <span>Calculate Local Arghya Muhurat</span>
+          </a>
+        </div>
+
+        <!-- LIVE COUNTDOWN BAR -->
+        <div class="hero-countdown-box">
+          <div class="countdown-label-group">
+            <span class="countdown-status-badge">● Chhath Mahaparv 2026</span>
+            <h3 class="countdown-headline" id="countdown-title-text">Counting down to Sandhya Arghya</h3>
+          </div>
+
+          <div class="countdown-digits-grid">
+            <div class="digit-slot">
+              <span class="digit-val" id="count-days">02</span>
+              <span class="digit-unit">Days</span>
+            </div>
+            <div class="digit-slot">
+              <span class="digit-val" id="count-hours">12</span>
+              <span class="digit-unit">Hours</span>
+            </div>
+            <div class="digit-slot">
+              <span class="digit-val" id="count-mins">45</span>
+              <span class="digit-unit">Mins</span>
+            </div>
+            <div class="digit-slot">
+              <span class="digit-val" id="count-secs">30</span>
+              <span class="digit-unit">Secs</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIRTUAL GANGA GHAT INTERACTIVE CANVAS SECTION -->
+    <section class="section-padding" id="virtual-ghat-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">त्रिवेणी संगम • आभासी गंगा घाट</span>
+          <h2 class="section-title">The Sacred Virtual River Ghat</h2>
+          <div class="ornamental-divider">🪔</div>
+          <p class="section-desc">
+            Wherever you are in the world, feel the gentle ripples of Maa Ganga. Light a sacred earthen diya, dedicate a prayer for your family, and watch it float among thousands of lamps offered by devotees across the globe.
+          </p>
+        </div>
+
+        <div class="virtual-ghat-wrapper">
+          <canvas id="ganga-canvas" class="ganga-canvas"></canvas>
+
+          <div class="ghat-canvas-overlay">
+            <div class="ghat-badge">
+              <span>🌊 Holy Ganga Twilight • Interactive Waters</span>
+            </div>
+
+            <div class="ghat-actions-toolbar">
+              <button id="offer-arghya-action-btn" class="ghat-act-btn btn-arghya-pour" title="Simulate pouring holy Arghya with raw milk and water">
+                <span>🥛</span>
+                <span>Offer Arghya (अर्घ्य अर्पण)</span>
+              </button>
+              <button onclick="document.getElementById('open-diya-modal-btn').click()" class="ghat-act-btn btn-float-diya">
+                <span>🪔</span>
+                <span>Float Your Diya</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="canvas-footer-tip">
+            💡 Click on any glowing floating diya in the river to read the devotee's heartfelt prayer and home city
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4-DAY SACRED RITUALS SECTION -->
+    <section class="section-padding" id="rituals">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">चार दिवसीय विधान • तप एवं शुचिता</span>
+          <h2 class="section-title">The Four Sacred Days of Chhath</h2>
+          <div class="ornamental-divider">🌾</div>
+          <p class="section-desc">
+            Each day represents a progressive ascension of internal purification, leading from culinary restraint to a strict 36-hour waterless fast (Nirjala Vrat), culminating in cosmic gratitude.
+          </p>
+        </div>
+
+        <!-- 4 Cards dynamically rendered by scheduler.js -->
+        <div class="rituals-grid" id="rituals-timeline-cards">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Cultural & Spiritual Insights -->
+        <div class="supa-interactive-wrapper" style="margin-top: 3.5rem;">
+          <div class="supa-visual-container">
+            <img src="assets/images/chhath_usha_arghya.jpg" alt="Devotees standing in holy water awaiting sunrise">
+          </div>
+          <div class="supa-details-panel">
+            <span class="supa-hint-badge">Spiritual Wisdom</span>
+            <h3 class="supa-panel-title">Why Chhath Honors the Setting Sun First</h3>
+            <p class="supa-panel-symbol">The Cycle of Respect & Grateful Farewell</p>
+            <p class="supa-panel-desc">
+              While almost every civilization praises only rising glory, Chhath Puja is unique: on the third day (Sandhya Arghya), devotees first offer prayers to the setting Sun (Astachalagami Surya). It embodies the philosophical truth that endings are as sacred as beginnings, and that those who depart in warmth deserve equal reverence before greeting the dawn.
+            </p>
+            <div style="background: rgba(245,158,11,0.08); padding: 1rem; border-radius: var(--radius-sm); border-left: 3px solid var(--gold-primary);">
+              <strong style="color: var(--text-accent); display: block; margin-bottom: 0.25rem;">The Orange Sindoor Tradition:</strong>
+              <span style="font-size: 0.88rem; color: var(--text-secondary);">
+                After Usha Arghya, the Vrati applies bright orange vermilion starting from the bridge of the woman's nose all the way up the parting of the hair. Tracing the body's central energy channel (Sushumna Nadi), it represents a wish for unbroken health, long life for the spouse, and universal family harmony.
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCHEDULING & GLOBAL MUHURAT CALCULATOR SECTION -->
+    <section class="section-padding" id="scheduler">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">ज्योतिष एवं सूर्योदय पंचांग • शुद्ध मुहूर्त</span>
+          <h2 class="section-title">Arghya Muhurat & Solar Horizon</h2>
+          <div class="ornamental-divider">☀️</div>
+          <p class="section-desc">
+            Exact solar timings for offering Sandhya Arghya and Usha Arghya across 20+ prominent cities in India, Nepal, and the global diaspora.
+          </p>
+        </div>
+
+        <div class="muhurat-calculator-card">
+          <div class="muhurat-controls-row">
+            <div class="muhurat-select-group">
+              <label for="city-select-dropdown" style="font-size: 0.88rem; font-weight: 600; color: var(--text-muted);">
+                Select Sacred Ghat / City:
+              </label>
+              <select id="city-select-dropdown" class="city-select" aria-label="Select City for Muhurat">
+                <!-- Populated by scheduler.js -->
+              </select>
+            </div>
+
+            <button id="detect-location-btn" class="detect-loc-btn" onclick="window.chhathScheduler.detectUserLocation()">
+              📍 Calculate My Local Solar Muhurat
+            </button>
+          </div>
+
+          <div style="margin-bottom: 1.75rem; text-align: center;">
+            <h3 id="muhurat-city-name" style="font-family: var(--font-serif); font-size: 1.6rem; color: var(--text-gold);">
+              Patna (Ganga Ghats), Bihar
+            </h3>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">
+              Astronomically computed for Kartik Shukla Shashthi 2026
+            </span>
+          </div>
+
+          <div class="muhurat-display-grid">
+            <div class="muhurat-metric-box">
+              <div class="muhurat-icon">🌇</div>
+              <div class="muhurat-time-val" id="muhurat-sunset-time">17:01 (15 Nov)</div>
+              <div class="muhurat-metric-label">Sandhya Arghya (Pehla Arghya)</div>
+              <div class="muhurat-metric-sub">Sunset Worship to Astachalagami Surya</div>
+            </div>
+
+            <div class="muhurat-metric-box">
+              <div class="muhurat-icon">🌌</div>
+              <div class="muhurat-time-val" id="muhurat-brahma-time">04:30 AM</div>
+              <div class="muhurat-metric-label">Brahma Muhurat (Bhorva Ghat)</div>
+              <div class="muhurat-metric-sub">Devotees gather at river bank under stars</div>
+            </div>
+
+            <div class="muhurat-metric-box">
+              <div class="muhurat-icon">🌅</div>
+              <div class="muhurat-time-val" id="muhurat-sunrise-time">06:06 (16 Nov)</div>
+              <div class="muhurat-metric-label">Usha Arghya & Paran (Dusra Arghya)</div>
+              <div class="muhurat-metric-sub">First rays of Arunodaya & fast breaking</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- INTERACTIVE BAMBOO SUPA & DAURA EXPLORER -->
+    <section class="section-padding" id="supa-explorer">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">सूप सज्जा एवं दउरा • सनातनी प्रतीक</span>
+          <h2 class="section-title">The Sacred Bamboo Supa Explorer</h2>
+          <div class="ornamental-divider">🧺</div>
+          <p class="section-desc">
+            In Chhath Puja, nature itself is the deity and the offering. Click the glowing markers on the sacred Supa below to discover the botanical, spiritual, and Ayurvedic significance of each offering.
+          </p>
+        </div>
+
+        <div class="supa-interactive-wrapper">
+          <div class="supa-visual-container">
+            <img src="assets/images/chhath_thekua_supa.jpg" alt="Aesthetic bamboo supa with thekua, fruits, and diya">
+            
+            <div class="supa-hotspots-overlay" aria-label="Interactive Offering Points">
+              <button class="supa-hotspot active" style="top: 48%; left: 45%;" data-item="thekua" title="Khasta Thekua" aria-label="Thekua">🍪</button>
+              <button class="supa-hotspot" style="top: 25%; left: 78%;" data-item="ganna" title="Sugarcane" aria-label="Sugarcane">🎋</button>
+              <button class="supa-hotspot" style="top: 68%; left: 25%;" data-item="dabh" title="Dabh Nimbu" aria-label="Dabh Nimbu">🍋</button>
+              <button class="supa-hotspot" style="top: 30%; left: 28%;" data-item="nariyal" title="Coconut" aria-label="Coconut">🥥</button>
+              <button class="supa-hotspot" style="top: 75%; left: 70%;" data-item="haldi_adrak" title="Turmeric & Ginger" aria-label="Turmeric and Ginger">🌿</button>
+              <button class="supa-hotspot" style="top: 36%; left: 55%;" data-item="diya" title="Clay Diya" aria-label="Clay Diya">🪔</button>
+              <button class="supa-hotspot" style="top: 55%; left: 62%;" data-item="kasar" title="Sacred Kasar" aria-label="Kasar">🟡</button>
+              <button class="supa-hotspot" style="top: 15%; left: 50%;" data-item="sindoor" title="Orange Vermilion" aria-label="Vermilion">✨</button>
+            </div>
+
+            <!-- Touch-Friendly Item Selector Carousel for Mobile & Clean UI -->
+            <div class="supa-touch-chips-carousel" aria-label="Select Offering Item">
+              <button class="supa-touch-chip active" data-item="thekua">🍪 Thekua</button>
+              <button class="supa-touch-chip" data-item="ganna">🎋 Sugarcane</button>
+              <button class="supa-touch-chip" data-item="dabh">🍋 Dabh Nimbu</button>
+              <button class="supa-touch-chip" data-item="nariyal">🥥 Coconut</button>
+              <button class="supa-touch-chip" data-item="haldi_adrak">🌿 Haldi-Adrak</button>
+              <button class="supa-touch-chip" data-item="diya">🪔 Clay Diya</button>
+              <button class="supa-touch-chip" data-item="kasar">🟡 Kasar</button>
+              <button class="supa-touch-chip" data-item="sindoor">✨ Sendur</button>
+            </div>
+          </div>
+
+          <div class="supa-details-panel">
+            <span class="supa-hint-badge">Sacred Symbolism</span>
+            <h3 class="supa-panel-title" id="supa-info-title">Khasta Thekua (ठेकुआ)</h3>
+            <p class="supa-panel-symbol" id="supa-info-symbol">Sacred Essence: Gratitude for the golden harvest & solar warmth</p>
+            <p class="supa-panel-desc" id="supa-info-desc">
+              Made from fresh whole wheat, cow ghee, and sugarcane jaggery pressed on wooden saancha moulds. It symbolizes the sweetness of devotion and uncompromised perseverance.
+            </p>
+
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+              Explore Other Sacred Offerings:
+            </span>
+            <div class="supa-items-quicknav">
+              <button class="supa-quick-btn" onclick="document.querySelector('[data-item=thekua]').click()">Thekua</button>
+              <button class="supa-quick-btn" onclick="document.querySelector('[data-item=ganna]').click()">Sugarcane</button>
+              <button class="supa-quick-btn" onclick="document.querySelector('[data-item=dabh]').click()">Dabh Nimbu</button>
+              <button class="supa-quick-btn" onclick="document.querySelector('[data-item=nariyal]').click()">Coconut</button>
+              <button class="supa-quick-btn" onclick="document.querySelector('[data-item=haldi_adrak]').click()">Haldi & Adrak</button>
+              <button class="supa-quick-btn" onclick="document.querySelector('[data-item=diya]').click()">Clay Diya</button>
+              <button class="supa-quick-btn" onclick="document.querySelector('[data-item=kasar]').click()">Kasar Ladoo</button>
+              <button class="supa-quick-btn" onclick="document.querySelector('[data-item=sindoor]').click()">Orange Sendur</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- AUTHENTIC SACRED RECIPES SECTION -->
+    <section class="section-padding" id="recipes">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">सात्विक पाक कला • महाप्रसाद</span>
+          <h2 class="section-title">Authentic Chhath Mahaprasad Recipes</h2>
+          <div class="ornamental-divider">🍯</div>
+          <p class="section-desc">
+            Prepared with the highest standards of Vedic purity (Pavitrata)—using mango firewood, new brass and clay vessels, and pure cow ghee. Use the serving scaler below to adapt ingredient quantities for your family or community ghat.
+          </p>
+        </div>
+
+        <div class="recipes-container-box">
+          <div class="recipes-header-bar">
+            <!-- Tab buttons populated by recipes.js -->
+            <div class="recipes-nav-tabs" id="recipes-nav-tabs"></div>
+
+            <!-- Serving Scaler -->
+            <div class="recipe-scale-control">
+              <span class="scale-label">Serving Scale:</span>
+              <button class="scale-btn" data-scale="5">5 Devotees</button>
+              <button class="scale-btn active" data-scale="15">15 (Family)</button>
+              <button class="scale-btn" data-scale="50">50 (Ghat Prasad)</button>
+            </div>
+          </div>
+
+          <div class="recipe-main-grid">
+            <!-- Left: Media & Secret Tips -->
+            <div class="recipe-media-card">
+              <img id="recipe-display-img" src="assets/images/chhath_thekua_supa.jpg" alt="Recipe Prasad">
+              
+              <div class="recipe-meta-badges">
+                <span class="meta-badge">⏱ Prep: <strong id="recipe-display-prep">25 mins</strong></span>
+                <span class="meta-badge">🔥 Cook: <strong id="recipe-display-cook">35 mins</strong></span>
+                <span class="meta-badge">👥 Servings: <strong id="recipe-display-servings">15 Devotees</strong></span>
+              </div>
+
+              <div class="recipe-secret-box">
+                <strong>✨ Vrati's Culinary Secret:</strong>
+                <span id="recipe-display-tip">
+                  The secret to melt-in-mouth thekua is the 'Moyen' (ghee ratio). Rub ghee into flour until it holds shape when clutched before adding syrup.
+                </span>
+              </div>
+
+              <div style="margin-top: 1.5rem; text-align: center;">
+                <button onclick="window.recipesManager.printRecipe()" class="btn-secondary-glass" style="width: 100%; justify-content: center;">
+                  🖨️ Print / Save Satvik Recipe Card
+                </button>
+              </div>
+            </div>
+
+            <!-- Right: Dynamic Ingredients & Method -->
+            <div class="recipe-details-content">
+              <h3 id="recipe-display-hindi" style="font-family: var(--font-folk); font-size: 1.5rem; color: var(--text-accent);">
+                पारंपरिक खस्ता ठेकुआ
+              </h3>
+              <h4 id="recipe-display-title" style="font-family: var(--font-serif); font-size: 1.8rem; color: var(--text-primary); margin-bottom: 0.5rem;">
+                Traditional Bihari Khasta Thekua
+              </h4>
+              <p id="recipe-display-desc" style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 1.75rem;">
+                The most sacred and revered prasad of Chhath Puja.
+              </p>
+
+              <!-- Scalable Ingredients Checklist -->
+              <div class="recipe-ingredients-box">
+                <h4>
+                  <span>Pavitra Ingredients</span>
+                  <span style="font-size: 0.78rem; font-weight: normal; color: var(--text-muted);">(Click to check off)</span>
+                </h4>
+                <ul class="ingredients-list" id="recipe-ingredients-list">
+                  <!-- Populated dynamically with live scaled values -->
+                </ul>
+              </div>
+
+              <!-- Step-by-Step Guide -->
+              <div class="recipe-steps-box">
+                <h4>Sacred Step-by-Step Preparation:</h4>
+                <div id="recipe-steps-list">
+                  <!-- Populated dynamically -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SACRED FOLK GEET & MUSIC LOUNGE -->
+    <section class="section-padding" id="folk-geet">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">लोकगीत संगम • शारदा सिन्हा स्मृति</span>
+          <h2 class="section-title">Sacred Chhath Folk Geet Lounge</h2>
+          <div class="ornamental-divider">🎶</div>
+          <p class="section-desc">
+            No Chhath Puja is complete without the haunting, soulful Bhojpuri melodies of Padma Shri Sharda Sinha. Enjoy synthesized meditative flute accompaniment along with complete lyrics in Devanagari, English transliteration, and spiritual meanings.
+          </p>
+        </div>
+
+        <div class="geet-lounge-wrapper">
+          <!-- Geet tabs -->
+          <div class="geet-track-tabs" id="geet-track-tabs">
+            <!-- Populated dynamically -->
+          </div>
+
+          <div class="geet-player-header">
+            <div class="geet-song-titles">
+              <h3 id="active-geet-hindi">केलवा के पात पर उगेलन सूरजमल</h3>
+              <h4 id="active-geet-title">Kelwa Ke Paat Par Ugelan Suraj Mal</h4>
+              <span id="active-geet-raga" style="font-size: 0.8rem; color: var(--gold-light);">Traditional Raga: Bhupali / Desh</span>
+            </div>
+
+            <button id="geet-play-toggle-btn" class="geet-play-btn" onclick="window.communityManager.toggleGeetPlay()">
+              ▶ Play Flute Melody
+            </button>
+          </div>
+
+          <div class="geet-context-box" id="active-geet-context">
+            The iconic, soul-stirring prayer sung as the sun rises over banana groves and devotees wait with water offerings in the river.
+          </div>
+
+          <div class="geet-lyrics-grid">
+            <div class="lyrics-column">
+              <h5>Devanagari Folk Lyrics (भोजपुरी / हिंदी)</h5>
+              <div id="geet-lyrics-hindi"></div>
+            </div>
+
+            <div class="lyrics-column">
+              <h5>English Transliteration</h5>
+              <div id="geet-lyrics-english"></div>
+            </div>
+          </div>
+
+          <div class="geet-meaning-box">
+            <h5>📖 Spiritual Meaning & Poetic Reflection:</h5>
+            <p id="geet-meaning-text">
+              Upon the green banana leaf, the radiant Sun rises with gentle grace...
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- COMMUNITY WISHES & PRARTHANA BOARD -->
+    <section class="section-padding" id="community-wall">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">शुभकामनाएं एवं प्रार्थना दीवार • जन-संवाद</span>
+          <h2 class="section-title">Global Devotee Prarthana Wall</h2>
+          <div class="ornamental-divider">🙏</div>
+          <p class="section-desc">
+            Connect with millions of devotees worldwide. Share your family blessings, village memories, or heartfelt gratitude to Bhagwan Surya. Every prayer posted here is preserved and celebrated.
+          </p>
+        </div>
+
+        <!-- Post a Prayer Form -->
+        <div class="post-prayer-card">
+          <h3 style="font-family: var(--font-serif); font-size: 1.4rem; color: var(--text-gold); margin-bottom: 0.5rem;">
+            Write Your Prayer to Chhathi Maiya & Surya Dev
+          </h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+            Your message will appear on this wall and float as a radiant diya on the sacred virtual Ganges river above.
+          </p>
+
+          <form id="community-wish-form">
+            <div class="prayer-form-grid">
+              <div class="form-group">
+                <label for="wish-input-name">Your Full Name / Family Name *</label>
+                <input type="text" id="wish-input-name" class="form-input" placeholder="e.g. Ramesh & Sunita Jha" required>
+              </div>
+
+              <div class="form-group">
+                <label for="wish-input-city">Ghat / City & Country *</label>
+                <input type="text" id="wish-input-city" class="form-input" placeholder="e.g. Digha Ghat, Patna or London, UK" required>
+              </div>
+
+              <div class="form-group">
+                <label for="wish-input-category">Intention / Category</label>
+                <select id="wish-input-category" class="form-select">
+                  <option value="family">Family Health & Blessings (परिवार कल्याण)</option>
+                  <option value="gratitude">Gratitude to Surya Dev (सूर्य वंदना)</option>
+                  <option value="nostalgia">Ghat Nostalgia & Memories (स्मृतियां)</option>
+                  <option value="diaspora">Diaspora Devotees (प्रवासी छठ)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="wish-input-message">Your Heartfelt Prayer / Blessings *</label>
+              <textarea id="wish-input-message" class="form-textarea" placeholder="Write your words of prayer, devotion, or gratitude..." required></textarea>
+            </div>
+
+            <div class="form-submit-row">
+              <span id="wish-form-feedback" style="display: none; color: #22c55e; font-size: 0.9rem; font-weight: 600;"></span>
+              <button type="submit" class="btn-primary-golden" style="margin-left: auto;">
+                <span>🪔</span>
+                <span>Offer Prayer & Float Diya</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Filter Pills Bar -->
+        <div class="community-subnav-bar">
+          <div class="wishes-filter-pills">
+            <button class="wish-cat-btn active" data-cat="all">All Prayers</button>
+            <button class="wish-cat-btn" data-cat="family">Family Welfare</button>
+            <button class="wish-cat-btn" data-cat="gratitude">Gratitude to Surya</button>
+            <button class="wish-cat-btn" data-cat="nostalgia">Ghat Memories</button>
+            <button class="wish-cat-btn" data-cat="diaspora">Global Diaspora</button>
+          </div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">
+            Click <strong>🙏 प्रणाम</strong> on any prayer to send your sacred blessing
+          </span>
+        </div>
+
+        <!-- Prayers Grid -->
+        <div class="wishes-cards-grid" id="wishes-cards-container">
+          <!-- Populated by community.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- GLOBAL GHAT FINDER & COMMUNITY DIRECTORY -->
+    <section class="section-padding" id="ghat-finder">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">घाट संगम • निकटतम छठ घाट</span>
+          <h2 class="section-title">Global Chhath Ghat Directory & Meetups</h2>
+          <div class="ornamental-divider">🌊</div>
+          <p class="section-desc">
+            Find verified, safe Chhath Puja ghats across India, Nepal, North America, the UK, and beyond—complete with safety facilities, clean water arrangements, and community volunteer contacts.
+          </p>
+        </div>
+
+        <div class="ghats-search-bar">
+          <input type="text" id="ghat-search-input" class="form-input ghat-search-input" placeholder="🔍 Search by ghat name, city, or river (e.g., Patna, Yamuna, Edison, Juhu)...">
+          
+          <select id="ghat-region-select" class="form-select" style="max-width: 240px;">
+            <option value="all">All Regions & World</option>
+            <option value="bihar">Bihar & Jharkhand</option>
+            <option value="up">UP & Delhi-NCR</option>
+            <option value="west">Maharashtra & South India</option>
+            <option value="diaspora">International Diaspora (USA, UK)</option>
+          </select>
+
+          <button id="open-register-ghat-modal-btn" class="btn-secondary-glass">
+            <span>➕</span>
+            <span>Register Your Local Ghat</span>
+          </button>
+        </div>
+
+        <div class="ghats-grid" id="ghats-directory-grid">
+          <!-- Populated by community.js -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VRATI PREPARATION & PACKING CHECKLIST -->
+    <section class="section-padding" id="checklist">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-tag">तैयारी मार्गदर्शिका • सूप-दउरा सामग्री</span>
+          <h2 class="section-title">Vrati Preparation & Packing Assistant</h2>
+          <div class="ornamental-divider">📋</div>
+          <p class="section-desc">
+            A comprehensive, interactive checklist for families preparing for the Mahaparv. Check off items as you source them; your progress automatically saves in your browser.
+          </p>
+        </div>
+
+        <div class="checklist-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h3 style="font-family: var(--font-serif); font-size: 1.3rem; color: var(--text-primary);">
+                Sacred Packing Status
+              </h3>
+              <span id="checklist-percent-text" style="font-size: 0.9rem; font-weight: 700; color: var(--gold-light);">
+                45% Ready
+              </span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+              <button onclick="window.communityManager.resetChecklist()" style="font-size: 0.8rem; color: var(--text-muted); text-decoration: underline;">
+                Reset Checklist
+              </button>
+            </div>
+          </div>
+
+          <div class="checklist-progress-bar-bg">
+            <div class="checklist-progress-fill" id="checklist-progress-fill"></div>
+          </div>
+
+          <!-- Category Filter Pills & Cloud Tools -->
+          <div class="checklist-header-tools">
+            <div class="checklist-filter-pills" role="tablist" aria-label="Checklist Categories">
+              <button class="chk-filter-pill active" data-chk-cat="all" onclick="window.communityManager.setChecklistCategory('all')">All (13)</button>
+              <button class="chk-filter-pill" data-chk-cat="bamboo" onclick="window.communityManager.setChecklistCategory('bamboo')">🧺 Bamboo & Daura</button>
+              <button class="chk-filter-pill" data-chk-cat="cooking" onclick="window.communityManager.setChecklistCategory('cooking')">🍯 Satvik Kitchen</button>
+              <button class="chk-filter-pill" data-chk-cat="puja" onclick="window.communityManager.setChecklistCategory('puja')">🪔 Puja Samagri</button>
+              <button class="chk-filter-pill" data-chk-cat="shringar" onclick="window.communityManager.setChecklistCategory('shringar')">✨ Shringar & Arghya</button>
+            </div>
+
+            <div class="checklist-cloud-tools">
+              <button onclick="window.cloudSyncManager ? window.cloudSyncManager.exportBackup() : null" class="btn-cloud-tool" title="Download backup of your checklist & prayers">
+                <span>☁️</span>
+                <span>Cloud Backup</span>
+              </button>
+              <label class="btn-cloud-tool" title="Restore previous backup">
+                <span>📥</span>
+                <span>Restore</span>
+                <input type="file" id="cloud-restore-input" accept=".json" style="display:none" onchange="window.cloudSyncManager ? window.cloudSyncManager.importBackup(this) : null">
+              </label>
+            </div>
+          </div>
+
+          <div class="check-grid" id="checklist-items-container">
+            <!-- Populated by community.js -->
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- SITE FOOTER -->
+  <footer class="site-footer" style="background: #06080e; border-top: 1px solid var(--border-subtle); padding: 5rem 0 3rem; margin-top: 4rem;">
+    <div class="container">
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 3rem; margin-bottom: 3.5rem;">
+        <div>
+          <div class="brand-logo" style="margin-bottom: 1rem;">
+            <div class="brand-sun-icon" aria-hidden="true">☀️</div>
+            <div class="brand-text">
+              <span class="brand-hi">छठी मईया</span>
+              <span class="brand-en">Chhath Mahaparv</span>
+            </div>
+          </div>
+          <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 1rem;">
+            A humble, human-crafted tribute to the ancient festival of truth, purity, and universal equality. Dedicated to the millions of Vratis who hold the universe in their prayers.
+          </p>
+          <span style="font-size: 0.82rem; color: var(--text-gold); font-family: var(--font-folk);">
+            ॥ माता भूमिः पुत्रोऽहं पृथिव्याः ॥
+          </span>
+        </div>
+
+        <div>
+          <h4 style="font-size: 1rem; color: var(--text-primary); margin-bottom: 1.25rem; font-family: var(--font-serif);">
+            Sacred Navigations
+          </h4>
+          <ul style="list-style: none; font-size: 0.88rem; color: var(--text-secondary); display: flex; flex-direction: column; gap: 0.65rem;">
+            <li><a href="#rituals" class="footer-link">4 Days of Rituals (विधान)</a></li>
+            <li><a href="#scheduler" class="footer-link">Solar Arghya Muhurat Timings</a></li>
+            <li><a href="#recipes" class="footer-link">Authentic Khasta Thekua Recipe</a></li>
+            <li><a href="#virtual-ghat-section" class="footer-link">Virtual Ganges Floating Diya</a></li>
+            <li><a href="#folk-geet" class="footer-link">Sharda Sinha Chhath Geet</a></li>
+            <li><a href="#ghat-finder" class="footer-link">Find Nearest Community Ghat</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 style="font-size: 1rem; color: var(--text-primary); margin-bottom: 1.25rem; font-family: var(--font-serif);">
+            Vedic Invocations
+          </h4>
+          <div style="background: rgba(245, 158, 11, 0.06); padding: 1.15rem; border-radius: var(--radius-sm); border-left: 2px solid var(--gold-primary);">
+            <p style="font-family: var(--font-folk); font-size: 0.95rem; color: var(--text-gold); margin-bottom: 0.4rem;">
+              ॐ आदित्याय विद्महे सहस्रकिरणाय धीमहि। तन्नो भानुः प्रचोदयात्॥
+            </p>
+            <p style="font-size: 0.78rem; color: var(--text-muted);">
+              "We meditate upon the radiant Sun who bestows life upon all beings. May that supreme light illumine our intellect."
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <h4 style="font-size: 1rem; color: var(--text-primary); margin-bottom: 1.25rem; font-family: var(--font-serif);">
+            Tribute & Remembrance
+          </h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+            In reverent remembrance of <strong>Padma Shri Dr. Sharda Sinha (1952–2024)</strong>, whose ethereal voice remains the eternal heartbeat of every Chhath sunrise.
+          </p>
+          <div style="margin-top: 1rem;">
+            <button onclick="window.scrollTo({top:0, behavior:'smooth'})" class="btn-secondary-glass" style="font-size: 0.82rem; padding: 0.5rem 1rem;">
+              ↑ Back to River Bank
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; padding-top: 2rem; border-top: 1px solid var(--border-subtle); font-size: 0.82rem; color: var(--text-muted);">
+        Made with reverence & pure cow ghee devotion. Jai Chhathi Maiya • Happy Chhath Puja!
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== MODALS ==================== -->
+
+  <!-- 1. LIGHT A DIYA MODAL -->
+  <div class="modal-backdrop" id="light-diya-modal" role="dialog" aria-modal="true" aria-labelledby="modal-diya-title">
+    <div class="modal-content-box">
+      <button class="modal-close-btn" id="close-diya-modal-btn" aria-label="Close Modal">&times;</button>
+      
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <span style="font-size: 2.2rem;">🪔</span>
+        <h3 id="modal-diya-title" style="font-family: var(--font-serif); font-size: 1.5rem; color: var(--text-gold);">
+          Light & Float Your Sacred Diya
+        </h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">
+          Dedicate a warm earthen lamp to Bhagwan Surya and Chhathi Maiya on the virtual Ganges
+        </p>
+      </div>
+
+      <form id="float-diya-form">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="diya-user-name">Your Name / Family Name *</label>
+          <input type="text" id="diya-user-name" class="form-input" placeholder="e.g. Anand & Archana" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="diya-user-city">Your City / Location *</label>
+          <input type="text" id="diya-user-city" class="form-input" placeholder="e.g. Patna, Varanasi, New York, London" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="diya-user-wish">Your Prayer / Sankalp *</label>
+          <textarea id="diya-user-wish" class="form-textarea" placeholder="May Chhathi Maiya bless all families with good health, purity, and peace..." required style="min-height: 80px;"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Choose Floral Offering:</label>
+          <div class="petal-selector-row">
+            <label class="petal-radio-option">
+              <input type="radio" name="diya-petal-type" value="marigold" checked>
+              <span>🌼 Marigold (गेंदा)</span>
+            </label>
+            <label class="petal-radio-option">
+              <input type="radio" name="diya-petal-type" value="rose">
+              <span>🌹 Rose Crimson (गुलाब)</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary-golden" style="width: 100%; justify-content: center; margin-top: 0.5rem;">
+          <span>🪔</span>
+          <span>Release Diya into Maa Ganga</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- 2. DIYA DETAIL POPUP MODAL -->
+  <div class="modal-backdrop" id="diya-detail-modal" role="dialog" aria-modal="true">
+    <div class="modal-content-box" style="max-width: 420px; text-align: center;">
+      <button class="modal-close-btn" id="close-detail-modal-btn">&times;</button>
+      <span style="font-size: 2.5rem; display: block; margin-bottom: 0.5rem;">🪔</span>
+      <h3 id="modal-diya-name" style="font-family: var(--font-serif); font-size: 1.3rem; color: var(--text-gold); margin-bottom: 0.25rem;">
+        Devotee Name
+      </h3>
+      <span id="modal-diya-location" style="font-size: 0.82rem; color: var(--text-muted); display: block; margin-bottom: 1rem;">
+        Location
+      </span>
+      <p id="modal-diya-prayer" style="font-size: 1rem; color: var(--text-primary); font-style: italic; line-height: 1.6; margin-bottom: 1.5rem;">
+        “Prayer text goes here”
+      </p>
+      <button onclick="document.getElementById('close-detail-modal-btn').click()" class="btn-secondary-glass" style="padding: 0.5rem 1.5rem;">
+        🙏 Har Har Gange
+      </button>
+    </div>
+  </div>
+
+  <!-- 3. REGISTER COMMUNITY GHAT MODAL -->
+  <div class="modal-backdrop" id="register-ghat-modal" role="dialog" aria-modal="true">
+    <div class="modal-content-box">
+      <button class="modal-close-btn" id="close-register-ghat-modal-btn">&times;</button>
+      <h3 style="font-family: var(--font-serif); font-size: 1.4rem; color: var(--text-gold); margin-bottom: 0.5rem;">
+        Register Your Local Chhath Ghat / Meetup
+      </h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+        Help devotees in your neighborhood or diaspora city find your community gathering
+      </p>
+
+      <form id="register-ghat-form">
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="new-ghat-name">Ghat / Venue Name *</label>
+          <input type="text" id="new-ghat-name" class="form-input" placeholder="e.g. Fremont Central Park Lake Chhath" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="new-ghat-city">City, State & Country *</label>
+          <input type="text" id="new-ghat-city" class="form-input" placeholder="e.g. San Jose, CA, USA" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="new-ghat-water">Waterbody Type</label>
+          <input type="text" id="new-ghat-water" class="form-input" placeholder="e.g. Natural Lake / Riverfront / Community Pool">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.25rem;">
+          <label for="new-ghat-org">Organizing Committee / Contact Person</label>
+          <input type="text" id="new-ghat-org" class="form-input" placeholder="e.g. Bihar Cultural Association">
+        </div>
+
+        <button type="submit" class="btn-primary-golden" style="width: 100%; justify-content: center;">
+          <span>🤝</span>
+          <span>Register Ghat in Global Directory</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- SCRIPT LIBRARIES -->
+  <script src="assets/js/audio-synthesizer.js"></script>
+  <script src="assets/js/virtual-ghat.js"></script>
+  <script src="assets/js/scheduler.js"></script>
+  <script src="assets/js/recipes.js"></script>
+  <script src="assets/js/community.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

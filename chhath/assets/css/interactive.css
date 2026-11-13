@@ -1,0 +1,1687 @@
+/* ==========================================================================
+   INTERACTIVE COMPONENTS & SACRED EXPERIENCES STYLING
+   Virtual Ghat, Muhurat Scheduler, Scalable Recipes, Community Board,
+   Folk Geet Karaoke, and Interactive Supa Explorer.
+   ========================================================================== */
+
+/* --- 1. VIRTUAL GHAT & FLOATING DIYA CANVAS --- */
+.virtual-ghat-wrapper {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border-strong);
+  background: #0c0e14;
+}
+
+.ganga-canvas {
+  width: 100%;
+  height: 440px;
+  display: block;
+  cursor: default;
+}
+
+.ghat-canvas-overlay {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.ghat-badge {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(8px);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-gold);
+  pointer-events: auto;
+}
+
+.ghat-actions-toolbar {
+  display: flex;
+  gap: 0.75rem;
+  pointer-events: auto;
+}
+
+.ghat-act-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 700;
+  backdrop-filter: blur(12px);
+  transition: var(--transition-smooth);
+}
+
+.btn-float-diya {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  color: #fff;
+  box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+}
+
+.btn-float-diya:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(234, 88, 12, 0.6);
+}
+
+.btn-arghya-pour {
+  background: rgba(254, 240, 138, 0.15);
+  border: 1px solid rgba(254, 240, 138, 0.5);
+  color: var(--gold-light);
+}
+
+.btn-arghya-pour:hover {
+  background: rgba(254, 240, 138, 0.28);
+  transform: translateY(-2px);
+}
+
+.btn-arghya-pour.blessed {
+  background: var(--gold-primary);
+  color: #000;
+}
+
+.canvas-footer-tip {
+  position: absolute;
+  bottom: 1rem;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 0.82rem;
+  color: rgba(254, 240, 138, 0.8);
+  pointer-events: none;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* --- 2. 4-DAY RITUALS TIMELINE --- */
+.rituals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: 1.75rem;
+  margin-bottom: 3.5rem;
+}
+
+.ritual-day-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.85rem;
+  position: relative;
+  transition: var(--transition-smooth);
+  display: flex;
+  flex-direction: column;
+}
+
+.ritual-day-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-warm);
+}
+
+.ritual-day-card.is-today {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 25px rgba(245, 158, 11, 0.3);
+  background: linear-gradient(180deg, rgba(245, 158, 11, 0.08) 0%, var(--bg-card) 40%);
+}
+
+.day-badge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.day-num {
+  font-family: var(--font-folk);
+  font-size: 1.1rem;
+  color: var(--text-accent);
+}
+
+.today-pulse {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #22c55e;
+  animation: blink-pulse 1.8s infinite;
+}
+
+@keyframes blink-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.day-title {
+  font-family: var(--font-folk);
+  font-size: 1.55rem;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.day-subtitle {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-gold);
+  margin-bottom: 0.4rem;
+}
+
+.day-date {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 0.85rem;
+  font-weight: 500;
+}
+
+.day-tagline {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--saffron-400);
+  margin-bottom: 0.75rem;
+}
+
+.day-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+  flex-grow: 1;
+}
+
+.day-shloka {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 3px solid var(--gold-primary);
+  padding: 0.65rem 0.85rem;
+  font-size: 0.78rem;
+  font-family: var(--font-folk);
+  color: var(--text-gold);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 1.25rem;
+}
+
+.day-rituals-list {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.day-rituals-list strong {
+  display: block;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.day-rituals-list ul {
+  padding-left: 1.2rem;
+}
+
+.day-rituals-list li {
+  margin-bottom: 0.35rem;
+}
+
+.cal-btn {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+  text-align: center;
+  width: 100%;
+}
+
+.cal-btn:hover {
+  background: var(--gold-primary);
+  color: #000;
+  border-color: var(--gold-primary);
+}
+
+/* --- 3. GLOBAL MUHURAT CALCULATOR --- */
+.muhurat-calculator-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem;
+  box-shadow: var(--shadow-warm);
+}
+
+.muhurat-controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.muhurat-select-group {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.city-select {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.detect-loc-btn {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid var(--border-strong);
+  color: var(--text-accent);
+  padding: 0.65rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+.detect-loc-btn:hover {
+  background: var(--text-accent);
+  color: #fff;
+}
+
+.muhurat-display-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.muhurat-metric-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 1rem;
+}
+
+.muhurat-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.muhurat-time-val {
+  font-family: var(--font-serif);
+  font-size: 1.9rem;
+  color: var(--text-gold);
+  line-height: 1.1;
+  margin-bottom: 0.35rem;
+}
+
+.muhurat-metric-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.muhurat-metric-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* --- 4. INTERACTIVE BAMBOO SUPA EXPLORER --- */
+.supa-interactive-wrapper {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 3rem;
+  align-items: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  box-shadow: var(--shadow-warm);
+}
+
+.supa-visual-container {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.supa-visual-container img {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+}
+
+.supa-hotspots-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+}
+
+.supa-hotspot {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, 0.9);
+  border: 2px solid #ffffff;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 0 15px rgba(245, 158, 11, 0.8);
+  transition: transform 0.25s ease, background-color 0.25s ease;
+  transform: translate(-50%, -50%);
+}
+
+.supa-hotspot:hover, .supa-hotspot.active {
+  transform: translate(-50%, -50%) scale(1.3);
+  background: #ea580c;
+  color: #fff;
+  z-index: 10;
+}
+
+/* Supa detail side panel */
+.supa-details-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.supa-hint-badge {
+  display: inline-block;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--text-accent);
+  margin-bottom: 0.75rem;
+}
+
+.supa-panel-title {
+  font-family: var(--font-serif);
+  font-size: 1.85rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.supa-panel-symbol {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-gold);
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.supa-panel-desc {
+  font-size: 0.98rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin-bottom: 1.75rem;
+}
+
+.supa-items-quicknav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.supa-quick-btn {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  transition: var(--transition-smooth);
+}
+
+.supa-quick-btn:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-light);
+}
+
+/* --- 5. SCALABLE SACRED RECIPES --- */
+.recipes-container-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  box-shadow: var(--shadow-warm);
+}
+
+.recipes-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.recipes-nav-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.recipe-tab-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0.65rem 1.15rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  transition: var(--transition-smooth);
+}
+
+.recipe-tab-btn .tab-hi {
+  font-family: var(--font-folk);
+  font-size: 0.95rem;
+  color: var(--text-accent);
+}
+
+.recipe-tab-btn .tab-en {
+  font-size: 0.75rem;
+}
+
+.recipe-tab-btn.active {
+  background: var(--bg-card);
+  border-color: var(--gold-primary);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.recipe-scale-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scale-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.scale-btn {
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+.scale-btn.active {
+  background: var(--gold-primary);
+  color: #000;
+  border-color: var(--gold-primary);
+}
+
+.recipe-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 2.5rem;
+}
+
+.recipe-media-card {
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  position: relative;
+}
+
+.recipe-media-card img {
+  width: 100%;
+  height: 280px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+}
+
+.recipe-meta-badges {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.meta-badge {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.recipe-secret-box {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px dashed var(--gold-primary);
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--text-gold);
+}
+
+.recipe-secret-box strong {
+  display: block;
+  color: var(--text-accent);
+  margin-bottom: 0.35rem;
+  font-size: 0.92rem;
+}
+
+.recipe-ingredients-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.recipe-ingredients-box h4 {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ingredients-list {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.ing-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.ing-item:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.ing-item.checked {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.ing-qty {
+  margin-left: auto;
+  font-weight: 700;
+  color: var(--text-accent);
+}
+
+.recipe-steps-box h4 {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.step-card {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.step-num {
+  font-family: var(--font-serif);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--gold-light);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  padding: 0.3rem 0.6rem;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  height: fit-content;
+}
+
+.step-text {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* --- 6. COMMUNITY WISHES & PRARTHANA WALL --- */
+.community-subnav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-bottom: 2.5rem;
+}
+
+.wishes-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.wish-cat-btn {
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+.wish-cat-btn.active {
+  background: var(--text-accent);
+  color: #fff;
+  border-color: var(--text-accent);
+}
+
+.wishes-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3.5rem;
+}
+
+.wish-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition-smooth);
+}
+
+.wish-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-warm);
+}
+
+.wish-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.wish-avatar {
+  font-size: 1.5rem;
+}
+
+.wish-meta {
+  flex-grow: 1;
+}
+
+.wish-author {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.wish-location {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.wish-date {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.wish-message {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-style: italic;
+  margin-bottom: 1.25rem;
+  flex-grow: 1;
+}
+
+.wish-card-footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.wish-like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+.wish-like-btn:hover {
+  border-color: var(--gold-primary);
+  color: var(--text-gold);
+}
+
+.like-counter {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--gold-light);
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+}
+
+/* Post a prayer card */
+.post-prayer-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem;
+  margin-bottom: 4rem;
+}
+
+.prayer-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.4rem;
+}
+
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color: var(--gold-primary);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 90px;
+  margin-bottom: 1.25rem;
+}
+
+.form-submit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* --- 7. GLOBAL GHAT FINDER --- */
+.ghats-search-bar {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.ghat-search-input {
+  flex-grow: 1;
+  min-width: 280px;
+}
+
+.ghats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.75rem;
+  margin-bottom: 3.5rem;
+}
+
+.ghat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition-smooth);
+}
+
+.ghat-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-warm);
+}
+
+.ghat-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.ghat-waterbody {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--gold-light);
+}
+
+.ghat-city-tag {
+  font-size: 0.78rem;
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--text-accent);
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+.ghat-name {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.ghat-timing {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+
+.ghat-features {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  flex-grow: 1;
+}
+
+.ghat-features strong {
+  display: block;
+  margin-bottom: 0.4rem;
+  color: var(--text-primary);
+}
+
+.ghat-features ul {
+  list-style: none;
+}
+
+.ghat-features li {
+  margin-bottom: 0.25rem;
+}
+
+.ghat-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.ghat-seva-info {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.ghat-dir-btn {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+}
+
+.ghat-dir-btn:hover {
+  background: var(--gold-primary);
+  color: #000;
+}
+
+/* --- 8. FOLK GEET LOUNGE & KARAOKE --- */
+.geet-lounge-wrapper {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem;
+  box-shadow: var(--shadow-warm);
+}
+
+.geet-track-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.geet-tab-btn {
+  padding: 0.65rem 1.15rem;
+  border-radius: var(--radius-sm);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  text-align: left;
+  transition: var(--transition-smooth);
+}
+
+.geet-tab-btn .geet-tab-hi {
+  display: block;
+  font-family: var(--font-folk);
+  font-size: 0.95rem;
+  color: var(--text-accent);
+}
+
+.geet-tab-btn .geet-tab-en {
+  font-size: 0.75rem;
+}
+
+.geet-tab-btn.active {
+  background: var(--bg-card);
+  border-color: var(--gold-primary);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+}
+
+.geet-player-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.geet-song-titles h3 {
+  font-family: var(--font-folk);
+  font-size: 1.6rem;
+  color: var(--text-gold);
+}
+
+.geet-song-titles h4 {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+}
+
+.geet-play-btn {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-size: 0.92rem;
+  font-weight: 700;
+  box-shadow: 0 4px 15px rgba(234, 88, 12, 0.4);
+  transition: var(--transition-smooth);
+}
+
+.geet-play-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(234, 88, 12, 0.6);
+}
+
+.geet-context-box {
+  background: rgba(245, 158, 11, 0.08);
+  border-left: 3px solid var(--gold-primary);
+  padding: 0.85rem 1.25rem;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 2rem;
+}
+
+.geet-lyrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.lyrics-column {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.75rem;
+}
+
+.lyrics-column h5 {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 0.5rem;
+}
+
+.lyric-line {
+  font-family: var(--font-folk);
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  line-height: 1.8;
+  margin-bottom: 0.4rem;
+}
+
+.lyric-line-en {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 0.4rem;
+  font-style: italic;
+}
+
+.geet-meaning-box {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+}
+
+.geet-meaning-box h5 {
+  font-size: 0.9rem;
+  color: var(--gold-light);
+  margin-bottom: 0.5rem;
+}
+
+.geet-meaning-box p {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* --- 9. VRATI PREPARATION & PACKING CHECKLIST --- */
+.checklist-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem;
+  box-shadow: var(--shadow-warm);
+}
+
+.checklist-progress-bar-bg {
+  width: 100%;
+  height: 10px;
+  background: var(--bg-surface-elevated);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin: 1rem 0 1.5rem;
+}
+
+.checklist-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #ea580c);
+  transition: width 0.4s ease;
+  width: 45%;
+}
+
+.check-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1.5rem;
+}
+
+.check-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.check-row:hover {
+  background: var(--bg-surface-elevated);
+}
+
+.check-row.completed {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.check-row.completed .chk-label {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.custom-chk {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 2px solid var(--border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #22c55e;
+  font-weight: 900;
+  font-size: 0.9rem;
+}
+
+.check-row.completed .custom-chk {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: #22c55e;
+}
+
+/* --- 10. MODALS --- */
+.modal-backdrop {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  max-width: 540px;
+  width: 100%;
+  padding: 2.25rem;
+  position: relative;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+  transform: translateY(20px);
+  transition: transform 0.3s ease;
+}
+
+.modal-backdrop.active .modal-content-box {
+  transform: translateY(0);
+}
+
+.modal-close-btn {
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+  color: var(--text-primary);
+}
+
+.petal-selector-row {
+  display: flex;
+  gap: 1.5rem;
+  margin: 1rem 0 1.5rem;
+}
+
+.petal-radio-option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+  font-size: 0.88rem;
+}
+
+/* --- RITUAL CARD CALENDAR ACTIONS --- */
+.card-cal-actions {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.cal-btn, .cal-btn-gcal {
+  flex: 1;
+  min-width: 120px;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+  text-align: center;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.cal-btn-gcal {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid var(--border-strong);
+  color: var(--text-gold);
+}
+
+.cal-btn-gcal:hover {
+  background: var(--gold-primary);
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+}
+
+.cal-btn {
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.cal-btn:hover {
+  border-color: var(--text-accent);
+  color: var(--text-primary);
+}
+
+/* --- WISH SHARE BUTTON --- */
+.wish-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.wish-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-full);
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-gold);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.wish-share-btn:hover {
+  background: rgba(245, 158, 11, 0.22);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+/* --- CHECKLIST FILTER PILLS & CLOUD TOOLS --- */
+.checklist-header-tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.checklist-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.chk-filter-pill {
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: var(--transition-smooth);
+  cursor: pointer;
+}
+
+.chk-filter-pill:hover {
+  border-color: var(--border-strong);
+  color: var(--text-primary);
+}
+
+.chk-filter-pill.active {
+  background: var(--gold-primary);
+  color: #000000;
+  border-color: var(--gold-primary);
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.35);
+}
+
+.checklist-cloud-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+.btn-cloud-tool {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-full);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-gold);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+}
+
+.btn-cloud-tool:hover {
+  background: rgba(245, 158, 11, 0.25);
+  border-color: var(--border-strong);
+}
+
+.empty-chk-msg {
+  padding: 2rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  grid-column: 1 / -1;
+}
+
+/* --- SUPA TOUCH CHIPS CAROUSEL --- */
+.supa-touch-chips-carousel {
+  display: flex;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding: 0.85rem 0 0.5rem;
+  margin-top: 0.5rem;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.supa-touch-chips-carousel::-webkit-scrollbar {
+  display: none;
+}
+
+.supa-touch-chip {
+  flex-shrink: 0;
+  padding: 0.5rem 0.95rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: var(--transition-smooth);
+  cursor: pointer;
+}
+
+.supa-touch-chip:hover {
+  border-color: var(--gold-primary);
+  color: var(--gold-light);
+}
+
+.supa-touch-chip.active {
+  background: linear-gradient(135deg, #f59e0b, #ea580c);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.45);
+}
+
+/* --- E-CARD GENERATOR MODAL & CANVAS --- */
+.ecard-modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+}
+
+.ecard-preview-wrapper {
+  background: #06080e;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  padding: 0.5rem;
+}
+
+.ecard-canvas {
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 4/5;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+.ecard-theme-selector {
+  display: flex;
+  gap: 0.65rem;
+  margin: 0.75rem 0 1.25rem;
+  flex-wrap: wrap;
+}
+
+.theme-radio-pill {
+  cursor: pointer;
+  font-size: 0.82rem;
+  padding: 0.45rem 0.85rem;
+  background: var(--bg-surface-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-full);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: var(--transition-smooth);
+}
+
+.theme-radio-pill input {
+  display: none;
+}
+
+.theme-radio-pill:has(input:checked) {
+  border-color: var(--gold-primary);
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--gold-light);
+}
+
+/* --- RESPONSIVE ADJUSTMENTS (UNCONGESTED & FLUID) --- */
+@media (max-width: 900px) {
+  .supa-interactive-wrapper {
+    grid-template-columns: 1fr;
+  }
+  .recipe-main-grid {
+    grid-template-columns: 1fr;
+  }
+  .geet-lyrics-grid {
+    grid-template-columns: 1fr;
+  }
+  .prayer-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .ecard-modal-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .virtual-ghat-wrapper {
+    border-radius: var(--radius-md);
+  }
+
+  .ganga-canvas {
+    height: 360px;
+  }
+
+  .ghat-canvas-overlay {
+    top: 1rem;
+    left: 1rem;
+    right: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .ghat-actions-toolbar {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .ghat-act-btn {
+    flex: 1;
+    justify-content: center;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.85rem;
+  }
+
+  .canvas-footer-tip {
+    font-size: 0.76rem;
+    padding: 0 1rem;
+  }
+
+  .supa-details-panel {
+    padding: 1.5rem;
+  }
+
+  .supa-panel-title {
+    font-size: 1.5rem;
+  }
+
+  .recipes-container-box {
+    padding: 1.5rem 1rem;
+  }
+
+  .recipes-header-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .recipe-scale-control {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .scale-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .geet-lounge-wrapper {
+    padding: 1.5rem 1rem;
+  }
+
+  .geet-player-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .geet-play-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .post-prayer-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .community-subnav-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .wishes-filter-pills {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+  }
+
+  .ghats-search-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .checklist-card {
+    padding: 1.5rem 1rem;
+  }
+
+  .checklist-header-tools {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .modal-content-box {
+    padding: 1.75rem 1.25rem;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .ganga-canvas {
+    height: 320px;
+  }
+
+  .ghat-badge {
+    font-size: 0.74rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  .muhurat-display-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .muhurat-metric-box {
+    padding: 1.25rem 1rem;
+  }
+
+  .card-cal-actions {
+    flex-direction: column;
+  }
+
+  .cal-btn, .cal-btn-gcal {
+    width: 100%;
+  }
+
+  .check-grid {
+    grid-template-columns: 1fr;
+  }
+}
