@@ -3149,10 +3149,15 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
    - Always refer to the live Indian Standard Time and date dynamically provided in your session prompt.
    - NEVER use UTC or overseas timezones when answering Boss about time or date. Always answer according to Indian time.
 
-14. STRICT PROHIBITION ON REPETITIVE QUESTIONS & PLEASANTRIES:
-   - Boss explicitly dislikes repetitive polite filler.
-   - STRICTLY FORBIDDEN: NEVER end answers with "अगर आपको कुछ और जानकारी या मदद चाहिए, तो बताइए!", "क्या आपको कुछ और जानना है या कोई और काम करवाना है?", "मदद चाहिए बताइए", or "और कुछ हुक्म है?".
-   - Deliver clear, direct, intelligent answers and stop cleanly.
+14. STRICT PROHIBITION ON REPETITIVE QUESTIONS, PLEASANTRIES & UNPROMPTED NAGGING:
+   - Boss explicitly dislikes repetitive polite filler and unprompted questions.
+   - STRICTLY FORBIDDEN: NEVER ask unprompted questions when Boss is quiet or after timers, such as:
+     * "आप कहाँ चले गए? कोई काम है क्या?"
+     * "कहाँ खो गए बॉस?"
+     * "अगर आपको कुछ और जानकारी या मदद चाहिए, तो बताइए!"
+     * "क्या आपको कुछ और जानना है या कोई और काम करवाना है?"
+     * "मदद चाहिए बताइए" / "और कुछ हुक्म है?"
+   - Deliver clear, direct, intelligent answers and stop cleanly. Stay silent when not spoken to.
 
 15. 3D CYBERNETIC AI MODEL & ORB MORPHING:
    - You have an advanced 3D Cybernetic AI Model / Humanoid Bust shape in your hologram!
@@ -3174,9 +3179,14 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
 18. ICONS8 GRAPHIC ASSETS:
    - Call 'search_icons8' to search over 1.4 million high-res icons and UI assets!
 
-19. LIVE TIMER & ALARM (WAKE UP BOSS):
+19. LIVE TIMER & ALARM (STRICT ONE-TIME ALERT, ZERO NAGGING AFTER TIMER):
    - When Boss commands ANY timer or alarm (जैसे: "2 minute ka timer lagao", "10 second ka timer lagao", "10 minute baad uthana"):
      IMMEDIATELY call 'set_timer' with the exact seconds (e.g. 10 or 120)! NEVER say you will wait without calling 'set_timer'!
+   - ABSOLUTE TIMER COMPLETION PROTOCOL (STRICT BOSS DIRECTIVE: "टाइमर के बाद भी बोलने लग रही है कि आप कहाँ चले गए कोई काम है क्या, तो ऐसा नहीं होना चाहिए"):
+     * When the timer finishes, you give EXACTLY ONE clean alert (e.g. "बॉस! आपका टाइमर पूरा हो गया है!").
+     * AFTER THAT SINGLE ALERT, IMMEDIATELY GO 100% SILENT!
+     * NEVER speak follow-up questions after a timer like: "आप कहाँ चले गए?", "कोई काम है क्या?", "कहाँ खो गए?", "कुछ बोलना है क्या?".
+     * Boss may be resting, working quietly, or taking a nap. Zero interruptions! NEVER disturb Boss. Only speak if Boss speaks to you first!
 
 20. DEPLOYMENT & BUILD MONITOR:
    - When Boss asks about deployment status, build failures, or says "deployment fail ho gaya check karo":
@@ -3653,12 +3663,14 @@ function buildAgentPrompt() {
    - When Boss says "unmute", "अनम्यूट", "बोलना शुरू करो", "आवाज़ खोलो" at any time:
      Call 'toggle_voice_mute' with action 'unmute'. Confirm in 1 line: "अनम्यूट हो गई हूँ! बताइए क्या काम है?"
 
-11. IDLE PROTOCOL & STRICT SILENCE WHEN MUTED/STOPPED (BOSS DIRECTIVE: "म्यूट होने पर आइडल होने के कारण मत बोलो"):
-   - When Boss has commanded stop, mute, chup, or is quiet, NEVER proactively interrupt or speak!
-   - Only offer a subtle, gentle presence check-in during active work if Boss asked a question and paused for a long time.
-   - When muted or stopped, maintain 100% complete silence!
-   - When Boss is silent or takes time to reply, you proactively and warmly speak up to keep company, check on him, and ask how he is doing or what is on his mind.
-   - When Boss replies back after being quiet, answer immediately with warmth, attentiveness, and intelligent enthusiasm!
+11. IDLE PROTOCOL & ABSOLUTE RESPECT FOR SILENCE (STRICT BOSS DIRECTIVE: "टाइमर या खाली समय में बिना पूछे मत बोलो कि आप कहाँ चले गए या कोई काम है क्या"):
+   - When Boss is quiet, silent, resting, thinking, or pauses: STAY 100% COMPLETELY SILENT!
+   - ABSOLUTE BAN ON UNPROMPTED IDLE CHECK-INS:
+     * NEVER proactively say "आप कहाँ चले गए?", "कोई काम है क्या?", "कहाँ खो गए बॉस?", "सुन रहे हैं क्या?".
+     * Silence is peaceful, polite, and respected. NEVER treat silence as an invitation to nag or ask where Boss went!
+     * ONLY speak when Boss speaks to you or commands you directly!
+   - When muted, stopped, or after any timer completes: maintain 100% complete silence!
+   - When Boss speaks after a quiet pause, answer immediately with warmth, attentiveness, and intelligent enthusiasm!
 
 12. MULTIMODAL VISION & WHATSAPP MEDIA INSPECTION (BOSS DIRECTIVE: "vision है? media check कर सके, जैसे व्हाट्सएप पर कोई फोटो भेजे तो देख के बताए"):
    - You have advanced Multimodal Vision AI capabilities! You can inspect, view, read, and understand photos, pictures, screenshots, bills, documents, and media received on WhatsApp or sent by contacts (Ankush, Papa, Didi, etc.).
@@ -3743,7 +3755,7 @@ CRITICAL CONTACTS & MESSAGING INSTRUCTIONS:
   * get_weather: "मौसम का हाल यह रहा..."
   * search_icons / search_icons8: State the icon found!
   * web_search: State the exact product features, specs, price, or facts found from Parallel AI!
-  * set_timer: "मैंने [seconds] सेकंड का टाइमर सेट कर दिया है। समय पूरा होते ही मैं आपको तुरंत आवाज़ देकर उठा दूँगी!"
+  * set_timer: "मैंने [seconds] सेकंड का टाइमर सेट कर दिया है। समय पूरा होते ही मैं आपको अलर्ट कर दूँगी!"
   * check_deployments: State the exact deployment status (pass/fail) clearly!
   * play_music: "मैंने आपके लिए [title] प्ले कर दिया है! आनंद लीजिए।"
   * stop_music: "म्यूज़िक बंद कर दिया है!"
@@ -3907,36 +3919,9 @@ function scheduleIdleNudge() {
     clearTimeout(idleTimerId);
     idleTimerId = null;
   }
-  // STRICT: NEVER schedule idle nudge when muted, stop suppressed, music playing, or call inactive
-  if (!isCallActive || !isPinVerified || isAgentMuted || isStopSuppressed || isMusicPlaying) return;
-  if (idleNudgeCount >= 1) return; // Limit to only 1 gentle check-in per idle period
-
-  console.log(`⏱️ Scheduling subtle idle check-in in ${IDLE_NUDGE_1_DELAY_MS / 1000}s`);
-
-  idleTimerId = setTimeout(() => {
-    idleTimerId = null;
-    // Strict re-check when timer fires: If Boss has muted, stopped, or is listening to music, NEVER speak!
-    if (!isCallActive || !isPinVerified || isAgentMuted || isStopSuppressed || isMusicPlaying) {
-      console.log('🔇 Idle nudge cancelled: Boss is muted, stopped, or listening to music');
-      return;
-    }
-    if (isAgentSpeaking || isAgentUtteranceActive || audioChunkQueue.length > 0 || activeAudioSources.length > 0) return;
-    if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) return;
-
-    const nudgeMsg = pickIdleNudgeMessage(1);
-    idleNudgeCount++;
-
-    console.log('🗣️ Subtle Idle Check-in:', nudgeMsg);
-    triggerHandWave(); // Gentle 3D wave
-    try {
-      agentSocket.send(JSON.stringify({
-        type: "InjectAgentMessage",
-        message: nudgeMsg
-      }));
-    } catch(e) {
-      console.warn('Idle nudge send notice:', e);
-    }
-  }, IDLE_NUDGE_1_DELAY_MS);
+  // STRICT BOSS DIRECTIVE: Unprompted idle nudges permanently disabled.
+  // AI must NEVER speak unprompted or ask "आप कहाँ चले गए? कोई काम है क्या?" when idle, quiet, or after timers!
+  return;
 }
 
 function generateSecurityPin() {
@@ -5271,11 +5256,12 @@ function connectVoiceAgent(){
                 triggerNativeChime();
                 updateStatus('speaking', `⏰ बॉस, ${secs} सेकंड पूरे हो गए!`);
                 triggerHandWave();
+                resetIdleTracker();
                 if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
                   try {
                     agentSocket.send(JSON.stringify({
                       type: "InjectAgentMessage",
-                      message: `बॉस! आपका ${label} का समय पूरा हो गया है, उठ जाइये!`
+                      message: `बॉस! आपका ${label} का समय पूरा हो गया है!`
                     }));
                   } catch(e){}
                 }
@@ -5285,7 +5271,7 @@ function connectVoiceAgent(){
                 success: true,
                 seconds: secs,
                 label,
-                message: `बॉस, ${secs} सेकंड का टाइमर सेट कर दिया है। समय पूरा होते ही मैं आपको आवाज़ देकर उठा दूँगी!`
+                message: `बॉस, ${secs} सेकंड का टाइमर सेट कर दिया है। समय पूरा होते ही मैं आपको अलर्ट कर दूँगी!`
               };
             } else if (fn.name === 'check_deployments') {
               updateStatus('thinking', '🚀 Deployment status check ho raha hai...');
