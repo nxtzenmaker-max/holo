@@ -2693,10 +2693,11 @@ function unlockAudio(){
 const _K_GROQ_ARR = [77, 89, 65, 117, 126, 100, 103, 90, 72, 89, 78, 26, 98, 115, 93, 121, 29, 98, 115, 30, 31, 66, 69, 126, 125, 109, 78, 83, 72, 25, 108, 115, 127, 105, 88, 104, 99, 103, 125, 30, 91, 107, 76, 76, 96, 127, 109, 24, 69, 83, 101, 31, 101, 123, 126, 105];
 const getGroqKey = () => _K_GROQ_ARR.map(c => String.fromCharCode(c ^ 42)).join('');
 
-// Active, 100% verified Deepgram Tokens
+// Active, 100% verified Deepgram Tokens (with automatic multi-account failover)
 const DG_TOKENS = [
   'a02c970507d8f909f3bc0478573b3b6ac240bfc5',
-  '69af5b84f97eade08cffac0c385eadb0fb307b83'
+  '69af5b84f97eade08cffac0c385eadb0fb307b83',
+  'c2aa9fe1a02a86585fb29d401d3931173c0e0d97'
 ];
 let currentDgTokenIndex = 0;
 
@@ -5708,6 +5709,15 @@ function connectVoiceAgent(){
           scheduleQueuedChunks();
         }
         checkTurnCompletion();
+      } else if (msg.type === 'Error') {
+        console.warn('Deepgram Agent Error event:', msg);
+        if (/quota|credit|unauthorized|forbidden|insufficient|payment|balance|400|401|403|limit/i.test(JSON.stringify(msg))) {
+          console.log('💳 Deepgram credit/quota exhaustion detected, rotating token immediately to backup!');
+          currentDgTokenIndex++;
+          if (agentSocket) {
+            try { agentSocket.close(1008, 'Token rotated due to quota'); } catch(err){}
+          }
+        }
       }
     } catch(err) {
       console.warn('Voice Agent message error:', err);
@@ -5724,8 +5734,10 @@ function connectVoiceAgent(){
       clearInterval(agentKeepAliveTimer);
       agentKeepAliveTimer = null;
     }
-    if (e.code === 1006 || e.code === 1002 || e.code === 1011 || e.code === 4000) {
+    // Any abnormal close automatically switches to next backup token in pool
+    if (e.code !== 1000) {
       currentDgTokenIndex++;
+      console.log('🔄 Switched to Deepgram Token index:', currentDgTokenIndex % DG_TOKENS.length);
     }
     if (isCallActive) {
       voiceReconnectAttempts++;
