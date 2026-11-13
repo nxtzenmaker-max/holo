@@ -1,5 +1,5 @@
 // Holo AI PWA Service Worker
-const CACHE_NAME = 'holo-pwa-v2';
+const CACHE_NAME = 'holo-pwa-v3';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
@@ -25,6 +25,28 @@ self.addEventListener('activate', (event) => {
         })
       )
     ).then(() => self.clients.claim())
+  );
+});
+
+// Keep-alive message channel from client to prevent SW idling during active calls
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'PING') {
+    if (event.ports && event.ports[0]) {
+      event.ports[0].postMessage({ type: 'PONG', timestamp: Date.now() });
+    }
+  }
+});
+
+// Focus active PWA window upon notification click
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url && 'focus' in client) return client.focus();
+      }
+      if (clients.openWindow) return clients.openWindow('./');
+    })
   );
 });
 

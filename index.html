@@ -1417,6 +1417,21 @@
           <span>📲</span>
         </button>
       </div>
+
+      <div style="margin-top: 10px;">
+        <div style="width: 100%; display: flex; flex-direction: column; gap: 5px; padding: 10px 14px; border-radius: 12px; background: rgba(0, 240, 255, 0.08); border: 1px solid rgba(0, 240, 255, 0.22); font-size: 11px; color: #cbd5e1;">
+          <div style="display: flex; align-items: center; justify-content: space-between; font-weight: 600; color: #00f0ff;">
+            <span style="display: flex; align-items: center; gap: 6px;">
+              <span style="width: 7px; height: 7px; border-radius: 50%; background: #00f0ff; box-shadow: 0 0 8px #00f0ff;"></span>
+              <span>24/7 Background Run</span>
+            </span>
+            <span style="font-size: 10px; background: rgba(0,240,255,0.15); padding: 1px 6px; border-radius: 6px;">🛡️ Active</span>
+          </div>
+          <div style="font-size: 10px; color: #94a3b8; line-height: 1.4;">
+            स्क्रीन लॉक में भी ऐप चालू रखने के लिए: Phone <b>Settings &gt; Apps &gt; Chrome/Holo AI &gt; Battery &gt; Unrestricted</b> सेट करें।
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2667,6 +2682,7 @@ function playHologramMusic(track) {
 
   updateMusicControlsUI(true);
   updateStatus('active', `🎵 ${track.title || 'Song'} बज रहा है • 🎙️ माइक चालू है`);
+  updateMediaSession();
 }
 
 function stopHologramMusic() {
@@ -2685,6 +2701,7 @@ function stopHologramMusic() {
     try { navigator.audioSession.type = 'play-and-record'; } catch(e){}
   }
   ensureMicStreamActive();
+  updateMediaSession();
   updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
 }
 
@@ -2700,12 +2717,14 @@ function toggleMusicPlayback() {
     iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
     isMusicPlaying = false;
     updateMusicControlsUI(false);
+    updateMediaSession();
     updateStatus('listening', '⏸️ म्यूज़िक पॉज़ है • 🎙️ RJN सुन रही है');
   } else {
     iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
     isMusicPlaying = true;
     updateMusicControlsUI(true);
     ensureMicStreamActive();
+    updateMediaSession();
     updateStatus('active', '▶️ म्यूज़िक चल रहा है • 🎙️ माइक चालू है');
   }
 }
@@ -2809,6 +2828,108 @@ function unlockAudio(){
       source.connect(audioCtx.destination);
       source.start(0);
     } catch(e){}
+  }
+  startBackgroundAudioKeepAlive();
+  updateMediaSession();
+}
+
+// ================= BACKGROUND PWA AUDIO KEEP-ALIVE & MEDIA SESSION =================
+let bgKeepAliveAudio = null;
+
+function createSilentWavBlob() {
+  const sampleRate = 8000;
+  const numSamples = sampleRate * 1;
+  const buffer = new ArrayBuffer(44 + numSamples);
+  const view = new DataView(buffer);
+  
+  const writeStr = (offset, str) => {
+    for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+  };
+
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + numSamples, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate, true);
+  view.setUint16(32, 1, true);
+  view.setUint16(34, 8, true);
+  writeStr(36, 'data');
+  view.setUint32(40, numSamples, true);
+  const bytes = new Uint8Array(buffer, 44);
+  bytes.fill(128); // 8-bit PCM neutral silence
+  return new Blob([buffer], { type: 'audio/wav' });
+}
+
+function initBackgroundAudioKeepAlive() {
+  if (bgKeepAliveAudio) return;
+  try {
+    bgKeepAliveAudio = document.createElement('audio');
+    bgKeepAliveAudio.id = 'rjnBackgroundKeepAliveAudio';
+    bgKeepAliveAudio.loop = true;
+    bgKeepAliveAudio.playsInline = true;
+    bgKeepAliveAudio.setAttribute('playsinline', '');
+    bgKeepAliveAudio.setAttribute('webkit-playsinline', '');
+    bgKeepAliveAudio.preload = 'auto';
+
+    const blob = createSilentWavBlob();
+    bgKeepAliveAudio.src = URL.createObjectURL(blob);
+    bgKeepAliveAudio.volume = 0.001; // Inaudible yet actively keeps mobile OS audio track alive
+    document.body.appendChild(bgKeepAliveAudio);
+    console.log('🛡️ Background Audio Keep-Alive DOM element ready');
+  } catch(e) {
+    console.warn('Background audio keep-alive init notice:', e);
+  }
+}
+
+function startBackgroundAudioKeepAlive() {
+  initBackgroundAudioKeepAlive();
+  if (bgKeepAliveAudio && bgKeepAliveAudio.paused) {
+    bgKeepAliveAudio.play().then(() => {
+      console.log('🔊 Background Audio Keep-Alive active (holding OS audio lock)');
+      updateMediaSession();
+    }).catch(err => {
+      console.log('Keep-alive waiting for user touch:', err);
+    });
+  }
+}
+
+function updateMediaSession() {
+  if (!('mediaSession' in navigator)) return;
+  try {
+    const isPlaying = isMusicPlaying || isCallActive;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: isMusicPlaying && currentMusicTrack ? currentMusicTrack.title : 'Holo AI • Raj Nandini',
+      artist: isMusicPlaying && currentMusicTrack ? (currentMusicTrack.artist || 'YouTube Music') : '🎙️ Live AI Voice Companion • Active Call',
+      album: 'Google Deepmind RJN Cyber Assistant',
+      artwork: [
+        { src: './assets/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: './assets/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
+      ]
+    });
+
+    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'none';
+
+    navigator.mediaSession.setActionHandler('play', () => {
+      if (bgKeepAliveAudio) bgKeepAliveAudio.play().catch(()=>{});
+      if (isMusicPlaying) toggleMusicPlayback();
+      navigator.mediaSession.playbackState = 'playing';
+    });
+
+    navigator.mediaSession.setActionHandler('pause', () => {
+      if (isMusicPlaying) toggleMusicPlayback();
+      interruptAgentSpeech();
+    });
+
+    navigator.mediaSession.setActionHandler('stop', () => {
+      if (isMusicPlaying) stopHologramMusic();
+      stopVoiceCall();
+    });
+  } catch(err) {
+    console.warn('MediaSession notice:', err);
   }
 }
 
@@ -5933,6 +6054,8 @@ async function startVoiceCall(){
     isCallActive = true;
     unlockAudio();
     requestScreenWakeLock();
+    startBackgroundAudioKeepAlive();
+    updateMediaSession();
 
     // Generate random 3-digit security PIN for Boss verification
     generateSecurityPin();
@@ -6003,6 +6126,7 @@ function stopVoiceCall(){
     micStream = null;
   }
   stopAllAudioPlayback();
+  updateMediaSession();
   updateStatus('idle', '');
 }
 
@@ -6107,9 +6231,15 @@ window.addEventListener('wheel', e => {
 let lastT = performance.now();
 let audioLevel = 0, bassLevel = 0, midLevel = 0, highLevel = 0;
 let mouthOpen = 0, mouthWidth = 1.0;
+let isAppPageHidden = false;
+let renderAnimFrameId = null;
 
 function render(now){
-  requestAnimationFrame(render);
+  if (isAppPageHidden) {
+    renderAnimFrameId = null;
+    return; // Pause 3D WebGL GPU math when minimized to protect background process from OS kill
+  }
+  renderAnimFrameId = renderAnimFrameId = requestAnimationFrame(render);
   const dt = Math.min((now - lastT) * 0.001, 0.1);
   lastT = now;
   const t = now * 0.001;
@@ -6297,9 +6427,15 @@ setInterval(checkAndHandleSessionExpiration, 30000);
 
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible') {
+    isAppPageHidden = false;
+    lastT = performance.now();
+    if (!renderAnimFrameId) {
+      renderAnimFrameId = requestAnimationFrame(render);
+    }
     checkAndHandleSessionExpiration();
     if (isCallActive) {
       requestScreenWakeLock();
+      startBackgroundAudioKeepAlive();
     }
     // Resume audio context if browser suspended it during tab switch
     if (audioCtx && audioCtx.state === 'suspended') {
@@ -6308,19 +6444,36 @@ document.addEventListener('visibilitychange', async () => {
         console.log('🔊 AudioContext resumed after tab return');
       } catch (e) {}
     }
+    // Refresh microphone stream if OS muted or detached it during background
+    if (isCallActive) {
+      await ensureMicStreamActive();
+    }
     // Reconnect voice socket if disconnected while in background
     if (isCallActive && (!agentSocket || agentSocket.readyState !== WebSocket.OPEN)) {
       console.log('🔄 Reconnecting voice agent after tab return...');
-      await ensureMicStreamActive();
       connectVoiceAgent();
+    }
+  } else if (document.visibilityState === 'hidden') {
+    isAppPageHidden = true;
+    console.log('📱 App minimized to background: pausing 3D WebGL loop to conserve battery, maintaining audio keep-alive & voice socket');
+    if (isCallActive) {
+      startBackgroundAudioKeepAlive();
+      updateMediaSession();
     }
   }
 });
 
 window.addEventListener('focus', async () => {
+  isAppPageHidden = false;
+  lastT = performance.now();
+  if (!renderAnimFrameId) {
+    renderAnimFrameId = requestAnimationFrame(render);
+  }
   checkAndHandleSessionExpiration();
   if (isCallActive) {
     requestScreenWakeLock();
+    startBackgroundAudioKeepAlive();
+    await ensureMicStreamActive();
   }
   if (audioCtx && audioCtx.state === 'suspended') {
     try { await audioCtx.resume(); } catch (e) {}
@@ -6624,7 +6777,7 @@ runSystemStartupSequence(() => {
   initAuth();
 });
 
-requestAnimationFrame(render);
+renderAnimFrameId = requestAnimationFrame(render);
 
 /* ══════════════════════════════════════════
    AGENT LIVE TERMINAL — JS ENGINE
@@ -7019,7 +7172,16 @@ let deferredInstallPrompt = null;
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js')
-      .then(reg => console.log('✓ Service Worker registered:', reg.scope))
+      .then(reg => {
+        console.log('✓ Service Worker registered:', reg.scope);
+        // Periodic Service Worker keep-alive ping (every 25s) to avoid idle termination
+        setInterval(() => {
+          if (navigator.serviceWorker.controller) {
+            const channel = new MessageChannel();
+            navigator.serviceWorker.controller.postMessage({ type: 'PING' }, [channel.port2]);
+          }
+        }, 25000);
+      })
       .catch(err => console.warn('Service Worker registration error:', err));
   });
 }
