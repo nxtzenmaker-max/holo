@@ -3,8 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
+<title>Raj Nandini AI • Holo AI</title>
+
+<!-- PWA & Mobile Web Capabilities -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Holo AI">
+<meta name="application-name" content="Holo AI">
+<meta name="theme-color" content="#03040a">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="64x64" href="assets/icons/favicon-64.png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie_light.min.js"></script>
-<title>Raj Nandini AI</title>
 <style>
   *, *::before, *::after {
     box-sizing: border-box;
@@ -1374,6 +1387,16 @@
             <span>Agent Live Terminal</span>
           </span>
           <span>💻</span>
+        </button>
+      </div>
+
+      <div style="margin-top: 10px;">
+        <button type="button" id="sidebarInstallBtn" onclick="triggerPwaInstall()" style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-decoration: none; color: #a855f7; font-size: 12px; font-weight: 600; padding: 10px 14px; border-radius: 12px; background: rgba(168, 85, 247, 0.12); border: 1px solid rgba(168, 85, 247, 0.28); cursor: pointer; transition: all 0.2s ease;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #a855f7; box-shadow: 0 0 8px #a855f7;"></span>
+            <span id="installBtnText">Add to Home Screen (Install)</span>
+          </span>
+          <span>📲</span>
         </button>
       </div>
     </div>
@@ -6937,6 +6960,62 @@ requestAnimationFrame(render);
   </div>
   <div id="agentTermOut" class="agent-term-out"></div>
 </section>
+
+<!-- PWA INSTALL BANNER -->
+<div id="pwaInstallBanner" style="position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(160px);z-index:9999999;background:rgba(15,23,42,0.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(168,85,247,0.5);border-radius:16px;padding:12px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 12px 36px rgba(0,0,0,0.85),0 0 24px rgba(168,85,247,0.3);transition:transform 0.4s cubic-bezier(0.16,1,0.3,1);max-width:calc(100vw - 32px);width:340px;">
+  <img src="assets/icons/icon-192.png" alt="Holo Icon" style="width:42px;height:42px;border-radius:10px;object-fit:cover;flex-shrink:0;border:1px solid rgba(168,85,247,0.3);">
+  <div style="flex:1;min-width:0;">
+    <div style="font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Holo AI • Raj Nandini</div>
+    <div style="font-size:11px;color:#cbd5e1;">Add to Home Screen (Full Screen App)</div>
+  </div>
+  <button type="button" onclick="triggerPwaInstall()" style="background:#a855f7;color:#fff;border:none;padding:8px 14px;border-radius:10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;box-shadow:0 0 12px rgba(168,85,247,0.5);">Install</button>
+  <button type="button" onclick="document.getElementById('pwaInstallBanner').style.transform='translateX(-50%) translateY(160px)'" style="background:transparent;color:#94a3b8;border:none;font-size:20px;line-height:1;cursor:pointer;padding:0 2px;">&times;</button>
+</div>
+
+<script>
+// ================= PWA SERVICE WORKER & ADD TO HOME SCREEN =================
+let deferredInstallPrompt = null;
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => console.log('✓ Service Worker registered:', reg.scope))
+      .catch(err => console.warn('Service Worker registration error:', err));
+  });
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  console.log('📲 PWA beforeinstallprompt captured!');
+  const banner = document.getElementById('pwaInstallBanner');
+  if (banner) {
+    banner.style.transform = 'translateX(-50%) translateY(0)';
+  }
+});
+
+async function triggerPwaInstall() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const choice = await deferredInstallPrompt.userChoice;
+    console.log('PWA installation choice:', choice.outcome);
+    deferredInstallPrompt = null;
+    const banner = document.getElementById('pwaInstallBanner');
+    if (banner) banner.style.transform = 'translateX(-50%) translateY(160px)';
+  } else {
+    alert("Chrome Menu (दाहिनी तरफ ऊपर ⋮ तीन बिंदु) पर टैप करें और 'Install app' या 'Add to Home screen' चुनें!");
+  }
+}
+
+window.addEventListener('appinstalled', () => {
+  console.log('✓ Holo AI successfully installed as PWA!');
+  deferredInstallPrompt = null;
+  const banner = document.getElementById('pwaInstallBanner');
+  if (banner) banner.style.transform = 'translateX(-50%) translateY(160px)';
+  const btnText = document.getElementById('installBtnText');
+  if (btnText) btnText.textContent = 'App Installed ✓';
+});
+</script>
 
 </body>
 </html>
