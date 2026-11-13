@@ -4959,7 +4959,7 @@ function connectVoiceAgent(){
                   'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ command: cmd, timeout: 20000 })
-              });
+              }, 25000);
               let stdout = runResp?.stdout || '';
               callResult = {
                 success: true,
@@ -5423,7 +5423,7 @@ function connectVoiceAgent(){
                   'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ command: assignCmd, timeout: 20000 })
-              });
+              }, 30000);
 
               let parsedTask = null;
               try {
@@ -5459,7 +5459,7 @@ function connectVoiceAgent(){
                   'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ command: cmd, timeout: 20000 })
-              });
+              }, 25000);
               let parsed = null;
               try { parsed = JSON.parse(runResp.stdout.trim()); } catch(e){}
               let taskSummary = "कोई सक्रिय टास्क नहीं है।";
