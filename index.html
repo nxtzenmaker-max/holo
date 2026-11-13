@@ -3967,12 +3967,12 @@ function handlePinVerifiedSuccess() {
     if (hud) hud.classList.add('docked');
   }, 2200);
 
-  // Send InjectUserMessage to Deepgram Voice Agent to trigger RJN's professional arrival greeting
+  // Inject immediate audio greeting straight to TTS in ~200ms with zero LLM waiting time!
   if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
-    console.log('🛡️ Voice PIN Verified! Sending Owner Arrived briefing trigger to Agent...');
+    console.log('🛡️ Voice PIN Verified! Speaking Owner Arrived greeting via InjectAgentMessage...');
     agentSocket.send(JSON.stringify({
-      type: "InjectUserMessage",
-      content: `[SYSTEM_EVENT: Owner Boss has successfully spoken the security code ${currentSecurityPin}! Verification 100% confirmed! Speak this EXACT professional executive greeting aloud immediately in clear natural Devanagari Hindi phonetics: "हेलो बॉस! ऑल सिस्टम्स ऑनलाइन एंड कॉन्फ़िगर्ड। एनीथिंग एल्स जो मैं आपकी हेल्प कर सकूँ?" (Hello Boss! All systems online and configured. Anything else jo main aapki help kar sakun?). STRICT INSTRUCTION: Speak this EXACT line. NEVER spell out letters like "जेड ई एन ओ" or "Z-E-N-O", and NEVER say "नमस्ते Zeno". Deliver it with crisp, sharp, professional authority!]`
+      type: "InjectAgentMessage",
+      message: "हेलो बॉस! ऑल सिस्टम्स ऑनलाइन एंड कॉन्फ़िगर्ड। एनीथिंग एल्स जो मैं आपकी हेल्प कर सकूँ?"
     }));
   }
 }
@@ -3986,9 +3986,9 @@ function scheduleQueuedChunks() {
   if (!audioCtx) return;
   const now = audioCtx.currentTime;
 
-  // If nextScheduledStartTime fell behind or hasn't started, initialize smoothly with 35ms lead time
+  // Ultra-fast streaming audio scheduler with minimal 15ms lead time
   if (nextScheduledStartTime < now) {
-    nextScheduledStartTime = now + 0.035;
+    nextScheduledStartTime = now + 0.015;
   }
 
   while (audioChunkQueue.length > 0) {
@@ -4041,28 +4041,15 @@ function playAgentAudioChunk(arrayBuffer){
 
   audioChunkQueue.push({ buffer: audioBuf, duration: audioBuf.duration });
 
-  // Jitter buffer logic:
-  // If playback hasn't started yet for this turn, pre-buffer at least 2 chunks (~160ms)
-  // or start after a safe 80ms timer to ensure continuous gapless audio streaming
+  // Instant streaming playback: start immediately on chunk 1 for sub-second vocal response!
   if (!isPlaybackRunning) {
-    if (audioChunkQueue.length >= 2 || agentAudioStreamFinished) {
-      if (jitterBufferTimeout) {
-        clearTimeout(jitterBufferTimeout);
-        jitterBufferTimeout = null;
-      }
-      isPlaybackRunning = true;
-      nextScheduledStartTime = audioCtx.currentTime + 0.035;
-      scheduleQueuedChunks();
-    } else if (!jitterBufferTimeout) {
-      jitterBufferTimeout = setTimeout(() => {
-        jitterBufferTimeout = null;
-        if (!isPlaybackRunning && audioChunkQueue.length > 0) {
-          isPlaybackRunning = true;
-          nextScheduledStartTime = audioCtx ? (audioCtx.currentTime + 0.025) : 0;
-          scheduleQueuedChunks();
-        }
-      }, 40);
+    if (jitterBufferTimeout) {
+      clearTimeout(jitterBufferTimeout);
+      jitterBufferTimeout = null;
     }
+    isPlaybackRunning = true;
+    nextScheduledStartTime = audioCtx.currentTime + 0.015;
+    scheduleQueuedChunks();
   } else {
     // Playback already running: immediately schedule this chunk back-to-back with zero gap!
     scheduleQueuedChunks();
@@ -4076,7 +4063,7 @@ function checkTurnCompletion(){
   // Complete ONLY when server sent all chunks (AgentAudioDone), queue drained, and all audio sources finished
   if (agentAudioStreamFinished && audioChunkQueue.length === 0 && activeAudioSources.length === 0 && now >= (agentPlaybackEndTime - 0.020)) {
     if (turnFinishTimeout) clearTimeout(turnFinishTimeout);
-    // 300ms acoustic echo decay window before reopening microphone
+    // 80ms crisp echo decay window before reopening microphone for instant turn-taking
     turnFinishTimeout = setTimeout(() => {
       const cur = audioCtx ? audioCtx.currentTime : 0;
       if (agentAudioStreamFinished && audioChunkQueue.length === 0 && activeAudioSources.length === 0 && cur >= (agentPlaybackEndTime - 0.020)) {
@@ -4091,7 +4078,7 @@ function checkTurnCompletion(){
           scheduleIdleNudge();
         }
       }
-    }, 300);
+    }, 80);
   }
 }
 
@@ -4235,10 +4222,10 @@ function handlePcmAudioProcess(e){
                                    (now < (agentPlaybackEndTime + 0.150));
 
   // If RJN is currently speaking lively:
-  // Allow Boss's vocal energy (RMS > 0.022) to stream through so Deepgram immediately detects barge-in ("stop", "रुको", or questions)!
-  // Send silence only during quiet pause/residual speaker bleed (RMS <= 0.022) to prevent false cutoffs
+  // Allow Boss's vocal energy (RMS > 0.014) to stream through so Deepgram immediately detects barge-in ("stop", "रुको", or questions)!
+  // Send silence only during quiet pause/residual speaker bleed (RMS <= 0.014) to prevent false cutoffs
   if (isAgentCurrentlySpeaking) {
-    if (rms <= 0.022) {
+    if (rms <= 0.014) {
       const outSamples = Math.round(inputData.length / (inRate / 16000));
       const buffer = new ArrayBuffer(outSamples * 2); // silence
       try { agentSocket.send(buffer); } catch(err){}
@@ -4276,9 +4263,9 @@ function setupMicAudioNodes(stream){
     // 1. Connect to visualizer analyser (particles react to phone mic)
     micGainNode.connect(analyser);
 
-    // 2. Connect to PCM streaming processor for Deepgram Voice Agent
+    // 2. Connect to PCM streaming processor for Deepgram Voice Agent (2048 samples = ~42ms ultra-low latency)
     if (!pcmProcessor) {
-      pcmProcessor = audioCtx.createScriptProcessor(4096, 1, 1);
+      pcmProcessor = audioCtx.createScriptProcessor(2048, 1, 1);
       pcmProcessor.onaudioprocess = handlePcmAudioProcess;
     }
     micGainNode.connect(pcmProcessor);
@@ -4342,7 +4329,7 @@ function connectVoiceAgent(){
       const msg = JSON.parse(event.data);
 
       if (msg.type === 'Welcome') {
-        console.log('Handshake: Sending Voice Agent Settings with Nova-3 Hindi & Anthropic Claude Sonnet 4.5...');
+        console.log('Handshake: Sending Voice Agent Settings with Nova-3 Hindi & GPT-4o-mini (ultra-low latency)...');
         agentSocket.send(JSON.stringify({
           type: "Settings",
           audio: {
@@ -4356,6 +4343,7 @@ function connectVoiceAgent(){
                 version: "v1",
                 model: "nova-3",
                 language: "hi",
+                endpointing: 200,
                 keyterms: [
                   "नमस्ते", "शेर", "गिटार", "तितली", "चाय", "कप", "पेड़", "कार", "दिल", "फूल", "चाँद",
                   "बनो", "दिखाओ", "होलोग्राम", "कैसी हो", "क्या हाल है", "कोड", "बग",
@@ -4372,7 +4360,7 @@ function connectVoiceAgent(){
               }
             },
             think: {
-              provider: { type: "anthropic", model: "claude-sonnet-4-5" },
+              provider: { type: "open_ai", model: "gpt-4o-mini" },
               prompt: buildAgentPrompt(),
               functions: [
                 {
@@ -4745,7 +4733,7 @@ function connectVoiceAgent(){
               ]
             },
             speak: {
-              provider: { type: "deepgram", model: "flux-prachi-hi", speed: 1.20 }
+              provider: { type: "deepgram", model: "flux-prachi-hi", speed: 1.25 }
             },
             language: "hi"
           }
