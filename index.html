@@ -1019,6 +1019,25 @@
     margin-left: auto;
     font-style: italic;
   }
+  #musicIframeContainer {
+    width: 100%;
+    margin-top: 10px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    display: none;
+  }
+  #musicIframeContainer.visible {
+    display: block;
+  }
+  #musicIframeContainer iframe {
+    width: 100%;
+    height: 160px;
+    border: none;
+    display: block;
+    border-radius: 12px;
+  }
 
   /* ================= 3-DIGIT VOICE SECURITY PIN HUD ================= */
   .voice-security-hud {
@@ -1300,6 +1319,7 @@
       <div class="music-meta">
         <span id="musicDuration" class="music-pill">0:00</span>
         <span class="music-pill music-badge-hq">🔊 Speaker</span>
+        <span class="music-pill" style="background:rgba(34,197,94,0.18);color:#4ade80;font-weight:600;">🎙️ Mic On</span>
       </div>
     </div>
   </div>
@@ -1314,9 +1334,7 @@
     <a id="musicYtLink" href="#" target="_blank" rel="noopener" class="music-btn music-yt-btn" title="Open on YouTube">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
     </a>
-    <button type="button" id="musicTalkBtn" class="music-talk-btn" onclick="pauseMusicAndTalk()" title="Pause song and talk to RJN">
-      <span>🎙️ RJN से बोलें</span>
-    </button>
+    <span class="music-status-note" id="musicMicStatusNote">🎙️ माइक चालू है (हाथ हिलाए बिना बोलें)</span>
   </div>
 </div>
 
@@ -2595,6 +2613,15 @@ const hideGeneratedImage = hideMediaViewer;
 let currentMusicTrack = null;
 let isMusicPlaying = false;
 
+function duckMusicVolume(duck = true) {
+  const iframe = document.getElementById('musicYtIframe');
+  if (!iframe || !isMusicPlaying) return;
+  const vol = duck ? 20 : 100;
+  try {
+    iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [vol] }), '*');
+  } catch(e){}
+}
+
 function playHologramMusic(track) {
   if (!track || !track.id) return;
   currentMusicTrack = track;
@@ -2613,25 +2640,25 @@ function playHologramMusic(track) {
   if (duration) duration.textContent = track.duration || 'HQ Audio';
   if (ytLink) ytLink.href = track.url || `https://www.youtube.com/watch?v=${track.id}`;
 
-  // 🔊 CRITICAL SPEAKERPHONE / LOUDSPEAKER ROUTING FIX:
-  // On mobile Android/iOS, having an active microphone locks the whole browser into
-  // "MODE_IN_COMMUNICATION" (earpiece/telephony call audio).
-  // To route music through the phone's LOUDSPEAKER (media audio stream):
-  // 1. Temporarily pause/release the micStream so Android exits communication mode and returns to MODE_NORMAL.
-  // 2. Set navigator.audioSession.type = 'playback' (forces media loudspeaker).
+  // 🔊 LOUDSPEAKER ROUTING & ACTIVE MICROPHONE:
+  // 1. YouTube iframe is rendered with visible layout (width 100%, height 160px) and playsinline=1.
+  //    On Android Chrome, displaying a visible on-screen video player prompts the OS to route audio
+  //    through the system LOUDSPEAKER rather than treating it as hidden background telephony.
+  // 2. AudioSession configuration:
   if ('audioSession' in navigator) {
-    try { navigator.audioSession.type = 'playback'; } catch(e){}
+    try { navigator.audioSession.type = 'play-and-record'; } catch(e){}
   }
-  if (micStream) {
-    console.log('🔊 Switching audio to Loudspeaker: releasing mic stream during music playback');
-    try {
-      micStream.getTracks().forEach(t => t.stop());
-    } catch(e){}
-    micStream = null;
+  if (audioCtx && typeof audioCtx.setSinkId === 'function') {
+    try { audioCtx.setSinkId({ type: 'none' }); } catch(e){}
   }
 
+  // 3. Boss commanded: "bhai gana chale to mic bhi chalu rehna chahiye"!
+  // Ensure microphone remains 100% active and streaming to Deepgram:
+  ensureMicStreamActive();
+
   if (iframeContainer) {
-    iframeContainer.innerHTML = `<iframe id="musicYtIframe" width="1" height="1" style="position:absolute;left:-9999px;opacity:0.001;pointer-events:none;" src="https://www.youtube.com/embed/${track.id}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+    iframeContainer.classList.add('visible');
+    iframeContainer.innerHTML = `<iframe id="musicYtIframe" width="100%" height="160" src="https://www.youtube.com/embed/${track.id}?autoplay=1&enablejsapi=1&playsinline=1&origin=${encodeURIComponent(window.location.origin)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="width:100%;height:160px;border-radius:12px;border:none;display:block;"></iframe>`;
   }
 
   if (widget) {
@@ -2639,17 +2666,21 @@ function playHologramMusic(track) {
   }
 
   updateMusicControlsUI(true);
+  updateStatus('active', `🎵 ${track.title || 'Song'} बज रहा है • 🎙️ माइक चालू है`);
 }
 
 function stopHologramMusic() {
   isMusicPlaying = false;
   const widget = document.getElementById('musicPlayerWidget');
   const iframeContainer = document.getElementById('musicIframeContainer');
-  if (iframeContainer) iframeContainer.innerHTML = '';
+  if (iframeContainer) {
+    iframeContainer.classList.remove('visible');
+    iframeContainer.innerHTML = '';
+  }
   if (widget) widget.classList.remove('active');
   currentMusicTrack = null;
 
-  // Restore microphone immediately for voice call
+  // Restore microphone status for voice call
   if ('audioSession' in navigator) {
     try { navigator.audioSession.type = 'play-and-record'; } catch(e){}
   }
@@ -2658,18 +2689,7 @@ function stopHologramMusic() {
 }
 
 function pauseMusicAndTalk() {
-  const iframe = document.getElementById('musicYtIframe');
-  if (iframe && isMusicPlaying) {
-    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
-    isMusicPlaying = false;
-    updateMusicControlsUI(false);
-  }
-  // Restore microphone immediately so Boss can speak to RJN
-  if ('audioSession' in navigator) {
-    try { navigator.audioSession.type = 'play-and-record'; } catch(e){}
-  }
-  ensureMicStreamActive();
-  updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+  toggleMusicPlayback();
 }
 
 function toggleMusicPlayback() {
@@ -2680,25 +2700,13 @@ function toggleMusicPlayback() {
     iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
     isMusicPlaying = false;
     updateMusicControlsUI(false);
-    // When paused, re-engage mic so Boss can speak to RJN
-    if ('audioSession' in navigator) {
-      try { navigator.audioSession.type = 'play-and-record'; } catch(e){}
-    }
-    ensureMicStreamActive();
-    updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+    updateStatus('listening', '⏸️ म्यूज़िक पॉज़ है • 🎙️ RJN सुन रही है');
   } else {
-    // When resuming music, release mic to route back to loudspeaker
-    if ('audioSession' in navigator) {
-      try { navigator.audioSession.type = 'playback'; } catch(e){}
-    }
-    if (micStream) {
-      try { micStream.getTracks().forEach(t => t.stop()); } catch(e){}
-      micStream = null;
-    }
     iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
     isMusicPlaying = true;
     updateMusicControlsUI(true);
-    updateStatus('speaking', '🎵 Music on Loudspeaker...');
+    ensureMicStreamActive();
+    updateStatus('active', '▶️ म्यूज़िक चल रहा है • 🎙️ माइक चालू है');
   }
 }
 
@@ -2709,6 +2717,14 @@ function updateMusicControlsUI(playing) {
   if (playIcon) playIcon.style.display = playing ? 'none' : 'block';
   if (pauseIcon) pauseIcon.style.display = playing ? 'block' : 'none';
   if (bars) bars.style.opacity = playing ? '1' : '0.2';
+}
+
+function isMusicStopIntent(text) {
+  if (!text || typeof text !== 'string') return false;
+  const s = text.toLowerCase().trim();
+  if (/(गाना\s*बंद|म्यूजिक\s*बंद|गाना\s*रोको|म्यूजिक\s*रोको|गाना\s*हटाओ|सॉन्ग\s*बंद|गाना\s*पॉज)/i.test(s)) return true;
+  if (/\b(gana band|gaana band|music band|song band|gana roko|gaana roko|music roko|stop music|pause music|stop song|pause song|turn off music|close music|band karo gana|band kar gana)\b/i.test(s)) return true;
+  return false;
 }
 
 // Automatically restore microphone when YouTube track finishes
@@ -3029,7 +3045,8 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
    - You have full YouTube Music streaming superpower via 'play_music'!
    - When Boss asks to play any song, music, beats, lo-fi, track, or artist (जैसे: "lofi beats chalao", "Arijit Singh ka gana bajao", "Sidhu Moosewala song sunao", "gana chalao", "music bajao", "play music"):
      IMMEDIATELY call 'play_music' with the song/artist query!
-   - When Boss says "music band karo", "gana roko", "stop music", "pause music":
+   - Boss's microphone is 100% ACTIVE during music playback! Boss can talk, change songs, or give commands hands-free.
+   - When Boss says "music band karo", "gana roko", "stop music", "pause music", "stop", or "गाना बंद करो":
      Call 'stop_music'!
 
 22. UNIVERSAL HOLOGRAPHIC MEDIA VIEWER SUPERPOWER ('show_media'):
@@ -3749,17 +3766,17 @@ function scheduleIdleNudge() {
     clearTimeout(idleTimerId);
     idleTimerId = null;
   }
-  // STRICT: NEVER schedule idle nudge when muted, stop suppressed, or call inactive
-  if (!isCallActive || !isPinVerified || isAgentMuted || isStopSuppressed) return;
+  // STRICT: NEVER schedule idle nudge when muted, stop suppressed, music playing, or call inactive
+  if (!isCallActive || !isPinVerified || isAgentMuted || isStopSuppressed || isMusicPlaying) return;
   if (idleNudgeCount >= 1) return; // Limit to only 1 gentle check-in per idle period
 
   console.log(`⏱️ Scheduling subtle idle check-in in ${IDLE_NUDGE_1_DELAY_MS / 1000}s`);
 
   idleTimerId = setTimeout(() => {
     idleTimerId = null;
-    // Strict re-check when timer fires: If Boss has muted or stopped, NEVER speak!
-    if (!isCallActive || !isPinVerified || isAgentMuted || isStopSuppressed) {
-      console.log('🔇 Idle nudge cancelled: Boss is muted or stopped');
+    // Strict re-check when timer fires: If Boss has muted, stopped, or is listening to music, NEVER speak!
+    if (!isCallActive || !isPinVerified || isAgentMuted || isStopSuppressed || isMusicPlaying) {
+      console.log('🔇 Idle nudge cancelled: Boss is muted, stopped, or listening to music');
       return;
     }
     if (isAgentSpeaking || isAgentUtteranceActive || audioChunkQueue.length > 0 || activeAudioSources.length > 0) return;
@@ -4199,8 +4216,11 @@ function checkTurnCompletion(){
         agentAudioStreamFinished = false;
         nextScheduledStartTime = 0;
         agentPlaybackEndTime = 0;
+        if (isMusicPlaying) {
+          duckMusicVolume(false);
+        }
         if (isCallActive && !isAgentMuted && !isStopSuppressed) {
-          updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+          updateStatus('listening', isMusicPlaying ? '🎵 म्यूज़िक चालू है • 🎙️ माइक चालू है' : '🎙️ RJN सुन रही है... (बोलिए)');
           scheduleIdleNudge();
         }
       }
@@ -4347,17 +4367,24 @@ function handlePcmAudioProcess(e){
                                    (audioChunkQueue.length > 0) || (activeAudioSources.length > 0) || 
                                    (now < (agentPlaybackEndTime + 0.150));
 
-  // If RJN is currently speaking lively:
-  // Allow Boss's vocal energy (RMS > 0.014) to stream through so Deepgram immediately detects barge-in ("stop", "रुको", or questions)!
-  // Send silence only during quiet pause/residual speaker bleed (RMS <= 0.014) to prevent false cutoffs
-  if (isAgentCurrentlySpeaking) {
-    if (rms <= 0.014) {
+  // If RJN is currently speaking lively OR music is playing through loudspeaker:
+  // Allow Boss's real vocal energy (RMS > threshold) to stream through so Deepgram immediately detects commands ("stop", "रुको", "गाना बंद करो")!
+  // Send silence only during quiet pause/speaker bleed (RMS <= threshold) to prevent hallucinated lyrics
+  const isMusicActive = isMusicPlaying;
+  if (isAgentCurrentlySpeaking || isMusicActive) {
+    const speechThreshold = isMusicActive ? 0.018 : 0.014;
+    if (rms <= speechThreshold) {
       const outSamples = Math.round(inputData.length / (inRate / 16000));
       const buffer = new ArrayBuffer(outSamples * 2); // silence
       try { agentSocket.send(buffer); } catch(err){}
       return;
     }
-    console.log('🎙️ Boss vocal barge-in activity detected (RMS:', rms.toFixed(4), ')');
+    if (isMusicActive) {
+      console.log('🎙️ Boss voice command detected during music playback (RMS:', rms.toFixed(4), ')');
+      duckMusicVolume(true);
+    } else {
+      console.log('🎙️ Boss vocal barge-in activity detected (RMS:', rms.toFixed(4), ')');
+    }
   }
 
   // Pure, full-fidelity unfiltered user speech directly to Deepgram Nova-3:
@@ -4884,6 +4911,9 @@ function connectVoiceAgent(){
         console.log('🛑 Deepgram UserStartedSpeaking: stopping agent audio immediately for Boss');
         stopAllAudioPlayback();
         resetIdleTracker();
+        if (isMusicPlaying) {
+          duckMusicVolume(true);
+        }
         updateStatus('listening', '🎙️ RJN सुन रही है...');
       } else if (msg.type === 'AgentThinking') {
         updateStatus('thinking', '✨ RJN सोच रही है...');
@@ -5782,9 +5812,19 @@ function connectVoiceAgent(){
             return;
           }
 
-          // 4. STOP COMMAND: Boss says stop/रुको -> halt speaking immediately and stay completely quiet!
+          // 4. MUSIC STOP OR FULL STOP COMMAND:
+          if (isMusicPlaying && isMusicStopIntent(userText)) {
+            console.log('🛑 Boss commanded music stop:', userText);
+            stopHologramMusic();
+            updateStatus('listening', '🎙️ गाना बंद कर दिया है, बॉस!');
+            return;
+          }
+
           if (isStopCommand(userText)) {
             console.log('🛑 Boss commanded STOP: immediately halting playback and staying quiet (zero idle nudges)');
+            if (isMusicPlaying) {
+              stopHologramMusic();
+            }
             isStopSuppressed = true;
             stopAllAudioPlayback();
             resetIdleTracker();
