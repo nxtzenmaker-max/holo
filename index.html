@@ -1099,16 +1099,18 @@
   .agent-live-panel {
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    z-index: 9999;
-    max-height: 42vh;
+    z-index: 999999;
+    max-height: 48vh;
+    min-height: 180px;
     display: flex;
     flex-direction: column;
-    background: rgba(10,10,14,0.96);
+    background: rgba(8, 10, 16, 0.98);
     backdrop-filter: blur(28px) saturate(1.4);
     -webkit-backdrop-filter: blur(28px) saturate(1.4);
-    border-top: 1px solid rgba(255,255,255,0.08);
-    box-shadow: 0 -4px 48px rgba(0,0,0,0.7);
-    animation: agentPanelIn 0.28s cubic-bezier(.22,1,.36,1) both;
+    border-top: 1.5px solid rgba(99, 102, 241, 0.45);
+    box-shadow: 0 -8px 48px rgba(0, 0, 0, 0.9), 0 0 24px rgba(99, 102, 241, 0.2);
+    animation: agentPanelIn 0.28s cubic-bezier(.22, 1, .36, 1) both;
+    padding-bottom: env(safe-area-inset-bottom, 10px);
   }
   .agent-live-panel[data-s="min"] { max-height: 42px; }
   @keyframes agentPanelIn {
@@ -1341,6 +1343,16 @@
           </span>
           <span style="opacity: 0.8;">↗</span>
         </a>
+      </div>
+
+      <div style="margin-top: 10px;">
+        <button type="button" id="sidebarTerminalBtn" style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-decoration: none; color: #22c55e; font-size: 12px; font-weight: 600; padding: 10px 14px; border-radius: 12px; background: rgba(34, 197, 94, 0.12); border: 1px solid rgba(34, 197, 94, 0.28); cursor: pointer; transition: all 0.2s ease;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 8px #22c55e;"></span>
+            <span>Agent Live Terminal</span>
+          </span>
+          <span>💻</span>
+        </button>
       </div>
     </div>
   </div>
@@ -2851,14 +2863,14 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
 10. SECURE CLOUD MEMORY:
    - Secure cloud database is 100% online, healthy, and permanent.
    - Use 'query_database', 'save_contact', 'search_contacts' to read/write memories!
-11. AUTONOMOUS BACKGROUND AGENT:
-   - You have a dedicated autonomous developer AI agent running 24/7 in the cloud!
-   - Whenever Boss commands any coding, script writing, automation, or background work (जैसे: "एजेंट को यह काम दो", "बैकग्राउंड में एजेंट से काम करवाओ"):
-     Immediately call 'assign_autonomous_task' with the instruction!
-     Confirm happily in Hindi: "मैंने एजेंट को काम दे दिया है, वो इसे पूरा करेगा!"
-   - When Boss asks "एजेंट का काम कितना हुआ?", "एजेंट का स्टेटस क्या है?", "टास्क चेक करो":
-     Immediately call 'get_autonomous_task_status'!
-     Report the progress or result happily to Boss!
+11. AUTONOMOUS BACKGROUND AGENT & BOTTOM LIVE TERMINAL:
+   - You have a dedicated autonomous developer AI agent running 24/7 on your high-speed cloud VPS!
+   - CRITICAL REQUIREMENT: Whenever Boss asks you to build a website, write a script, code an app, or assign any work to the agent (जैसे: "agent ko task do", "website banao", "Chhath Puja website bana do", "script likho", "kuch bana do", "एजेंट को यह काम दो"):
+     YOU MUST ALWAYS INVOKE THE FUNCTION 'assign_autonomous_task' WITH THE INSTRUCTION!
+     STRICTLY FORBIDDEN: NEVER just speak in words that you gave the task without executing 'assign_autonomous_task'!
+     Calling 'assign_autonomous_task' automatically opens the bottom live terminal drawer on Boss's screen and streams real-time execution logs!
+   - When Boss asks about the agent, terminal, progress, or output ("terminal dikhao", "terminal log", "status kya hai", "task kitna hua", "output dikhao", "terminal log dikhao"):
+     Immediately invoke 'get_autonomous_task_status'! This opens the bottom terminal drawer and streams the live logs on Boss's screen!
 12. UNIVERSAL 3D SHAPE MORPHING:
    - Whenever Boss asks to show or become any object, call 'morph_shape'.
 13. INDIAN STANDARD TIME (IST) & CURRENT DATE ANCHOR:
@@ -4664,7 +4676,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "assign_autonomous_task",
-                  description: "Assign an autonomous task to cloud background agent. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'हाँ, मैं अभी एजेंट को यह काम सौंप रही हूँ...') before invoking this tool.",
+                  description: "CRITICAL: Call this function whenever Boss asks to assign a task to the agent, build a website, code, write a script, create an app, or do background work. Automatically opens the bottom terminal drawer on screen and streams execution.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -4702,7 +4714,7 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "get_autonomous_task_status",
-                  description: "Check the live connection status, online state, or task progress of your dedicated cloud background agent. CRITICAL DIRECTIVE: Speak aloud to Boss first (e.g. 'मैं अभी एजेंट का स्टेटस चेक कर रही हूँ...') before invoking this tool.",
+                  description: "Check live status and show bottom terminal output on Boss's screen. Call whenever Boss asks about agent progress, task status, terminal output, or says 'terminal dikhao', 'terminal log', 'task kitna hua'.",
                   parameters: {
                     type: "object",
                     properties: {
@@ -5470,8 +5482,29 @@ function connectVoiceAgent(){
                 const statusHindi = isDone ? 'सफलतापूर्वक पूरा हो गया है' : 'अभी बैकग्राउंड में चल रहा है';
                 taskSummary = `टास्क: "${t.instruction}". स्टेटस: ${statusHindi}!`;
                 const resText = t.result || t.summary || '';
+
+                // ALWAYS display live output in the bottom terminal drawer for Boss!
+                if (window._agentPanel) {
+                  window._agentPanel.show();
+                  window._agentPanel.start({ task: t.instruction || 'Autonomous Task', agent: 'RJN AUTONOMOUS AGENT' });
+                  window._agentPanel.cmd({
+                    command: `rjn-agent status --id="${t._id || ''}"`,
+                    output: ''
+                  });
+                  window._agentPanel.append(`\n[•] Task: "${t.instruction}"`);
+                  window._agentPanel.append(`\n[•] Execution Status: ${t.status}`);
+                  if (t.started_at) window._agentPanel.append(`\n[•] Started: ${t.started_at}`);
+                  if (t.log) window._agentPanel.append(`\n${t.log}`);
+                  if (resText) {
+                    window._agentPanel.append(`\n\n=== AGENT RESULT OUTPUT ===\n${resText}\n`);
+                    window._agentPanel.append(isDone ? '\n✓ Exit 0' : '\n[•] Executing in background...');
+                  }
+                  if (!isDone && t._id) {
+                    window._agentPanel.startMonitor(String(t._id), RAILWAY_RUNNER_URL, RUNNER_SECRET_KEY);
+                  }
+                }
                 
-                // If it generated an image or nature scene, automatically display the visual output on Boss's screen!
+                // If it generated an image, also show the image viewer
                 const isImageTask = /image|artwork|photo|nature|scene|alpine|valley|tree/i.test((t.instruction || '') + ' ' + resText);
                 if (isImageTask) {
                   mediaShown = true;
@@ -5487,14 +5520,6 @@ function connectVoiceAgent(){
                     url: imgUrl,
                     title: titleStr,
                     description: t.instruction || 'AI Generated Nature Scene by Cloud Agent'
-                  });
-                } else if (resText) {
-                  mediaShown = true;
-                  showMediaViewer({
-                    type: 'document',
-                    content: resText,
-                    title: `📄 Agent Result: ${(t.instruction || 'Task Output').slice(0, 32)}`,
-                    description: `Status: ${t.status}`
                   });
                 }
 
@@ -6402,7 +6427,12 @@ requestAnimationFrame(render);
     const p = document.getElementById('agentLivePanel');
     if (!p) return;
     p.style.display = 'flex';
+    p.style.visibility = 'visible';
+    p.style.opacity = '1';
+    p.style.zIndex = '999999';
     p.dataset.s = 'normal';
+    const out = document.getElementById('agentTermOut');
+    if (out) out.scrollTop = out.scrollHeight;
   }
   function hideAgentLivePanel() {
     stopLiveTaskMonitor();
@@ -6663,6 +6693,14 @@ requestAnimationFrame(render);
       if (!termOut) return;
       navigator.clipboard.writeText(termOut.innerText || termOut.textContent || '').catch(() => {});
     });
+
+    const sideTerm = document.getElementById('sidebarTerminalBtn');
+    if (sideTerm) {
+      sideTerm.addEventListener('click', function() {
+        if (typeof closeSidebar === 'function') closeSidebar();
+        showAgentLivePanel();
+      });
+    }
   });
 
   /* ── Expose globally so handlers in main script can call them ── */
