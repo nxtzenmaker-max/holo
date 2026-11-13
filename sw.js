@@ -1,12 +1,15 @@
 // Holo AI PWA Service Worker
-const CACHE_NAME = 'holo-pwa-v3';
+const CACHE_NAME = 'holo-pwa-v4';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
-  './assets/icons/apple-touch-icon.png'
+  './assets/icons/icon-maskable-512.png',
+  './assets/icons/apple-touch-icon.png',
+  './assets/icons/favicon-64.png',
+  './assets/icons/favicon.ico'
 ];
 
 self.addEventListener('install', (event) => {
