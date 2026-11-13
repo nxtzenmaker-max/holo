@@ -2664,9 +2664,7 @@ function playHologramMusic(track) {
   if ('audioSession' in navigator) {
     try { navigator.audioSession.type = 'play-and-record'; } catch(e){}
   }
-  if (audioCtx && typeof audioCtx.setSinkId === 'function') {
-    try { audioCtx.setSinkId({ type: 'none' }); } catch(e){}
-  }
+  ensureAudioRunning();
 
   // 3. Boss commanded: "bhai gana chale to mic bhi chalu rehna chahiye"!
   // Ensure microphone remains 100% active and streaming to Deepgram:
@@ -2696,6 +2694,10 @@ function stopHologramMusic() {
   }
   if (widget) widget.classList.remove('active');
   currentMusicTrack = null;
+  isStopSuppressed = false;
+
+  // Restore audio context and default speaker output
+  ensureAudioRunning();
 
   // Restore microphone status for voice call
   if ('audioSession' in navigator) {
@@ -2812,7 +2814,25 @@ function initAudioContext(){
     silentGain.connect(audioCtx.destination);
   }
   if (audioCtx.state === 'suspended') {
-    audioCtx.resume();
+    audioCtx.resume().catch(()=>{});
+  }
+  if (typeof audioCtx.setSinkId === 'function') {
+    try { audioCtx.setSinkId(''); } catch(e){}
+  }
+}
+
+async function ensureAudioRunning() {
+  initAudioContext();
+  if (audioCtx) {
+    if (audioCtx.state === 'suspended') {
+      try { await audioCtx.resume(); } catch(e){}
+    }
+    if (typeof audioCtx.setSinkId === 'function') {
+      try { await audioCtx.setSinkId(''); } catch(e){}
+    }
+  }
+  if (masterGain) {
+    masterGain.gain.value = 0.85;
   }
 }
 
@@ -4252,7 +4272,9 @@ function scheduleQueuedChunks() {
   const now = audioCtx.currentTime;
 
   // Ultra-fast streaming audio scheduler with minimal 15ms lead time
-  if (nextScheduledStartTime < now) {
+  // If nextScheduledStartTime fell behind the running clock (e.g. after context resume or song switch),
+  // immediately catch up to (now + 0.015) so chunks are never skipped!
+  if (nextScheduledStartTime < now + 0.005) {
     nextScheduledStartTime = now + 0.015;
   }
 
@@ -4278,12 +4300,20 @@ function scheduleQueuedChunks() {
 }
 
 function playAgentAudioChunk(arrayBuffer){
-  if (!audioCtx) return;
-  if (!isPinVerified || isAgentMuted || isStopSuppressed) {
-    // Drop audio chunks until PIN is verified or while Boss has muted RJN
+  if (!audioCtx) initAudioContext();
+  if (!isPinVerified || isAgentMuted) {
+    // Drop audio chunks ONLY if PIN is not verified or while Boss explicitly commanded MUTE
     return;
   }
-  unlockAudio();
+  // Clear any stop suppression because the agent is speaking a fresh response to Boss
+  isStopSuppressed = false;
+
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume().catch(()=>{});
+  }
+  if (masterGain && masterGain.gain.value < 0.2) {
+    masterGain.gain.value = 0.85;
+  }
 
   const int16 = new Int16Array(arrayBuffer);
   if (int16.length === 0) return;
@@ -4313,7 +4343,8 @@ function playAgentAudioChunk(arrayBuffer){
       jitterBufferTimeout = null;
     }
     isPlaybackRunning = true;
-    nextScheduledStartTime = audioCtx.currentTime + 0.015;
+    const now = audioCtx ? audioCtx.currentTime : 0;
+    nextScheduledStartTime = now + 0.015;
     scheduleQueuedChunks();
   } else {
     // Playback already running: immediately schedule this chunk back-to-back with zero gap!
@@ -5021,6 +5052,11 @@ function connectVoiceAgent(){
           clearTimeout(idleTimerId);
           idleTimerId = null;
         }
+        isStopSuppressed = false;
+        ensureAudioRunning();
+        if (isMusicPlaying) {
+          duckMusicVolume(true);
+        }
         isAgentUtteranceActive = true;
         isAgentSpeaking = true;
         agentAudioStreamFinished = false;
@@ -5033,6 +5069,8 @@ function connectVoiceAgent(){
         console.log('🛑 Deepgram UserStartedSpeaking: stopping agent audio immediately for Boss');
         stopAllAudioPlayback();
         resetIdleTracker();
+        isStopSuppressed = false;
+        ensureAudioRunning();
         if (isMusicPlaying) {
           duckMusicVolume(true);
         }
@@ -5938,6 +5976,7 @@ function connectVoiceAgent(){
           if (isMusicPlaying && isMusicStopIntent(userText)) {
             console.log('🛑 Boss commanded music stop:', userText);
             stopHologramMusic();
+            isStopSuppressed = false;
             updateStatus('listening', '🎙️ गाना बंद कर दिया है, बॉस!');
             return;
           }
@@ -5958,7 +5997,8 @@ function connectVoiceAgent(){
           updateStatus('listening', `🎙️ "${userText}"`);
           checkVoiceIntent(userText);
         } else if (msg.role === 'assistant') {
-          if (!isPinVerified || isAgentMuted || isStopSuppressed) return; // Mute assistant text before PIN verification or while muted
+          if (!isPinVerified || isAgentMuted) return; // Mute assistant text only before PIN verification or while muted
+          isStopSuppressed = false;
           const cleanAssistantText = stripLinksFromText(msg.content);
           updateStatus('speaking', `💬 RJN: ${cleanAssistantText}`);
           if (lastUserSpokenMsg) {
@@ -6054,6 +6094,7 @@ async function startVoiceCall(){
   try {
     isCallActive = true;
     unlockAudio();
+    ensureAudioRunning();
     requestScreenWakeLock();
     startBackgroundAudioKeepAlive();
     updateMediaSession();
@@ -6091,6 +6132,7 @@ function stopVoiceCall(){
   isCallActive = false;
   isPinVerified = false;
   isAgentMuted = false;
+  isStopSuppressed = false;
   if (muteTimeoutTimer) {
     clearTimeout(muteTimeoutTimer);
     muteTimeoutTimer = null;
@@ -6439,12 +6481,7 @@ document.addEventListener('visibilitychange', async () => {
       startBackgroundAudioKeepAlive();
     }
     // Resume audio context if browser suspended it during tab switch
-    if (audioCtx && audioCtx.state === 'suspended') {
-      try {
-        await audioCtx.resume();
-        console.log('🔊 AudioContext resumed after tab return');
-      } catch (e) {}
-    }
+    ensureAudioRunning();
     // Refresh microphone stream if OS muted or detached it during background
     if (isCallActive) {
       await ensureMicStreamActive();
@@ -6474,10 +6511,8 @@ window.addEventListener('focus', async () => {
   if (isCallActive) {
     requestScreenWakeLock();
     startBackgroundAudioKeepAlive();
+    ensureAudioRunning();
     await ensureMicStreamActive();
-  }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    try { await audioCtx.resume(); } catch (e) {}
   }
   if (isCallActive && (!agentSocket || agentSocket.readyState !== WebSocket.OPEN)) {
     await ensureMicStreamActive();
