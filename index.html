@@ -980,6 +980,26 @@
     box-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
     color: #fff;
   }
+  .music-talk-btn {
+    background: rgba(34, 197, 94, 0.18);
+    border: 1px solid rgba(34, 197, 94, 0.45);
+    color: #4ade80;
+    border-radius: 8px;
+    padding: 6px 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: auto;
+    transition: all 0.2s;
+  }
+  .music-talk-btn:hover {
+    background: rgba(34, 197, 94, 0.32);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.45);
+    color: #fff;
+  }
   .music-status-note {
     font-size: 10px;
     color: #64748b;
@@ -1246,7 +1266,7 @@
   <div class="music-header">
     <div class="music-badge">
       <span class="music-dot"></span>
-      <span>YouTube Music Live</span>
+      <span>YouTube Music • Loudspeaker</span>
     </div>
     <button type="button" class="music-close-btn" onclick="stopHologramMusic()" title="Close player">&times;</button>
   </div>
@@ -1266,7 +1286,7 @@
       <div id="musicArtist" class="music-artist">Artist</div>
       <div class="music-meta">
         <span id="musicDuration" class="music-pill">0:00</span>
-        <span class="music-pill music-badge-hq">HQ Audio</span>
+        <span class="music-pill music-badge-hq">🔊 Speaker</span>
       </div>
     </div>
   </div>
@@ -1281,7 +1301,9 @@
     <a id="musicYtLink" href="#" target="_blank" rel="noopener" class="music-btn music-yt-btn" title="Open on YouTube">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
     </a>
-    <span class="music-status-note">Streaming for Boss</span>
+    <button type="button" id="musicTalkBtn" class="music-talk-btn" onclick="pauseMusicAndTalk()" title="Pause song and talk to RJN">
+      <span>🎙️ RJN से बोलें</span>
+    </button>
   </div>
 </div>
 
@@ -2568,6 +2590,23 @@ function playHologramMusic(track) {
   if (duration) duration.textContent = track.duration || 'HQ Audio';
   if (ytLink) ytLink.href = track.url || `https://www.youtube.com/watch?v=${track.id}`;
 
+  // 🔊 CRITICAL SPEAKERPHONE / LOUDSPEAKER ROUTING FIX:
+  // On mobile Android/iOS, having an active microphone locks the whole browser into
+  // "MODE_IN_COMMUNICATION" (earpiece/telephony call audio).
+  // To route music through the phone's LOUDSPEAKER (media audio stream):
+  // 1. Temporarily pause/release the micStream so Android exits communication mode and returns to MODE_NORMAL.
+  // 2. Set navigator.audioSession.type = 'playback' (forces media loudspeaker).
+  if ('audioSession' in navigator) {
+    try { navigator.audioSession.type = 'playback'; } catch(e){}
+  }
+  if (micStream) {
+    console.log('🔊 Switching audio to Loudspeaker: releasing mic stream during music playback');
+    try {
+      micStream.getTracks().forEach(t => t.stop());
+    } catch(e){}
+    micStream = null;
+  }
+
   if (iframeContainer) {
     iframeContainer.innerHTML = `<iframe id="musicYtIframe" width="1" height="1" style="position:absolute;left:-9999px;opacity:0.001;pointer-events:none;" src="https://www.youtube.com/embed/${track.id}?autoplay=1&enablejsapi=1&origin=${encodeURIComponent(window.location.origin)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
   }
@@ -2586,6 +2625,28 @@ function stopHologramMusic() {
   if (iframeContainer) iframeContainer.innerHTML = '';
   if (widget) widget.classList.remove('active');
   currentMusicTrack = null;
+
+  // Restore microphone immediately for voice call
+  if ('audioSession' in navigator) {
+    try { navigator.audioSession.type = 'play-and-record'; } catch(e){}
+  }
+  ensureMicStreamActive();
+  updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+}
+
+function pauseMusicAndTalk() {
+  const iframe = document.getElementById('musicYtIframe');
+  if (iframe && isMusicPlaying) {
+    iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
+    isMusicPlaying = false;
+    updateMusicControlsUI(false);
+  }
+  // Restore microphone immediately so Boss can speak to RJN
+  if ('audioSession' in navigator) {
+    try { navigator.audioSession.type = 'play-and-record'; } catch(e){}
+  }
+  ensureMicStreamActive();
+  updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
 }
 
 function toggleMusicPlayback() {
@@ -2596,10 +2657,25 @@ function toggleMusicPlayback() {
     iframe.contentWindow.postMessage('{"event":"command","func":"pauseVideo","args":""}', '*');
     isMusicPlaying = false;
     updateMusicControlsUI(false);
+    // When paused, re-engage mic so Boss can speak to RJN
+    if ('audioSession' in navigator) {
+      try { navigator.audioSession.type = 'play-and-record'; } catch(e){}
+    }
+    ensureMicStreamActive();
+    updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
   } else {
+    // When resuming music, release mic to route back to loudspeaker
+    if ('audioSession' in navigator) {
+      try { navigator.audioSession.type = 'playback'; } catch(e){}
+    }
+    if (micStream) {
+      try { micStream.getTracks().forEach(t => t.stop()); } catch(e){}
+      micStream = null;
+    }
     iframe.contentWindow.postMessage('{"event":"command","func":"playVideo","args":""}', '*');
     isMusicPlaying = true;
     updateMusicControlsUI(true);
+    updateStatus('speaking', '🎵 Music on Loudspeaker...');
   }
 }
 
@@ -2611,6 +2687,17 @@ function updateMusicControlsUI(playing) {
   if (pauseIcon) pauseIcon.style.display = playing ? 'block' : 'none';
   if (bars) bars.style.opacity = playing ? '1' : '0.2';
 }
+
+// Automatically restore microphone when YouTube track finishes
+window.addEventListener('message', function(e) {
+  try {
+    const data = typeof e.data === 'string' ? JSON.parse(e.data) : e.data;
+    if (data && data.event === 'onStateChange' && data.info === 0) {
+      console.log('🎵 YouTube track finished playing, restoring mic...');
+      stopHologramMusic();
+    }
+  } catch(err){}
+});
 
 // ================= UI STATUS =================
 const hintEl = { textContent: '' };
