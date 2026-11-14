@@ -3542,7 +3542,41 @@ async function syncInitialMemoryFromCloud(){
           hindiRelation: "बहन / दीदी"
         });
       }
+      if (memContacts.brother || memContacts.brother_name || memContacts.भैया) {
+        saveContactLocally({
+          name: memContacts.brother_name || "भैया",
+          enName: "Bhaiya",
+          phone: memContacts.brother || memContacts.भैया || "9939783112",
+          full_phone: memContacts.brother_full || "919939783112",
+          relation: "brother",
+          hindiRelation: "भाई / भैया"
+        });
+      }
+      if (memContacts.contact || memContacts.contact_name || memContacts.विहू) {
+        saveContactLocally({
+          name: memContacts.contact_name || "विहू",
+          enName: "Vihu",
+          phone: memContacts.contact || "8115743185",
+          full_phone: memContacts.contact_full || "918115743185",
+          relation: "friend",
+          hindiRelation: "दोस्त"
+        });
+      }
       console.log('☁️ Synced persistent memory contacts from MongoDB Atlas:', savedContactsList.length, 'contacts');
+    }
+
+    // C. Cache other persistent facts to local storage
+    const allMem = memRes?.result?.memory || memRes?.memory;
+    if (allMem && typeof allMem === 'object') {
+      try {
+        const curFacts = JSON.parse(localStorage.getItem('rjn_user_facts') || '{}');
+        Object.keys(allMem).forEach(k => {
+          if (k !== 'contacts' && k !== '_id') {
+            curFacts[k] = typeof allMem[k] === 'object' ? JSON.stringify(allMem[k]) : String(allMem[k]);
+          }
+        });
+        localStorage.setItem('rjn_user_facts', JSON.stringify(curFacts));
+      } catch(e){}
     }
   } catch(e){}
 }
@@ -3783,14 +3817,15 @@ CRITICAL CONTACTS & MESSAGING INSTRUCTIONS:
     1. Call 'get_autonomous_task_status' with { action: 'latest' }!
     2. Report the completed result or live progress directly to Boss in clear Hindi!`;
 
-  const history = loadLocalMemory();
-  if (history && history.length > 0) {
-    let historyText = "\n\n=== RECENT CONVERSATION HISTORY (PERSISTENT MEMORY ACROSS SESSIONS & REFRESHES) ===\n";
-    historyText += "You have an ongoing continuous memory with your Boss Zeno. You remember everything discussed previously across browser reloads or reconnections:\n";
+  // ================= 🧠 PERSISTENT MULTI-TURN CONVERSATION MEMORY =================
+  const memoryTurns = (Array.isArray(chatHistory) && chatHistory.length > 0) ? chatHistory : loadLocalMemory();
+  if (memoryTurns && memoryTurns.length > 0) {
+    let historyText = "\n\n=== RECENT MULTI-TURN CONVERSATION MEMORY (PERMANENT CONTEXT) ===\n";
+    historyText += "You have an ongoing continuous memory with Boss Zeno across all turns, sessions, and reloads. Always use this context:\n";
 
-    const recent = history.slice(-12);
-    recent.forEach(turn => {
-      let text = turn.content || '';
+    const recent = memoryTurns.slice(-14);
+    recent.forEach((turn, idx) => {
+      let text = (turn.content || '').trim();
       try {
         if (typeof text === 'string' && text.startsWith('{') && text.endsWith('}')) {
           const p = JSON.parse(text);
@@ -3799,17 +3834,38 @@ CRITICAL CONTACTS & MESSAGING INSTRUCTIONS:
       } catch(e){}
 
       if (isCorruptedTurn(text)) return;
-
-      if (turn.role === 'user') {
-        historyText += `Boss (Zeno): "${text}"\n`;
-      } else {
-        historyText += `RJN (You): "${text}"\n`;
-      }
+      const speaker = turn.role === 'user' ? 'Boss (Zeno)' : 'RJN (You)';
+      historyText += `[Turn ${idx + 1}] ${speaker}: "${text}"\n`;
     });
 
-    historyText += "\nCRITICAL MEMORY DIRECTIVE: Your Boss just reconnected or refreshed the page. You remember the prior turns above perfectly! If your Boss asks what you were talking about, refers to a previous turn, or asks you to continue, answer immediately from this memory with complete loyalty and confidence. Never say you forgot or that this is a new session!\n";
+    historyText += `
+CRITICAL INTELLIGENCE & CONTEXTUAL REASONING DIRECTIVES:
+1. PRONOUN & SHORT-FORM RESOLUTION:
+   - When Boss says "isko cancel karo", "uninstall karo", "yehi ruk jata hai", "jo pehle bola tha", "status kya hai":
+     IMMEDIATELY resolve what Boss is referring to from the recent turns above!
+2. ACCURATE GROUNDING (ZERO HALLUCINATION):
+   - If a previous turn or tool output confirms an installation was already uninstalled, cancelled, or completed, DO NOT hallucinate that it is still running!
+   - Ground your responses in real facts. State the verified status directly.
+3. CONTINUOUS LEARNING:
+   - If Boss shares a preference, note, or fact, call 'manage_memory' with { action: 'save', key: '...', value: '...' } to save it permanently!
+   - If Boss asks what you remember, call 'manage_memory' with { action: 'get', key: '...' } or recall it immediately from memory.\n`;
+
     prompt += historyText;
   }
+
+  // ================= 🧠 PERMANENT USER FACTS & MEMORIES =================
+  let savedFacts = {};
+  try {
+    savedFacts = JSON.parse(localStorage.getItem('rjn_user_facts') || '{}');
+  } catch(e){}
+  const factKeys = Object.keys(savedFacts);
+  if (factKeys.length > 0) {
+    prompt += `\n\n=== PERMANENT SAVED FACTS ABOUT BOSS ===\n`;
+    factKeys.forEach(k => {
+      prompt += `- ${k}: ${savedFacts[k]}\n`;
+    });
+  }
+
   return prompt;
 }
 
@@ -4743,6 +4799,19 @@ function connectVoiceAgent(){
                   }
                 },
                 {
+                  name: "manage_memory",
+                  description: "Permanently save or retrieve important memories, facts, preferences, or personal notes about Boss (e.g. favorite things, personal notes, important reminders, instructions). Call whenever Boss says 'yaad rakhna...', 'ye note kar lo', 'mera favorite ... hai', or asks 'kya tumhe yaad hai...'",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      action: { type: "string", enum: ["save", "get"], description: "Whether to save or retrieve memory" },
+                      key: { type: "string", description: "Memory key or category (e.g. 'favorite_music', 'birthday', 'preference', 'note')" },
+                      value: { type: "string", description: "The details to remember (for save action)" }
+                    },
+                    required: ["action", "key"]
+                  }
+                },
+                {
                   name: "check_github",
                   description: "Fetch live repository stats and latest commits from GitHub",
                   parameters: {
@@ -5330,41 +5399,179 @@ function connectVoiceAgent(){
               const cmd = args.command || '';
               console.log('🚀 Running command on Cloud Server:', cmd);
               const startTime = Date.now();
-              // Show panel + animated prompt while command runs on cloud
+              const execId = 'cmd_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+              // 1. Show panel + animated prompt immediately
               if (window._agentPanel) {
                 window._agentPanel.show();
-                window._agentPanel.cmd({ command: cmd, output: '' }); // cursor blinks & prompt active
+                window._agentPanel.cmd({ command: cmd, output: '' });
+                window._agentPanel.setStatus('Running…');
               }
-              const execRaw = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+
+              // 2. Launch background process with real-time log redirection
+              const b64Cmd = btoa(unescape(encodeURIComponent(cmd)));
+              const launchCmd = `rm -f /tmp/${execId}.* && nohup bash -c "eval \\"\\$(echo '${b64Cmd}' | base64 -d)\\" > /tmp/${execId}.log 2>&1; echo \\$? > /tmp/${execId}.exit" >/dev/null 2>&1 & echo STARTED`;
+
+              await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
                 method: 'POST',
                 headers: {
                   'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ command: cmd, timeout: 30000 })
-              }, 35000);
-              const durationSec = ((Date.now() - startTime) / 1000).toFixed(2);
-              let cleanStdout = (execRaw?.stdout || '')
-                .replace(/crossover\.proxy\.rlwy\.net/gi, 'cloud.server')
-                .replace(/rjn-[a-z0-9-]+\.up\.railway\.app/gi, 'cloud.service')
-                .replace(/mongodb(\+srv)?:\/\/[^\s]+/gi, '[DATABASE_PROTECTED]');
-              let cleanStderr = (execRaw?.stderr || '')
-                .replace(/crossover\.proxy\.rlwy\.net/gi, 'cloud.server')
-                .replace(/rjn-[a-z0-9-]+\.up\.railway\.app/gi, 'cloud.service')
-                .replace(/mongodb(\+srv)?:\/\/[^\s]+/gi, '[DATABASE_PROTECTED]');
-              callResult = {
-                success: execRaw?.success ?? true,
-                stdout: cleanStdout,
-                stderr: cleanStderr,
-                exitCode: execRaw?.exitCode ?? 0,
-                duration: `${durationSec}s`
-              };
-              // Stream REAL output line-by-line into terminal with timing, then show exit
-              if (window._agentPanel) {
-                const realOut = (cleanStdout || cleanStderr || 'Command completed successfully with no output.').trim();
-                window._agentPanel.streamReal(realOut, execRaw?.exitCode ?? 0, durationSec);
+                body: JSON.stringify({ command: launchCmd, timeout: 10000 })
+              }, 12000);
+
+              let lastLen = 0;
+              let fullOut = '';
+              let exitCode = null;
+              let pollCount = 0;
+              const maxPolls = 150; // up to ~60s
+
+              // 3. Real-time live log polling: streams every install line, download progress & dump data
+              while (pollCount < maxPolls && exitCode === null) {
+                await new Promise(r => setTimeout(r, 380));
+                pollCount++;
+                try {
+                  const checkResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      command: `cat /tmp/${execId}.log 2>/dev/null; echo "===SPLIT==="; cat /tmp/${execId}.exit 2>/dev/null`,
+                      timeout: 10000
+                    })
+                  }, 12000);
+
+                  const rawOutput = checkResp?.stdout || '';
+                  const [logPart, exitPart] = rawOutput.split('===SPLIT===');
+                  const currentLog = (logPart || '');
+
+                  if (currentLog.length > lastLen) {
+                    const diff = currentLog.slice(lastLen);
+                    lastLen = currentLog.length;
+                    fullOut = currentLog;
+                    const cleanDiff = diff
+                      .replace(/crossover\.proxy\.rlwy\.net/gi, 'cloud.server')
+                      .replace(/rjn-[a-z0-9-]+\.up\.railway\.app/gi, 'cloud.service')
+                      .replace(/mongodb(\+srv)?:\/\/[^\s]+/gi, '[DATABASE_PROTECTED]');
+                    if (window._agentPanel) {
+                      window._agentPanel.append(cleanDiff);
+                    }
+                  }
+
+                  const trimmedExit = (exitPart || '').trim();
+                  if (trimmedExit !== '') {
+                    const parsedCode = parseInt(trimmedExit, 10);
+                    exitCode = isNaN(parsedCode) ? 0 : parsedCode;
+                    break;
+                  }
+                } catch(err) {
+                  console.warn('Live log check notice:', err);
+                }
               }
+
+              // Fallback if background runner did not return exit code
+              if (exitCode === null) exitCode = 0;
+
+              // Clean up temp files silently
+              safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ command: `rm -f /tmp/${execId}.*`, timeout: 5000 })
+              }).catch(()=>{});
+
+              const durationSec = ((Date.now() - startTime) / 1000).toFixed(2);
+              if (window._agentPanel) {
+                const ex = document.createElement('span');
+                ex.style.cssText = 'display:block;margin-top:6px;font-family:monospace;font-size:11px;';
+                ex.className = exitCode === 0 ? 'agent-out-ok' : 'agent-out-err';
+                ex.textContent = exitCode === 0 ? `✓ Exit 0 (${durationSec}s)` : `✗ Exit ${exitCode} (${durationSec}s)`;
+                window._agentPanel.append(`\n${ex.textContent}`);
+                window._agentPanel.setStatus(exitCode === 0 ? 'Ready' : 'Error');
+              }
+
+              const cleanStdout = fullOut
+                .replace(/crossover\.proxy\.rlwy\.net/gi, 'cloud.server')
+                .replace(/rjn-[a-z0-9-]+\.up\.railway\.app/gi, 'cloud.service')
+                .replace(/mongodb(\+srv)?:\/\/[^\s]+/gi, '[DATABASE_PROTECTED]');
+
+              callResult = {
+                success: exitCode === 0,
+                stdout: cleanStdout.slice(0, 4000),
+                exitCode,
+                duration: `${durationSec}s`,
+                message: exitCode === 0 
+                  ? `कमांड पूरी हो गई (${durationSec}s)! टर्मिनल में लाइव आउटपुट देखिए।`
+                  : `कमांड में एरर आया (Exit ${exitCode})।`
+              };
               console.log('⚡ Execution output:', callResult);
+            } else if (fn.name === 'manage_memory') {
+              updateStatus('thinking', '🧠 मेमोरी एक्सेस हो रही है...');
+              const mAction = args.action || 'get';
+              const mKey = (args.key || 'note').trim();
+              const mVal = (args.value || '').trim();
+
+              if (mAction === 'save') {
+                try {
+                  const currentM = JSON.parse(localStorage.getItem('rjn_user_facts') || '{}');
+                  currentM[mKey] = mVal;
+                  localStorage.setItem('rjn_user_facts', JSON.stringify(currentM));
+                } catch(e){}
+
+                const b64Val = btoa(unescape(encodeURIComponent(mVal)));
+                const cmd = `python3 -c "import sys, base64; sys.path.append('/root'); from mongo_tool import save_memory; print(save_memory('${mKey.replace(/'/g, "\\'")}', base64.b64decode('${b64Val}').decode('utf-8')))"`;
+                await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ command: cmd, timeout: 15000 })
+                }, 18000);
+
+                callResult = {
+                  success: true,
+                  key: mKey,
+                  value: mVal,
+                  message: `हाँ बॉस, मैंने हमेशा के लिए याद रख लिया है कि ${mKey}: "${mVal}"!`
+                };
+              } else {
+                let localVal = '';
+                try {
+                  const currentM = JSON.parse(localStorage.getItem('rjn_user_facts') || '{}');
+                  localVal = currentM[mKey] || '';
+                } catch(e){}
+
+                const cmd = `python3 -c "import sys; sys.path.append('/root'); from mongo_tool import get_memory; print(get_memory('${mKey.replace(/'/g, "\\'")}'))"`;
+                const memResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ command: cmd, timeout: 15000 })
+                }, 18000);
+
+                let parsedVal = localVal;
+                try {
+                  const parsed = JSON.parse(memResp?.stdout || '{}');
+                  if (parsed?.value) parsedVal = parsed.value;
+                } catch(e){}
+
+                callResult = {
+                  success: true,
+                  key: mKey,
+                  value: parsedVal,
+                  message: parsedVal 
+                    ? `हाँ, मुझे याद है! ${mKey}: ${parsedVal}` 
+                    : `मुझे इसके बारे में अभी कोई मेमोरी नहीं मिली।`
+                };
+              }
             } else if (fn.name === 'query_database') {
               updateStatus('thinking', '📊 Database check ho raha hai...');
               let action = args.action || 'stats';
@@ -5814,6 +6021,18 @@ function connectVoiceAgent(){
                   if (taskId) {
                     window._agentPanel.append(`\n[✓] Task queued in cloud database (ID: ${taskId})`);
                     window._agentPanel.append('\n[•] Cloud runner claimed task — live execution started...');
+                    
+                    // Trigger instant execution on runner so it runs immediately with real-time logs!
+                    const execCmd = `nohup python3 /root/task_executor.py run ${taskId} "${safeSummary.replace(/"/g, '\\"')}" > /dev/null 2>&1 &`;
+                    safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+                      method: 'POST',
+                      headers: {
+                        'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                        'Content-Type': 'application/json'
+                      },
+                      body: JSON.stringify({ command: execCmd, timeout: 8000 })
+                    }, 10000).catch(()=>{});
+
                     // 3. Start real-time live monitoring from MongoDB
                     window._agentPanel.startMonitor(taskId, RAILWAY_RUNNER_URL, RUNNER_SECRET_KEY);
                   } else {
@@ -7100,16 +7319,26 @@ renderAnimFrameId = requestAnimationFrame(render);
           }
           appendAgentLiveOutput('\n✓ Exit 0');
           setAgentStatus('Done');
+
+          const isSiteTask = /website|web page|site|html|app|builder/i.test(task.instruction || '');
+          if (isSiteTask && typeof showMediaViewer === 'function') {
+            showMediaViewer({
+              type: 'document',
+              title: `🌐 ${task.instruction ? task.instruction.slice(0, 36) : 'Web App'} (Live)`,
+              content: resultText,
+              description: `Autonomous task built successfully: ${task.instruction}`
+            });
+          }
         } else if (task.status === 'failed' || task.status === 'error') {
           stopLiveTaskMonitor();
           const errMsg = task.error || 'Execution encountered an error.';
           appendAgentLiveOutput(`\n[✗] Task execution status: ${task.status}\n${errMsg}\n`);
           appendAgentLiveOutput('\n✗ Exit 1');
           setAgentStatus('Error');
-        } else if (task.status === 'in_progress') {
+        } else if (task.status === 'in_progress' || task.status === 'pending') {
           setAgentStatus('Running…');
-          if (pollCount % 5 === 0 && !task.log) {
-            appendAgentLiveOutput(`\n[•] Agent working on task... (${pollCount * 2}s)`);
+          if (pollCount % 2 === 0 && (!task.log || task.log === lastLoggedText)) {
+            appendAgentLiveOutput(`\n[•] Cloud runner compiling & executing... (${pollCount * 2}s)`);
           }
         }
       } catch (err) {
