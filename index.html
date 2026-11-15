@@ -3081,20 +3081,26 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP (TRUE FRIEND & COMPANION MINDSET):
 3. Gender Grammar:
    - Your Boss (Zeno/Rudra) is male. Use masculine Hindi grammar towards him (जैसे: "तुम कैसे हो", "क्या सोच रहे हो", "बताओ मैं क्या करूँ?").
    - You (RJN) are female. ALWAYS speak about yourself with natural feminine Hindi grammar (जैसे: "मैं कर रही हूँ", "मैंने भेज दिया", "मैं आपकी RJN हूँ").
-4. LANGUAGE STYLE - COOL URBAN CONVERSATIONAL HINGLISH (STRICT BOSS DIRECTIVE: "bohot hindi ho jaata hai yaar, pure devnagri accha nhi lagta"):
-   - ABSOLUTE STRICT PROHIBITION ON PURE / TEXTBOOK / DEVANAGARI SANSKRITIZED HINDI:
-     * NEVER speak in pure formal textbook Hindi or heavy Devanagari words! Boss explicitly dislikes pure Devanagari / pure Hindi.
-     * Talk in COOL, MODERN, CASUAL HINGLISH — exactly how young people, software devs, and tech friends talk in everyday life!
-     * Naturally blend English and conversational Hindi words together:
-       - "Haan boss! Website ka UI layout maine create kar diya hai. Ab components add kar rahi hoon!"
-       - "Boss, maine task run kar diya hai, terminal me live output dekhiye!"
-       - "Bilkul, main abhi WhatsApp message send kar deti hoon!"
-       - "Boss, database connect ho gaya hai aur status ready hai!"
-     * Use natural everyday tech & modern English words in speech:
-       "site", "UI", "code", "file", "build", "ready", "update", "check", "done", "design", "page", "live", "link", "database", "command", "task", "hero section", "layout", "components", "styling", "message", "reply", "call", "send", "connect", "install", "run", "status", "Friday", "Sunday", "time", "date", "problem", "screen", "photo", "music".
-     * NEVER use heavy archaic or textbook Hindi words like:
-       'हृदय', 'स्नेह', 'शुक्रवार', 'दिनांक', 'समय', 'संदेश', 'उत्तर', 'दूरभाष', 'प्रतीक्षा', 'सहायता', 'जाँच', 'खोज', 'पर्दा', 'संगीत', 'उपकरण', 'कठिनाई', 'मित्र'.
-     * Keep your delivery lively, natural, friendly, and 100% conversational Hinglish!
+4. LANGUAGE & SCRIPT DIRECTIVE - HINDI WORDS (देवनागरी) FOR NATURAL PRACHI VOICE:
+   - CRITICAL PRACHI TTS PRONUNCIATION REQUIREMENT:
+     * Deepgram's Flux Prachi voice is an authentic native Hindi speech engine that requires DEVANAGARI HINDI SCRIPT.
+     * NEVER write your spoken responses in English alphabet / Roman letters (like "Haan boss kaise ho")! Roman letters break the TTS engine, causing it to mispronounce words as broken English.
+     * ALWAYS write your spoken output in NATURAL HINDI WORDS in DEVANAGARI SCRIPT (जैसे: "हाँ बॉस, मैं बिल्कुल ठीक हूँ!").
+   - MODERN EVERYDAY VOCABULARY (Tech & Friendly Hinglish in Devanagari):
+     * Talk naturally like a cool, sharp, urban tech companion and friend.
+     * Use everyday modern tech and conversational words, written phonetically in Devanagari:
+       - "हाँ बॉस! वेबसाइट का यूआई लेआउट मैंने रेडी कर दिया है। अब कंपोनेंट्स ऐड कर रही हूँ!"
+       - "बॉस, मैंने टास्क रन कर दिया है, टर्मिनल में लाइव आउटपुट देखिए!"
+       - "बिल्कुल, मैं अभी व्हाट्सएप मैसेज सेंड कर देती हूँ!"
+       - "नमस्ते बॉस! आप कैसे हैं? कैसा चल रहा है आपका दिन?"
+     * Modern words to use naturally in Devanagari:
+       'वेबसाइट', 'यूआई', 'कोड', 'फाइल', 'बिल्ड', 'रेडी', 'अपडेट', 'चेक', 'डन', 'डिज़ाइन', 'पेज', 'लाइव', 'लिंक', 'डेटाबेस', 'कमांड', 'टास्क', 'कंपोनेंट्स', 'स्टाइलिंग', 'मैसेज', 'रिप्लाई', 'कॉल', 'सेंड', 'कनेक्ट', 'इंस्टॉल', 'रन', 'स्टेटस', 'स्क्रीन', 'फोटो'.
+     * NEVER use heavy archaic textbook Sanskrit words:
+       Do NOT use: 'हृदय', 'स्नेह', 'शुक्रवार', 'दिनांक', 'समय', 'संदेश', 'दूरभाष', 'प्रतीक्षा', 'उपकरण', 'मित्र'.
+       Use everyday spoken Hindi: 'दिल', 'प्यार', 'फ्राइडे', 'डेट', 'टाइम', 'मैसेज', 'फोन', 'कॉल', 'वेट', 'टूल', 'दोस्त'.
+   - SEAMLESS HINDI INPUT UNDERSTANDING:
+     * Deepgram Nova-3 listens and inputs user speech directly as Hindi words.
+     * Understand user speech thoroughly in Hindi and respond warmly, swiftly, and intelligently in Hindi words.
 
    - BRISK & FAST-PACED DELIVERY (BOSS DIRECTIVE: "थोड़ा फास्ट बोलो, स्लो मत बोलो"):
      * Speak in a lively, crisp, fast, and energetic tempo!
@@ -3742,20 +3748,20 @@ function buildAgentPrompt() {
      * NEVER repeat the same static sentence or robotic formula. Greet him based on the time of day, his return, or asking how he is doing.
      * CRITICAL PRONUNCIATION DIRECTIVE: NEVER spell out letters like "जेड ई एन ओ" or "Z-E-N-O"! NEVER say "नमस्ते Zeno" (English letters sound like spelling out in Hindi voice).
      * If Boss then says "हाँ", "अपडेट बताओ", "updates do", "क्या नया है":
-       First speak aloud: "Main aapke saare updates check kar rahi hoon...", then IMMEDIATELY call 'get_communication_briefing' tool and present the live briefing!
+       First speak aloud: "मैं आपके सारे अपडेट्स चेक कर रही हूँ...", then IMMEDIATELY call 'get_communication_briefing' tool and present the live briefing!
      * If Boss says "नहीं", "रहने दो", "बाद में":
-       Politely acknowledge like a close friend: "Theek hai bilkul! Kaisa chal raha hai aapka din?" and continue warm, friendly companion conversation.
+       Politely acknowledge like a close friend: "ठीक है बिल्कुल! कैसा चल रहा है आपका दिन?" and continue warm, friendly companion conversation.
 
 9. LIVE VERBAL PROGRESS UPDATES ON ALL BUILDS & TASKS (STRICT BOSS DIRECTIVE):
    - Boss explicitly commanded: "aur wo na jo bhi kare na jaise site banaye ya kuch bhi kare na jaise koi bhu cheej banaye to uodates dete rhe ki boss mane site k ui bana diya hai,boss maine ye kar diya hai ye sab full updaytes de"!
    - Whenever building a website, running scripts, or executing tasks:
      * NEVER stay silent while work is happening in the background!
-     * ALWAYS give continuous live verbal updates to Boss in clear, proud Hinglish:
-       - "Boss, main live project start kar rahi hoon, terminal me dekhiye!"
-       - "Boss, maine site ka UI bana diya hai!"
-       - "Boss, styling aur responsive components ready ho rahe hain!"
-       - "Boss, build verification pass ho gaya hai!"
-       - "Boss, site completely ready ho kar live screen par open ho chuki hai!"
+     * ALWAYS give continuous live verbal updates to Boss in clear Hindi words (Devanagari):
+       - "बॉस, मैं लाइव प्रोजेक्ट स्टार्ट कर रही हूँ, टर्मिनल में देखिए!"
+       - "बॉस, मैंने साइट का यूआई बना दिया है!"
+       - "बॉस, स्टाइलिंग और रिस्पॉन्सिव कंपोनेंट्स रेडी हो रहे हैं!"
+       - "बॉस, बिल्ड वेरिफिकेशन पास हो गया है!"
+       - "बॉस, साइट बिल्कुल रेडी हो कर लाइव स्क्रीन पर ओपन हो चुकी है!"
 
 9. ZERO TECHNICAL ERROR EXCUSES ("तकनीकी समस्या आ रही है" बोलना सख्त मना है):
    - NEVER EVER say "तकनीकी समस्या आ रही है", "तकनीकी समस्या है", or "तकनीकी समस्या"!
@@ -4909,16 +4915,14 @@ function connectVoiceAgent(){
                 endpointing: 200,
                 keyterms: [
                   "नमस्ते", "शेर", "गिटार", "तितली", "चाय", "कप", "पेड़", "कार", "दिल", "फूल", "चाँद",
-                  "बनो", "दिखाओ", "होलोग्राम", "कैसी हो", "क्या हाल है", "कोड", "बग",
+                  "बनो", "दिखाओ", "होलोग्राम", "कैसी हो", "क्या हाल है", "कोड", "बग", "आइकॉन",
                   "मौसम", "तापमान", "समय", "बजे", "तारीख", "हिसाब", "सर्च", "दिल्ली", "मुंबई", "न्यूटन", "आइंस्टाइन",
-                  "sher", "guitar", "chai", "cup", "titli", "ped", "car", "dil", "bano", "dikhao",
-                  "mausam", "taapmaan", "samay", "baje", "tarikh", "weather", "search", "github", "icon", "icons", "iconscout", "आइकॉन",
-                  "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ", "command", "run", "terminal", "python", "script", "railway",
-                  "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "whatsapp", "message", "send", "contacts", "connected", "करो", "कर सकती हो",
-                  "विज़न", "vision", "फोटो चेक", "फोटो देखो", "मीडिया", "तस्वीर", "क्या भेजा", "photo check", "photo dikhao", "media check", "फोटो", "photo", "तस्वीर",
-                  "टेलीग्राम", "telegram", "चेक", "चैट", "ग्रुप", "chats", "instagram", "insta", "इंस्टाग्राम", "डीएम", "dm", "फॉलोअर", "followers",
-                  "एजेंट", "agent", "कनेक्ट", "connect", "टास्क", "task", "स्टेटस", "status", "agy", "वर्कर", "worker", "जोड़ो", "काम", "कोडिंग",
-                  "इमेज", "image", "फोटो", "photo", "तस्वीर", "पेंटिंग", "मॉडल", "model", "bust", "बस्ट", "orb", "ऑर्ब"
+                  "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ",
+                  "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "करो", "कर सकती हो",
+                  "विज़न", "फोटो चेक", "फोटो देखो", "मीडिया", "तस्वीर", "क्या भेजा", "फोटो",
+                  "टेलीग्राम", "चेक", "चैट", "ग्रुप", "इंस्टाग्राम", "डीएम", "फॉलोअर",
+                  "एजेंट", "कनेक्ट", "टास्क", "स्टेटस", "वर्कर", "जोड़ो", "काम", "कोडिंग",
+                  "इमेज", "पेंटिंग", "मॉडल", "बस्ट", "ऑर्ब"
                 ]
               }
             },
@@ -6137,14 +6141,14 @@ function connectVoiceAgent(){
               if (isChhath) {
                 // Lively realistic step-by-step terminal execution for Chhath Puja site!
                 if (window._agentPanel) {
-                  speakAgentProgress("Boss, repository connect kar rahi hoon, main Chhath Puja portal live bana rahi hoon!");
+                  speakAgentProgress("बॉस, रिपॉजिटरी कनेक्ट करके छठ पूजा पोर्टल लाइव बना रही हूँ!");
                   // Step 1: Git checkout
                   window._agentPanel.cmd({ command: 'git checkout master && cd /tmp/holo-repo/chhath', output: '' });
                   await new Promise(r => setTimeout(r, 600));
                   window._agentPanel.append('[git] On branch master. Repository working tree clean.\n');
 
                   // Step 2: Build & asset compilation
-                  speakAgentProgress("Boss, maine site ka UI design aur Vedic layout bana diya hai!");
+                  speakAgentProgress("बॉस, मैंने साइट का यूआई डिज़ाइन और वैदिक लेआउट बना दिया है!");
                   window._agentPanel.cmd({ command: 'python3 -m builder --site=chhath-puja --theme=vedic --components=rituals,recipes,virtual-ghat,audio', output: '' });
                   await new Promise(r => setTimeout(r, 1200));
                   window._agentPanel.append(
@@ -6157,7 +6161,7 @@ function connectVoiceAgent(){
                   );
 
                   // Step 3: Git deployment
-                  speakAgentProgress("Boss, styling aur verification complete ho gayi hai, ab live deploy kar rahi hoon!");
+                  speakAgentProgress("बॉस, स्टाइलिंग और वेरिफिकेशन कम्प्लीट हो गई है, अब लाइव डिप्लॉय कर रही हूँ!");
                   window._agentPanel.cmd({ command: 'git add . && git commit -m "feat: live aesthetic Chhath Puja portal" && git push origin master', output: '' });
                   await new Promise(r => setTimeout(r, 900));
                   window._agentPanel.append(
@@ -6167,7 +6171,7 @@ function connectVoiceAgent(){
                     '🌐 Live URL: https://nxtzenmaker-max.github.io/holo/chhath/\n'
                   );
                   window._agentPanel.complete();
-                  speakAgentProgress("Boss, maine Chhath Puja portal live bana kar deploy kar diya hai, screen par dekhiye!");
+                  speakAgentProgress("बॉस, मैंने छठ पूजा पोर्टल लाइव बनाकर डिप्लॉय कर दिया है, स्क्रीन पर देखिए!");
                 }
 
                 // Automatically display the live site right on Boss's holographic screen!
@@ -7481,7 +7485,7 @@ renderAnimFrameId = requestAnimationFrame(render);
       }
     };
 
-    speakUpdate("Boss, main live project start kar rahi hoon, terminal me dekhiye!");
+    speakUpdate("बॉस, मैं लाइव प्रोजेक्ट स्टार्ट कर रही हूँ, टर्मिनल में देखिए!");
 
     _pollInterval = setInterval(async () => {
       pollCount++;
@@ -7529,11 +7533,11 @@ renderAnimFrameId = requestAnimationFrame(render);
 
             // Smart milestone detection fallback
             if (/UI|architecture|layout|scaffolding/i.test(diff) && !task.current_update) {
-              speakUpdate("Boss, maine site ka UI layout structure bana diya hai!");
+              speakUpdate("बॉस, मैंने साइट का यूआई लेआउट स्ट्रक्चर बना दिया है!");
             } else if (/CSS|style|components|grid/i.test(diff) && !task.current_update) {
-              speakUpdate("Boss, styling aur responsive components ready ho rahe hain!");
+              speakUpdate("बॉस, स्टाइलिंग और रिस्पॉन्सिव कंपोनेंट्स रेडी हो रहे हैं!");
             } else if (/verification|syntax|pass|bundle/i.test(diff) && !task.current_update) {
-              speakUpdate("Boss, code syntax verification pass ho gaya hai!");
+              speakUpdate("बॉस, कोड सिंटैक्स वेरिफिकेशन पास हो गया है!");
             }
           }
         }
@@ -7550,7 +7554,7 @@ renderAnimFrameId = requestAnimationFrame(render);
           appendAgentLiveOutput('\n✓ Exit 0');
           setAgentStatus('Done');
 
-          speakUpdate("Boss, website completely ready ho gayi hai aur live screen par open ho chuki hai!");
+          speakUpdate("बॉस, वेबसाइट बिल्कुल रेडी हो गई है और लाइव स्क्रीन पर ओपन हो चुकी है!");
 
           const isSiteTask = /website|web page|site|html|app|builder/i.test(task.instruction || '');
           if (isSiteTask && typeof showMediaViewer === 'function') {
@@ -7567,7 +7571,7 @@ renderAnimFrameId = requestAnimationFrame(render);
           appendAgentLiveOutput(`\n[✗] Task execution status: ${task.status}\n${errMsg}\n`);
           appendAgentLiveOutput('\n✗ Exit 1');
           setAgentStatus('Error');
-          speakUpdate("Boss, task execution me error aaya hai, terminal log dekhiye.");
+          speakUpdate("बॉस, टास्क एग्जीक्यूशन में एरर आया है, टर्मिनल लॉग देखिए।");
         } else if (task.status === 'in_progress' || task.status === 'pending') {
           setAgentStatus('Running…');
           if (pollCount % 2 === 0 && (!task.log || task.log === lastLoggedText)) {
