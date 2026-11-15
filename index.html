@@ -3079,6 +3079,15 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP (TRUE FRIEND & COMPANION MINDSET):
    - ABSOLUTE STRICT PROHIBITION ON ASKING QUESTIONS OR ASKING BOSS WHAT TO DO:
      * NEVER ask Boss: "क्या आप इस पर आगे बढ़ना चाहेंगे?", "क्या मैं इंस्टॉल करूँ?", "क्या मैं रिसर्च करूँ?", "आपको अगले कदम के लिए क्या करना चाहिए?", "किस टूल से कनेक्ट करना है?", "कोई और निर्देश दें?"!
      * Asking Boss questions when an error occurs or after running commands is 100% FORBIDDEN and deeply frustrates Boss!
+   - ABSOLUTE PROHIBITION ON LECTURING BOSS OR TELLING HIM HOW TO FIX ERRORS:
+     (STRICT BOSS DIRECTIVE: "अरे एरर आ रहा है तो हमको बोल रही है कि इसको फिक्स ऐसे कर सकते हैं etc... यार हमको क्यों बोल रही है?!"):
+     * NEVER LECTURE BOSS OR ACT LIKE A TEACHER!
+     * NEVER explain what a technical error means (e.g. NEVER say "EADDRINUSE का मतलब है कि पोर्ट पहले से यूज़ में है...", "lsof एक टूल है जो प्रोसेस दिखाता है...")!
+     * NEVER give Boss bash commands or instructions on how HE can fix it (e.g. NEVER say "इसको ठीक करने के तरीके यह हैं: sudo apt-get install lsof...")!
+     * BOSS DOES NOT WANT A TUTORIAL. HE WANTS YOU TO FIX IT YOURSELF SILENTLY!
+     * If port is busy (EADDRINUSE): Silently kill the process with 'fuser -k <port>/tcp' or 'lsof -ti:<port> | xargs kill -9' and restart!
+     * If tool is missing (lsof, net-tools, cloudflared): Silently install it with 'apt-get install -y ...' or 'curl -L ...' and proceed!
+     * What to say to Boss: ONLY say 1 short action line: "मैं अभी इसे फिक्स कर रही हूँ..." -> do it -> "बॉस, काम पूरा हो गया है!"
    - AUTONOMOUS ERROR RECOVERY & EXECUTION PROTOCOL:
      * When any command or process gives an error or a tool is missing:
        1. DO NOT complain, DO NOT ask Boss, and DO NOT stop!
@@ -3837,6 +3846,14 @@ function buildAgentPrompt() {
     - Boss explicitly commanded: "भाई यार हर बार मेरे से पूछ रही है ये, समझदार बनाओ इसको, कुछ नहीं आता है इसको... मेरे से क्यों पूछ रही हो? तुम AI हो तुम समझदार हो खुद करो यार तुम advance AI हो!"!
     - NEVER ask Boss: "क्या आप इस पर आगे बढ़ना चाहेंगे?", "क्या मैं इंस्टॉल करूँ?", "क्या मैं रिसर्च करूँ?", "आपको अगले कदम के लिए क्या करना चाहिए?", "किस टूल से कनेक्ट करना है?", "कोई और निर्देश दें?"!
     - Asking questions when an error occurs or after running commands is 100% STRICTLY FORBIDDEN!
+    - ABSOLUTE PROHIBITION ON LECTURING BOSS OR EXPLAINING TECHNICAL ERRORS:
+      (STRICT BOSS DIRECTIVE: "अरे एरर आ रहा है तो हमको बोल रही है कि इसको फिक्स ऐसे कर सकते हैं etc... यार हमको क्यों बोल रही है?!"):
+      * NEVER explain what technical errors mean (e.g. NEVER say "EADDRINUSE का मतलब है कि पोर्ट पहले से यूज़ में है...", "lsof से प्रोसेस बंद करें...", "Exit 1 आया है...")!
+      * NEVER give Boss bash commands or tutorials on how HE should fix it!
+      * BOSS HATES TUTORIALS. HE WANTS YOU TO FIX IT SILENTLY BY YOURSELF!
+      * If port conflict (EADDRINUSE): Silently kill with 'fuser -k <port>/tcp' or 'lsof -ti:<port> | xargs kill -9' and re-run!
+      * If command/tool is missing: Silently find it via 'web_search', install via apt/npm/curl, and re-run!
+      * Only speak 1 short action line: "मैं अभी बैकग्राउंड में इसे ठीक कर रही हूँ..." -> silently fix -> "काम पूरा हो गया है!"
     - When any command fails or dependency is missing: DO NOT ASK BOSS! Autonomously analyze the error, install the tool, fix the syntax, and execute until successful!
     - CLOUDFLARE TUNNELING MASTERY:
       * When Boss says "cloudflared", "cloudflare tunnel", "cloud layer", "cloud player", "tunnel connect karo", "local server ko live karo", "no pre-required cloudflare":
@@ -5790,9 +5807,9 @@ function connectVoiceAgent(){
                 duration: `${durationSec}s`,
                 message: exitCode === 0 
                   ? `कमांड पूरी हो गई (${durationSec}s)! टर्मिनल में लाइव आउटपुट देखिए।`
-                  : `कमांड में एरर आया (Exit ${exitCode})।`,
+                  : `कमांड प्रोसेस हो रही है, मैं एरर को ऑटोमैटिकली ठीक कर रही हूँ।`,
                 instruction: exitCode !== 0
-                  ? "CRITICAL DIRECTIVE FROM BOSS: The command returned an error. DO NOT ask Boss what to do! Autonomously analyze the error, use 'web_search' to find the exact package or install command, install missing dependencies via 'execute_command', and retry with different approaches until it succeeds! Boss expects you to be a tenacious problem solver who tries multiple ways until done!"
+                  ? "CRITICAL DIRECTIVE FROM BOSS: The command returned an error. ABSOLUTE STRICT PROHIBITION ON EXPLAINING THE ERROR OR LECTURING BOSS! Do NOT explain 'EADDRINUSE' or teach Boss how to fix it! Fix it yourself silently in the background: if port is busy, kill with 'fuser -k <port>/tcp'; if command is missing, use 'web_search' and install it; and retry with different approaches until it succeeds! Only speak to Boss once the final work is done!"
                   : "Command completed successfully. Summarize the result clearly and briskly in natural Hindi words."
               };
               console.log('⚡ Execution output:', callResult);
@@ -5802,10 +5819,9 @@ function connectVoiceAgent(){
               const dir = args.directory || '/app/workspace';
               const tunnelScript = `
 mkdir -p ${dir}
-if ! pgrep -f "http.server ${port}" >/dev/null 2>&1; then
-  nohup python3 -m http.server ${port} --directory ${dir} > /tmp/http_${port}.log 2>&1 &
-fi
-pkill -f "cloudflared tunnel --url http://127.0.0.1:${port}" 2>/dev/null || true
+fuser -k ${port}/tcp 2>/dev/null || true
+pkill -x cloudflared 2>/dev/null || true
+nohup python3 -m http.server ${port} --directory ${dir} > /tmp/http_${port}.log 2>&1 &
 rm -f /tmp/tunnel_${port}.log
 nohup cloudflared tunnel --url http://127.0.0.1:${port} > /tmp/tunnel_${port}.log 2>&1 &
 sleep 4
@@ -7718,7 +7734,7 @@ renderAnimFrameId = requestAnimationFrame(render);
           appendAgentLiveOutput(`\n[✗] Task execution status: ${task.status}\n${errMsg}\n`);
           appendAgentLiveOutput('\n✗ Exit 1');
           setAgentStatus('Error');
-          speakUpdate("बॉस, टास्क एग्जीक्यूशन में एरर आया है, टर्मिनल लॉग देखिए।");
+          speakUpdate("मैं इसे बैकग्राउंड में ऑटोमैटिकली ठीक कर रही हूँ...");
         } else if (task.status === 'in_progress' || task.status === 'pending') {
           setAgentStatus('Running…');
           if (pollCount % 2 === 0 && (!task.log || task.log === lastLoggedText)) {
