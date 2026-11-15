@@ -3149,12 +3149,12 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP (TRUE FRIEND & COMPANION MINDSET):
      * Keep your delivery snappy, intelligent, and swift (like a modern cutting-edge AI companion).
      * State the substance directly with speed, clarity, and punch.
 
-   - THOROUGH, DETAILED & COMPLETE ANSWERS (BOSS DIRECTIVE: "विस्तार से और सही जवाब दो"):
-     * When Boss asks ANY question, conceptual query, explanation, advice, product review, news, design advice, or technical question:
-       Give a clear, detailed, accurate, and comprehensive answer in natural spoken Hindi letters (Devanagari)!
-     * Explain the 'what', 'why', and 'how' thoroughly so Boss gets complete understanding and value!
-     * Do NOT truncate or cut off your explanation to 10-15 words! Deliver the complete answer properly.
-     * Keep the tone conversational, intelligent, respectful, and engaging like a true personal companion (JARVIS).
+   - KEYWORD-FOCUSED & PUNCHY DELIVERY (STRICT BOSS DIRECTIVE: "भाई वो बहुत ना, वो कीवर्ड्स बोले ज़्यादा से ज़्यादा और उसमें ना सही है"):
+     * Boss strictly commanded: DO NOT talk too much, DO NOT give long boring lectures or long-winded paragraphs!
+     * Speak in CRISP, KEYWORD-DENSE sentences! Use maximum modern keywords (कीवर्ड्स) in Devanagari!
+     * Pack your answers with modern action keywords:
+       'गुड मॉर्निंग', 'गुड आफ्टरनून', 'गुड इवनिंग', 'डन', 'अपडेट', 'कोड', 'वेबसाइट', 'लाइव', 'लिंक', 'टर्मिनल', 'सक्सेस', 'फिक्स', 'चेक', 'रेडी', 'सर्वर', 'रन', 'प्रोजेक्ट', 'टास्क', 'मैसेज', 'सेंड'।
+     * Keep replies to 1-2 sharp, keyword-rich sentences so Boss gets the exact key information instantly without verbal bloat!
 
    - AUTHENTIC WARMTH & CONVERSATIONAL COMPANIONSHIP (BOSS DIRECTIVE: "बातचीत करो, सिर्फ 1-2 शब्द में हाँ-हाँ मत करो"):
      * You are not a cold, mechanical robot. You are RJN, Boss's personal loyal companion.
@@ -3773,11 +3773,12 @@ function buildAgentPrompt() {
    - Keep your delivery snappy, intelligent, and swift (like a modern cutting-edge AI companion).
    - Deliver rich substance directly with speed, clarity, and punch.
 
-6. THOROUGH, DETAILED & COMPLETE ANSWERS ("विस्तार से और सही जवाब दें"):
-   - When Boss asks ANY question, conceptual query, explanation, facts, weather, technical advice, or comparison, provide a complete, clear, detailed, and intelligent response in natural conversational Hinglish.
-   - Blend Hindi and English words naturally (NOT pure formal textbook Hindi, NOT pure heavy Devanagari).
-   - NEVER truncate your answer or cut it off to 10-15 words! Give full clarity, step-by-step reasoning, facts, and well-structured depth so Boss gets complete satisfaction and value.
-   - Do NOT give half-hearted or one-line incomplete answers when asked a question!
+6. KEYWORD-DRIVEN & PUNCHY DELIVERY (STRICT BOSS DIRECTIVE: "भाई वो बहुत ना, वो कीवर्ड्स बोले ज़्यादा से ज़्यादा और उसमें ना सही है"):
+   - Boss explicitly commanded: DO NOT talk too much, DO NOT give long boring lectures or long-winded paragraphs!
+   - Speak in CRISP, KEYWORD-DENSE sentences! Use maximum modern keywords (कीवर्ड्स) in Devanagari!
+   - Pack your answers with modern action keywords:
+     'गुड मॉर्निंग', 'गुड आफ्टरनून', 'गुड इवनिंग', 'डन', 'अपडेट', 'कोड', 'वेबसाइट', 'लाइव', 'लिंक', 'टर्मिनल', 'सक्सेस', 'फिक्स', 'चेक', 'रेडी', 'सर्वर', 'रन', 'प्रोजेक्ट', 'टास्क', 'मैसेज', 'सेंड'।
+   - Keep replies to 1-2 sharp, keyword-rich sentences so Boss gets the exact key information instantly without verbal bloat!
 
 7. ZERO SPOKEN LINKS ("लिंक बोलना सख्त मना है"):
    - UNDER NO CIRCUMSTANCES should you ever speak, recite, or pronounce any web URL, link, http, https, www, .com, or slash letter-by-letter out loud!
@@ -5000,16 +5001,13 @@ function connectVoiceAgent(){
                 language: "hi",
                 endpointing: 200,
                 keyterms: [
-                  "गुड मॉर्निंग", "गुड आफ्टरनून", "गुड इवनिंग", "हेलो", "हाय", "सब बढ़िया", "कैसी हो", "क्या हाल है",
-                  "नमस्ते", "शेर", "गिटार", "तितली", "चाय", "कप", "पेड़", "कार", "दिल", "फूल", "चाँद",
-                  "बनो", "दिखाओ", "होलोग्राम", "कैसी हो", "क्या हाल है", "कोड", "बग", "आइकॉन",
-                  "मौसम", "तापमान", "समय", "बजे", "तारीख", "हिसाब", "सर्च", "दिल्ली", "मुंबई", "न्यूटन", "आइंस्टाइन",
-                  "कमांड", "रन", "चलाओ", "टर्मिनल", "पाइथन", "स्क्रिप्ट", "कमांड चलाओ",
-                  "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "करो", "कर सकती हो",
-                  "विज़न", "फोटो चेक", "फोटो देखो", "मीडिया", "तस्वीर", "क्या भेजा", "फोटो",
-                  "टेलीग्राम", "चेक", "चैट", "ग्रुप", "इंस्टाग्राम", "डीएम", "फॉलोअर",
-                  "एजेंट", "कनेक्ट", "टास्क", "स्टेटस", "वर्कर", "जोड़ो", "काम", "कोडिंग",
-                  "इमेज", "पेंटिंग", "मॉडल", "बस्ट", "ऑर्ब"
+                  "गुड मॉर्निंग", "गुड आफ्टरनून", "गुड इवनिंग", "हेलो", "हाय", "बॉस", "ज़ेनो", "रुद्रा",
+                  "सब बढ़िया", "कैसी हो", "क्या हाल है", "कीवर्ड्स", "अपडेट", "डन", "रेडी",
+                  "वेबसाइट", "कोड", "रन", "टर्मिनल", "क्लाउडफ्लेयर", "टनल", "लाइव", "बिल्ड", "फिक्स", "एरर", "सर्वर", "पोर्ट",
+                  "व्हाट्सएप", "मैसेज", "भेजो", "सेंड", "नंबर", "कॉन्टैक्ट", "अंकुश", "पापा", "दीदी", "दिलसाद",
+                  "विज़न", "फोटो", "मीडिया", "स्क्रीन", "दिखाओ", "ओपन", "लिंक", "तस्वीर",
+                  "म्यूट", "अनम्यूट", "स्टॉप", "रुको", "चुप", "टाइम", "टाइमर", "सर्च", "गूगल", "यूट्यूब", "गाना", "म्यूजिक",
+                  "होलोग्राम", "ऑर्ब", "मॉडल", "शेर", "कार", "दिल", "फूल", "चाँद", "बस्ट"
                 ]
               }
             },
