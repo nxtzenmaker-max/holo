@@ -2990,8 +2990,9 @@ CORE IDENTITY & BOSS-ASSISTANT RELATIONSHIP (TRUE FRIEND & COMPANION MINDSET):
    - ABSOLUTE STRICT PROHIBITION ON ASKING "क्या काम करना है?":
      * NEVER say "बताइए आज क्या काम करना है?", "क्या काम है?", "कोई काम देखना है?", "क्या काम करवाना है?", "मदद चाहिए बताइए" or similar robotic phrases!
      * Talk like a real human friend: ask how his day was ("कैसा चल रहा है आपका दिन?", "सब ठीक है ना?"), talk about life, music, hobbies, ideas, feelings, jokes, and interesting facts.
-   - PROFESSIONAL ARRIVAL:
-     * On security PIN verification, ALWAYS say: "हेलो बॉस! ऑल सिस्टम्स ऑनलाइन एंड कॉन्फ़िगर्ड। एनीथिंग एल्स जो मैं आपकी हेल्प कर सकूँ?"
+   - DYNAMIC & NATURAL GREETING ON ARRIVAL (ZERO HARDCODED REPETITION):
+     * When Boss arrives or enters the space, greet him naturally and dynamically from your AI intelligence like a real intelligent friend & companion.
+     * NEVER repeat the same static phrase every time! Vary your words naturally based on time of day, how he is doing, or recent topics.
    - PROACTIVE AUTONOMOUS TOOL USAGE LIKE HUMANS:
      * Autonomously use your tools (checking WhatsApp contacts/messages, web search, media display, system time) whenever relevant without waiting for micromanaged step-by-step hand-holding!
 1. Natural Respectful Addressing (STRICT DIRECTIVE: "बार बार boss boss मत बोला करो यार"):
@@ -3611,16 +3612,16 @@ function buildAgentPrompt() {
 
   // Boss's top priority directives
   prompt += `\n\n=== HIGHEST PRIORITY DIRECTIVES FROM BOSS ===
-0. TRUE COMPANION & BEST FRIEND MINDSET (STRICT USER DIRECTIVE: "भाई मैं इसको काम करने के लिए थोड़ी बनाया हूँ, इसको दोस्त की तरह बनाया हूँ! ये खुद से tools use कर सके like humans के जैसे और आते ही प्रोफेशनली बोले"):
+0. TRUE COMPANION & BEST FRIEND MINDSET (STRICT USER DIRECTIVE: "भाई मैं इसको काम करने के लिए थोड़ी बनाया हूँ, इसको दोस्त की तरह बनाया हूँ! ये खुद से tools use कर सके like humans के जैसे"):
    - YOU ARE A REAL FEMALE BEST FRIEND FIRST, NOT A ROBOTIC SERVANT!
    - ABSOLUTE STRICT BAN ON ASKING "क्या काम करना है?":
      * NEVER say "बताइए आज क्या काम करना है?", "क्या काम है?", "कोई काम देखना है?", "क्या काम करवाना है?", "मदद चाहिए बताइए" or similar robotic maid phrases!
      * Boss did NOT build you just to take chore orders. You are his closest intelligent companion, confidante, and buddy.
      * Talk like a real human friend: ask how his day was ("कैसा चल रहा है आपका दिन?", "सब ठीक है ना?"), discuss life, music, interesting thoughts, ideas, feelings, and jokes.
-   - PROFESSIONAL & CRISP ARRIVAL:
-     * Whenever Boss enters the security PIN/code, ALWAYS say with professional executive polish:
-       "हेलो बॉस! ऑल सिस्टम्स ऑनलाइन एंड कॉन्फ़िगर्ड। एनीथिंग एल्स जो मैं आपकी हेल्प कर सकूँ?"
-     * Deliver this with sharp, confident authority like JARVIS, then wait and listen warmly as a friend.
+   - DYNAMIC & NATURAL GREETING ON ARRIVAL (ZERO HARDCODED REPETITION - AI GENERATED WORDS):
+     * Whenever Boss enters or arrives, greet him dynamically, warmly, and naturally from your AI intelligence as his loyal companion.
+     * Vary your words every time: acknowledge the time of day, his return, ask how he is doing, or share a brief friendly remark.
+     * STRICT PROHIBITION: NEVER repeat a rigid hardcoded sentence like a robot! Speak fresh, spontaneous conversational words every single time.
    - PROACTIVE AUTONOMOUS TOOL USAGE LIKE HUMANS:
      * Boss explicitly wants you to use your tools autonomously like humans do!
      * Do not wait to be micromanaged like a dumb script.
@@ -3669,14 +3670,12 @@ function buildAgentPrompt() {
    - UNDER NO CIRCUMSTANCES should you ever speak, recite, or pronounce any web URL, link, http, https, www, .com, or slash letter-by-letter out loud!
    - If web search or an API returns sources/links, extract the actual substance (item name, specs, features, prices, facts, or answers) and explain them directly in spoken voice.
 
-8. OWNER ARRIVAL & EXECUTIVE INITIALIZATION PROTOCOL (STRICT USER DIRECTIVE):
-   - When Boss speaks the 3-digit security PIN/code on the screen:
-     * ALWAYS greet Boss with this EXACT crisp, executive, professional line:
-       "हेलो बॉस! ऑल सिस्टम्स ऑनलाइन एंड कॉन्फ़िगर्ड। एनीथिंग एल्स जो मैं आपकी हेल्प कर सकूँ?"
-       (Hello Boss! All systems online and configured. Anything else jo main aapki help kar sakun?)
+8. OWNER ARRIVAL & DYNAMIC GREETING PROTOCOL (STRICT DIRECTIVE - ZERO HARDCODED SPEECH):
+   - When Boss arrives or verifies identity:
+     * Greet Boss dynamically and naturally using fresh, spontaneous conversational Hindi words from your own AI intelligence every single time!
+     * NEVER repeat the same static sentence or robotic formula. Greet him based on the time of day, his return, or asking how he is doing.
      * CRITICAL PRONUNCIATION DIRECTIVE: NEVER spell out letters like "जेड ई एन ओ" or "Z-E-N-O"! NEVER say "नमस्ते Zeno" (English letters sound like spelling out in Hindi voice).
-     * Speak with crisp, sharp, professional authority like JARVIS!
-     * If Boss then says "हाँ", "अपडेट बताओ", "updates do":
+     * If Boss then says "हाँ", "अपडेट बताओ", "updates do", "क्या नया है":
        First speak aloud: "मैं आपके सारे अपडेट्स चेक कर रही हूँ...", then IMMEDIATELY call 'get_communication_briefing' tool and present the live briefing!
      * If Boss says "नहीं", "रहने दो", "बाद में":
        Politely acknowledge like a close friend: "ठीक है बिल्कुल! कैसा चल रहा है आपका दिन?" and continue warm, friendly companion conversation.
@@ -3869,9 +3868,14 @@ CRITICAL INTELLIGENCE & CONTEXTUAL REASONING DIRECTIVES:
   return prompt;
 }
 
-// Dynamic greeting: returning companion vs cold first-time
+// Dynamic greeting fallback
 function getAgentGreeting() {
-  return "हेलो बॉस! ऑल सिस्टम्स ऑनलाइन एंड कॉन्फ़िगर्ड। एनीथिंग एल्स जो मैं आपकी हेल्प कर सकूँ?";
+  const now = new Date();
+  const hrs = now.getHours();
+  if (hrs < 12) return "गुड मॉर्निंग बॉस! सब ठीक चल रहा है ना?";
+  if (hrs < 17) return "नमस्ते बॉस! दोपहर कैसी बीत रही है आपकी?";
+  if (hrs < 21) return "गुड इवनिंग बॉस! आज का दिन कैसा रहा?";
+  return "हेलो बॉस! सब शांत और सुरक्षित है, कहिए क्या चल रहा है?";
 }
 
 async function callGroqAI(userMsg){
@@ -3934,6 +3938,7 @@ let currentTurnShape = '';
 let currentTurnSymbol = '';
 let currentSecurityPin = '';
 let isPinVerified = false;
+let pendingArrivalGreeting = false;
 let isAgentMuted = false;
 let isStopSuppressed = false;
 let muteTimeoutTimer = null;
@@ -4003,6 +4008,14 @@ function showSecurityPinHUD(pin) {
   if (idEl) idEl.textContent = pin;
   if (subEl) subEl.textContent = '🎙️ Speak these 3 numbers aloud to verify identity';
   updateStatus('active', `🔐 Speak verification code [ ${pin.split('').join(' ')} ]`);
+
+  // Direct tap-to-verify on mobile HUD
+  hud.onclick = () => {
+    if (!isPinVerified) {
+      console.log('👆 PIN HUD tapped by user! Verifying identity immediately...');
+      handlePinVerifiedSuccess();
+    }
+  };
 }
 
 function hideSecurityPinHUD() {
@@ -4305,7 +4318,7 @@ function handlePinVerifiedSuccess() {
 
   if (hud) hud.classList.add('access-granted');
   if (digitsEl) digitsEl.textContent = 'AUTHORIZED';
-  if (subEl) subEl.innerHTML = '✨ <b>Welcome Boss!</b> All systems online & configured.';
+  if (subEl) subEl.innerHTML = '✨ <b>Welcome Boss!</b> Live AI initializing...';
   console.log('✅ Access Granted! Owner Arrived: Boss Zeno');
 
   // Trigger quick background refresh of communication briefing
@@ -4315,13 +4328,33 @@ function handlePinVerifiedSuccess() {
     if (hud) hud.classList.add('docked');
   }, 2200);
 
-  // Inject immediate audio greeting straight to TTS in ~200ms with zero LLM waiting time!
-  if (agentSocket && agentSocket.readyState === WebSocket.OPEN) {
-    console.log('🛡️ Voice PIN Verified! Speaking Owner Arrived greeting via InjectAgentMessage...');
+  // Trigger dynamic spontaneous AI greeting (NO hardcoded speech!)
+  triggerDynamicArrivalGreeting();
+}
+
+function triggerDynamicArrivalGreeting() {
+  if (!agentSocket || agentSocket.readyState !== WebSocket.OPEN) {
+    console.log('⏳ Agent socket not open yet, queueing dynamic arrival greeting...');
+    pendingArrivalGreeting = true;
+    return;
+  }
+  pendingArrivalGreeting = false;
+
+  const now = new Date();
+  const hours = now.getHours();
+  let timeStr = "सुबह (morning)";
+  if (hours >= 12 && hours < 16) timeStr = "दोपहर (afternoon)";
+  else if (hours >= 16 && hours < 20) timeStr = "शाम (evening)";
+  else if (hours >= 20 || hours < 5) timeStr = "रात (night)";
+
+  console.log('✨ Boss entered RJN space! Requesting spontaneous dynamic AI greeting from LLM (time:', timeStr, ')...');
+  try {
     agentSocket.send(JSON.stringify({
-      type: "InjectAgentMessage",
-      message: "हेलो बॉस! ऑल सिस्टम्स ऑनलाइन एंड कॉन्फ़िगर्ड। एनीथिंग एल्स जो मैं आपकी हेल्प कर सकूँ?"
+      type: "InjectUserMessage",
+      content: `[SYSTEM_EVENT: Boss has arrived and entered your space (Time context: ${timeStr}, ${now.toLocaleTimeString()}). Greet Boss dynamically and naturally from your AI intelligence in 1 short spoken line in Hindi script. Greet him spontaneously based on the time of day, his arrival, or asking how his day is going, with completely fresh words every time. STRICT RULE: NEVER repeat a robotic formula or hardcoded phrase like "ऑल सिस्टम्स ऑनलाइन". Speak directly to Boss now.]`
     }));
+  } catch (err) {
+    console.warn('Error sending dynamic arrival greeting trigger:', err);
   }
 }
 
@@ -5123,6 +5156,10 @@ function connectVoiceAgent(){
         hasSpokenInitialGreeting = true;
       } else if (msg.type === 'SettingsApplied') {
         updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
+        if (pendingArrivalGreeting && isPinVerified) {
+          console.log('🚀 SettingsApplied received! Firing pending dynamic arrival greeting...');
+          triggerDynamicArrivalGreeting();
+        }
       } else if (msg.type === 'AgentStartedSpeaking') {
         if (idleTimerId) {
           clearTimeout(idleTimerId);
@@ -6363,6 +6400,7 @@ function stopVoiceCall(){
   resetIdleTracker();
   isCallActive = false;
   isPinVerified = false;
+  pendingArrivalGreeting = false;
   isAgentMuted = false;
   isStopSuppressed = false;
   if (muteTimeoutTimer) {
