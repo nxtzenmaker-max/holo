@@ -1,5 +1,5 @@
 // Holo AI PWA Service Worker
-const CACHE_NAME = 'holo-pwa-v7';
+const CACHE_NAME = 'holo-pwa-v8';
 const PRECACHE_ASSETS = [
   './',
   './index.html',
