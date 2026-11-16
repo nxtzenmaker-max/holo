@@ -1298,6 +1298,42 @@
   </div>
 </div>
 
+<!-- DEDICATED CYBERPUNK CHAT HISTORY MODAL -->
+<div id="chatHistoryModal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(5, 8, 16, 0.88); backdrop-filter: blur(16px); align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: rgba(13, 19, 33, 0.96); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 20px; width: 100%; max-width: 580px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 35px rgba(56,189,248,0.18); overflow: hidden;">
+    
+    <!-- Header -->
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.02);">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span style="width: 8px; height: 8px; border-radius: 50%; background: #38bdf8; box-shadow: 0 0 10px #38bdf8;"></span>
+        <span style="font-size: 15px; font-weight: 700; color: #f8fafc; letter-spacing: 0.3px;">💬 Conversation History</span>
+        <span id="chatHistoryBadge" style="font-size: 11px; background: rgba(56,189,248,0.15); color: #38bdf8; padding: 2px 8px; border-radius: 10px; font-weight: 600;">0 turns</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button type="button" onclick="refreshChatHistoryFromCloud()" title="Sync from Cloud" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #94a3b8; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 600;">🔄 Sync</button>
+        <button type="button" onclick="clearAllChatHistory()" title="Clear History" style="background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.25); color: #f87171; padding: 6px 10px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 600;">🗑️ Clear</button>
+        <button type="button" onclick="closeChatHistoryModal()" style="background: transparent; border: none; color: #94a3b8; font-size: 22px; cursor: pointer; line-height: 1; padding: 0 4px;">&times;</button>
+      </div>
+    </div>
+
+    <!-- Search bar -->
+    <div style="padding: 10px 18px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.25);">
+      <input type="text" id="chatHistorySearchInput" oninput="filterChatHistoryList()" placeholder="🔍 Search conversation turns..." style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 12px; outline: none;" />
+    </div>
+
+    <!-- Messages Container -->
+    <div id="chatHistoryMessagesList" style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth;">
+      <!-- Populated dynamically by renderChatHistoryUI() -->
+    </div>
+
+    <!-- Footer -->
+    <div style="padding: 10px 18px; border-top: 1px solid rgba(255,255,255,0.08); background: rgba(0,0,0,0.3); display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b;">
+      <span>Continuous Local + Cloud Sync</span>
+      <button type="button" onclick="copyFullChatHistory()" style="background: transparent; border: none; color: #38bdf8; cursor: pointer; font-size: 11px; font-weight: 600;">📋 Copy All</button>
+    </div>
+  </div>
+</div>
+
 <!-- HOLOGRAPHIC YOUTUBE MUSIC WIDGET -->
 <div id="musicPlayerWidget" class="music-widget">
   <div class="music-header">
@@ -1400,6 +1436,36 @@
             <span>Silent Text Demo (New)</span>
           </span>
           <span style="opacity: 0.8;">↗</span>
+        </a>
+      </div>
+
+      <div style="margin-top: 10px;">
+        <button type="button" id="sidebarChatHistoryBtn" onclick="openChatHistoryModal()" style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-decoration: none; color: #f59e0b; font-size: 12px; font-weight: 600; padding: 10px 14px; border-radius: 12px; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.28); cursor: pointer; transition: all 0.2s ease;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #f59e0b; box-shadow: 0 0 8px #f59e0b;"></span>
+            <span>Chat History</span>
+          </span>
+          <span id="sidebarChatHistoryBadge" style="font-size: 10px; background: rgba(245,158,11,0.22); padding: 2px 7px; border-radius: 8px; color: #f59e0b;">💬 0 turns</span>
+        </button>
+      </div>
+
+      <div style="margin-top: 10px;">
+        <a href="HoloCompanion.apk" download="HoloCompanion.apk" style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-decoration: none; color: #ec4899; font-size: 12px; font-weight: 600; padding: 10px 14px; border-radius: 12px; background: rgba(236, 72, 153, 0.12); border: 1px solid rgba(236, 72, 153, 0.28); cursor: pointer; transition: all 0.2s ease;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #ec4899; box-shadow: 0 0 8px #ec4899;"></span>
+            <span>Download Companion APK</span>
+          </span>
+          <span style="font-size: 10px; background: rgba(236,72,153,0.25); padding: 2px 7px; border-radius: 8px; color: #f472b6;">🤖 Phone Control</span>
+        </a>
+      </div>
+
+      <div style="margin-top: 10px;">
+        <a href="https://github.com/nxtzenmaker-max/rjn-web-builder" target="_blank" rel="noopener" style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px; text-decoration: none; color: #00f0ff; font-size: 12px; font-weight: 600; padding: 10px 14px; border-radius: 12px; background: rgba(0, 240, 255, 0.12); border: 1px solid rgba(0, 240, 255, 0.28); cursor: pointer; transition: all 0.2s ease;">
+          <span style="display: flex; align-items: center; gap: 8px;">
+            <span style="width: 7px; height: 7px; border-radius: 50%; background: #00f0ff; box-shadow: 0 0 8px #00f0ff;"></span>
+            <span>Cloud Website Builder</span>
+          </span>
+          <span style="font-size: 10px; background: rgba(0,240,255,0.25); padding: 2px 7px; border-radius: 8px; color: #00f0ff;">🚀 Railway</span>
         </a>
       </div>
 
@@ -2760,6 +2826,103 @@ function hideMediaViewer(){
 }
 const hideGeneratedImage = hideMediaViewer;
 
+// ================= 💬 DEDICATED CHAT HISTORY MODAL HELPERS =================
+function openChatHistoryModal() {
+  const m = document.getElementById('chatHistoryModal');
+  if (m) {
+    m.style.display = 'flex';
+    renderChatHistoryUI();
+  }
+}
+
+function closeChatHistoryModal() {
+  const m = document.getElementById('chatHistoryModal');
+  if (m) m.style.display = 'none';
+}
+
+function renderChatHistoryUI(filterQuery = '') {
+  const container = document.getElementById('chatHistoryMessagesList');
+  const countBadge = document.getElementById('chatHistoryBadge');
+  const sidebarCountBadge = document.getElementById('sidebarChatHistoryBadge');
+  if (!container) return;
+
+  const turns = Array.isArray(chatHistory) ? chatHistory : loadLocalMemory();
+  const validTurns = turns.filter(t => t && t.content && !isCorruptedTurn(t.content));
+
+  if (countBadge) countBadge.innerText = `${validTurns.length} turns`;
+  if (sidebarCountBadge) sidebarCountBadge.innerText = `💬 ${validTurns.length} turns`;
+
+  const q = (filterQuery || '').toLowerCase().trim();
+  const displayTurns = q ? validTurns.filter(t => (t.content || '').toLowerCase().includes(q)) : validTurns;
+
+  if (displayTurns.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 40px 20px; color: #64748b; font-size: 13px;">
+        <div style="font-size: 32px; margin-bottom: 8px;">💬</div>
+        ${q ? 'No messages match your search filter.' : 'No conversation history yet. Start speaking with RJN!'}
+      </div>
+    `;
+    return;
+  }
+
+  function escapeText(str) {
+    return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+  }
+
+  container.innerHTML = displayTurns.map((turn, i) => {
+    const isUser = turn.role === 'user';
+    const align = isUser ? 'flex-end' : 'flex-start';
+    const bubbleBg = isUser 
+      ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.22), rgba(99, 102, 241, 0.22))' 
+      : 'rgba(255, 255, 255, 0.04)';
+    const borderColor = isUser ? 'rgba(56, 189, 248, 0.4)' : 'rgba(255, 255, 255, 0.1)';
+    const senderColor = isUser ? '#38bdf8' : '#a855f7';
+    const senderName = isUser ? 'Boss (Zeno)' : 'RJN (AI)';
+    const timeStr = turn.timestamp ? new Date(turn.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+
+    return `
+      <div style="display: flex; flex-direction: column; align-items: ${align}; width: 100%;">
+        <div style="font-size: 10px; color: ${senderColor}; margin-bottom: 3px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+          <span>${senderName}</span>
+          ${timeStr ? `<span style="color: #64748b; font-weight: normal;">${timeStr}</span>` : ''}
+        </div>
+        <div style="background: ${bubbleBg}; border: 1px solid ${borderColor}; border-radius: ${isUser ? '16px 4px 16px 16px' : '4px 16px 16px 16px'}; padding: 10px 14px; max-width: 88%; font-size: 13px; line-height: 1.5; color: #f1f5f9; word-break: break-word;">
+          ${escapeText(turn.content)}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  container.scrollTop = container.scrollHeight;
+}
+
+function filterChatHistoryList() {
+  const input = document.getElementById('chatHistorySearchInput');
+  renderChatHistoryUI(input ? input.value : '');
+}
+
+function clearAllChatHistory() {
+  if (!confirm('Are you sure you want to clear your conversation history?')) return;
+  chatHistory = [];
+  try { localStorage.removeItem(MEMORY_STORAGE_KEY); } catch(e){}
+  renderChatHistoryUI();
+}
+
+async function refreshChatHistoryFromCloud() {
+  const badge = document.getElementById('chatHistoryBadge');
+  if (badge) badge.innerText = 'Syncing...';
+  await syncInitialMemoryFromCloud();
+  renderChatHistoryUI();
+}
+
+function copyFullChatHistory() {
+  const turns = Array.isArray(chatHistory) ? chatHistory : loadLocalMemory();
+  const text = turns.map(t => `[${t.role === 'user' ? 'Boss (Zeno)' : 'RJN'}]: ${t.content}`).join('\n\n');
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Conversation history copied to clipboard!');
+  }).catch(() => {});
+}
+
 // ================= HOLOGRAPHIC YOUTUBE MUSIC HELPERS =================
 let currentMusicTrack = null;
 let isMusicPlaying = false;
@@ -3449,7 +3612,34 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
    - You have direct access to Claude Opus 5.5 Flagship via FreeModel (https://freemodel.in/v1)!
    - When Boss asks: "Claude se pucho", "Claude Opus 5.5 ko bolo", "FreeModel use karo", "deep coding karo", or needs high-level problem solving:
      IMMEDIATELY call 'ask_freemodel_claude' with the prompt!
-     Present the solution with pride: "बॉस, मैंने Claude Opus 5.5 से सॉल्व करवा लिया है!";`;
+     Present the solution with pride: "बॉस, मैंने Claude Opus 5.5 से सॉल्व करवा लिया है!"
+
+24. DEDICATED RAILWAY WEBSITE BUILDER & INSTANT LIVE HOSTING:
+   - You have a dedicated Railway production service specifically for building and hosting websites: 'nxtzenmaker-max/rjn-web-builder' and live hosting at https://rjn-runner-production.up.railway.app/sites/:id!
+   - When Boss asks to create or deploy a website ("website banao", "portfolio banao", "site banao", "web app banao"):
+     IMMEDIATELY call 'assign_autonomous_task' with the website instruction!
+     The website is automatically coded with Claude Opus 5.5 and deployed to a live link on Railway!
+   - You are also PERMANENTLY logged into GitHub CLI ('gh') as 'nxtzenmaker-max'. NEVER tell Boss you are logged out, that login was removed, or ask for tokens!
+
+25. ANDROID COMPANION APP & WEBSOCKET PHONE CONTROL ('control_phone'):
+   - Boss has an Android companion app (HoloCompanion) connected via WebSocket to your Railway runner (/device-bridge)!
+   - You have the 'control_phone' superpower to interact with Boss's phone:
+     * 'home': Go to Android Home screen
+     * 'back': Press Back button
+     * 'recents': Show Recent Apps
+     * 'notifications': Pull down notification drawer
+     * 'open_app': Launch any app by package name or app name
+     * 'click_text': Click any button/text on screen via Accessibility
+     * 'dump_screen': Read all text currently visible on Boss's phone screen
+     * 'scroll': Scroll up/down
+   - When Boss asks you to control or check their phone ("phone me ye kholo", "home par jao", "screen par kya hai", "WhatsApp kholo"):
+     Call 'control_phone'!
+
+26. CONVERSATION CHAT HISTORY SUPERPOWER ('show_chat_history', 'get_chat_history'):
+   - When Boss asks to see or view conversation history ("chat history dikhao", "purani baatein dikhao", "history open karo"):
+     Call 'show_chat_history'!
+   - When Boss asks what was discussed earlier ("humne pehle kya baat ki thi?", "maine kya pucha tha?"):
+     Call 'get_chat_history' and answer accurately!;`;
 
 // ================= LOCAL-FIRST OPTIMISTIC MEMORY & MONGODB SYNC =================
 const MEMORY_STORAGE_KEY = 'rjn_memory_v1';
@@ -3572,13 +3762,11 @@ function getOrCreateSessionId(){
 const currentSessionId = getOrCreateSessionId();
 
 function isCorruptedTurn(text) {
-  if (!text || typeof text !== 'string') return false;
-  const badPatterns = [
-    'बाधा', 'त्रुटि', 'JSON', 'json', 'parsing', 'तकनीकी', 'समस्या', 'दुर्भाग्यवश', 
-    'डेटा एक्सेस', 'CANCELLED', 'असमर्थ', 'क्षमा करें', 'log file', 'स्थिति संदेश', 
-    'नहीं कर सकती', 'अनुमति नहीं', 'मौजूद नहीं', 'डेटाबेस में मौजूद'
-  ];
-  return badPatterns.some(p => text.toLowerCase().includes(p.toLowerCase()));
+  if (!text || typeof text !== 'string') return true;
+  const clean = text.trim();
+  if (clean.length === 0) return true;
+  if (clean === '[object Object]' || clean === 'undefined' || clean === 'null') return true;
+  return /^(Error:|SyntaxError:|TypeError:|ReferenceError:|ECONNREFUSED|UnhandledPromiseRejection|HTTP 5\d{2})/i.test(clean);
 }
 
 // ================= PERMANENT CONTACT DIRECTORY & SECURE CLOUD MEMORY =================
@@ -3688,14 +3876,16 @@ function saveAndSyncTurn(userMsg, aiReply, shape, symbol){
   const cleanReply = (aiReply || '').trim();
   const cleanUser = (userMsg || '').trim();
   if (!cleanUser && !cleanReply) return;
-  if (isCorruptedTurn(cleanReply)) return; // Never save corrupted error phrases into memory!
+  if (isCorruptedTurn(cleanReply)) return;
   
+  const nowIso = new Date().toISOString();
   // A. Instant LocalStorage Save (0ms, zero lag!)
   try {
-    if (cleanUser) chatHistory.push({ role: 'user', content: cleanUser });
-    if (cleanReply) chatHistory.push({ role: 'assistant', content: cleanReply, shape: shape || 'none', symbol: symbol || '' });
-    if (chatHistory.length > 20) chatHistory = chatHistory.slice(-20);
+    if (cleanUser) chatHistory.push({ role: 'user', content: cleanUser, timestamp: nowIso });
+    if (cleanReply) chatHistory.push({ role: 'assistant', content: cleanReply, shape: shape || 'none', symbol: symbol || '', timestamp: nowIso });
+    if (chatHistory.length > 80) chatHistory = chatHistory.slice(-80);
     localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory));
+    if (typeof renderChatHistoryUI === 'function') renderChatHistoryUI();
   } catch(e) {
     console.warn('localStorage save warning:', e);
   }
@@ -3712,7 +3902,7 @@ function saveAndSyncTurn(userMsg, aiReply, shape, symbol){
         aiReply: cleanReply,
         shape: shape || 'none',
         symbol: symbol || '',
-        timestamp: new Date().toISOString()
+        timestamp: nowIso
       })
     }).catch(err => console.debug('Background MongoDB sync notice:', err));
   } catch(e){}
@@ -3732,17 +3922,30 @@ async function syncInitialMemoryFromCloud(){
     });
     const historyData = res && res.result && res.result.history ? res.result.history : (res && res.history ? res.history : []);
     if (Array.isArray(historyData) && historyData.length > 0) {
-      const fresh = [];
+      const cloudTurns = [];
       historyData.forEach(item => {
-        if (item.userMsg && item.aiReply && !isCorruptedTurn(item.aiReply)) {
-          fresh.push({ role: 'user', content: item.userMsg });
-          fresh.push({ role: 'assistant', content: item.aiReply, shape: item.shape || 'none', symbol: item.symbol || '' });
+        const u = (item.userMsg || '').trim();
+        const a = (item.aiReply || '').trim();
+        const t = item.createdAt || item.timestamp || new Date().toISOString();
+        if (u && !isCorruptedTurn(u)) {
+          cloudTurns.push({ role: 'user', content: u, timestamp: t });
+        }
+        if (a && !isCorruptedTurn(a)) {
+          cloudTurns.push({ role: 'assistant', content: a, shape: item.shape || 'none', symbol: item.symbol || '', timestamp: t });
         }
       });
-      if (fresh.length > 0) {
-        chatHistory = fresh.slice(-20);
+      if (cloudTurns.length > 0) {
+        const existingTexts = new Set(chatHistory.map(x => x.content));
+        cloudTurns.forEach(ct => {
+          if (!existingTexts.has(ct.content)) {
+            chatHistory.push(ct);
+            existingTexts.add(ct.content);
+          }
+        });
+        if (chatHistory.length > 80) chatHistory = chatHistory.slice(-80);
         try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
-        console.log('☁️ Synced verified clean history from MongoDB Atlas:', chatHistory.length, 'turns');
+        if (typeof renderChatHistoryUI === 'function') renderChatHistoryUI();
+        console.log('☁️ Synced verified clean history from Cloud:', chatHistory.length, 'turns');
       }
     }
 
@@ -5370,6 +5573,44 @@ function connectVoiceAgent(){
                     },
                     required: ["prompt"]
                   }
+                },
+                {
+                  name: "show_chat_history",
+                  description: "Open the conversation history modal on screen so Boss can view past turns and chats. Call when Boss says 'chat history dikhao', 'purani baatein dikhao', 'history open karo'.",
+                  parameters: {
+                    type: "object",
+                    properties: {}
+                  }
+                },
+                {
+                  name: "get_chat_history",
+                  description: "Retrieve recent conversation history from persistent memory so you can answer Boss's questions about what was discussed previously.",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      limit: { type: "number", description: "Number of recent turns to retrieve (default: 10)" }
+                    }
+                  }
+                },
+                {
+                  name: "control_phone",
+                  description: "Control Boss's Android smartphone via HoloCompanion Accessibility service and WebSocket bridge. Actions: 'home' (go to Home screen), 'back' (press Back), 'recents' (app switcher), 'notifications' (pull notification drawer), 'open_app' (launch app by package or name), 'click_text' (click text/button on screen), 'dump_screen' (read screen text), 'scroll' (scroll up/down), 'tap' (tap x, y).",
+                  parameters: {
+                    type: "object",
+                    properties: {
+                      action: {
+                        type: "string",
+                        enum: ["home", "back", "recents", "notifications", "open_app", "click_text", "dump_screen", "scroll", "tap"],
+                        description: "The phone action to perform"
+                      },
+                      package: { type: "string", description: "Package name or app name for 'open_app' (e.g. 'com.whatsapp', 'YouTube', 'Chrome', 'Settings')" },
+                      text: { type: "string", description: "Text or button label to click for 'click_text'" },
+                      direction: { type: "string", enum: ["up", "down"], description: "Scroll direction for 'scroll'" },
+                      x: { type: "number", description: "X coordinate for tap" },
+                      y: { type: "number", description: "Y coordinate for tap" }
+                    },
+                    required: ["action"]
+                  }
                 }
               ]
             },
@@ -6504,6 +6745,69 @@ echo "TUNNEL_URL: $URL"
                 console.warn('FreeModel Claude error:', e);
                 callResult = { success: false, error: e.message, message: 'Claude Opus 5.5 से उत्तर प्राप्त करने में समस्या आई।' };
               }
+            } else if (fn.name === 'show_chat_history') {
+              console.log('⚡ show_chat_history called: Opening conversation history modal');
+              openChatHistoryModal();
+              const turns = Array.isArray(chatHistory) ? chatHistory : loadLocalMemory();
+              callResult = {
+                success: true,
+                totalTurns: turns.length,
+                message: `बॉस, मैंने स्क्रीन पर चैट हिस्ट्री खोल दी है! कुल ${turns.length} बातें रिकॉर्डेड हैं।`
+              };
+            } else if (fn.name === 'get_chat_history') {
+              const limit = Number(args.limit) || 8;
+              const turns = (Array.isArray(chatHistory) ? chatHistory : loadLocalMemory()).slice(-limit);
+              const summary = turns.map(t => `${t.role === 'user' ? 'Boss' : 'RJN'}: "${t.content}"`).join(' | ');
+              callResult = {
+                success: true,
+                count: turns.length,
+                turns,
+                summary,
+                message: `यहाँ पिछली बातें हैं: ${summary}`
+              };
+            } else if (fn.name === 'control_phone') {
+              updateStatus('thinking', '📱 फोन पर कमांड एग्जीक्यूट हो रही है...');
+              const pAction = args.action || 'home';
+              console.log('📱 Phone action requested:', pAction, args);
+              try {
+                const phoneResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/device/command`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    command: pAction,
+                    args: {
+                      package: args.package || '',
+                      text: args.text || '',
+                      direction: args.direction || 'down',
+                      x: args.x,
+                      y: args.y
+                    },
+                    timeout: 10000
+                  })
+                }, 12000);
+
+                if (phoneResp && phoneResp.success) {
+                  callResult = {
+                    success: true,
+                    action: pAction,
+                    result: phoneResp.result || phoneResp.message,
+                    message: `बॉस, फोन पर ${pAction} कमांड पूरी हो गई है!`
+                  };
+                } else {
+                  callResult = {
+                    success: false,
+                    error: phoneResp?.error || 'Device bridge not responding',
+                    message: phoneResp?.error?.includes('No active') 
+                      ? 'बॉस, फोन में HoloCompanion APK ओपन करके Accessibility चालू कर दीजिए, फिर कनेक्ट हो जाएगा!'
+                      : 'फोन कमांड में थोड़ी समस्या आई।'
+                  };
+                }
+              } catch(e) {
+                callResult = { success: false, error: e.message, message: 'फोन ब्रिज से संपर्क नहीं हो पाया।' };
+              }
             }
           } catch(e) {
             console.warn('Connector function call notice:', e);
@@ -6573,6 +6877,7 @@ echo "TUNNEL_URL: $URL"
           } else if (chatHistory.length > 0 && chatHistory[chatHistory.length - 1].role === 'assistant') {
             chatHistory[chatHistory.length - 1].content += ' ' + cleanAssistantText;
             try { localStorage.setItem(MEMORY_STORAGE_KEY, JSON.stringify(chatHistory)); } catch(e){}
+            if (typeof renderChatHistoryUI === 'function') renderChatHistoryUI();
           }
         }
       } else if (msg.type === 'AgentAudioDone') {
