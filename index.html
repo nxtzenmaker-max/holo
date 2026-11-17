@@ -7574,9 +7574,43 @@ window.addEventListener('focus', async () => {
   handleTabReturnVoiceCheck();
 });
 
+function syncDeviceLoginToDatabase() {
+  try {
+    const ua = navigator.userAgent || '';
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(ua);
+    let deviceDesc = isMobile ? 'Mobile Phone' : 'Desktop/Laptop Computer';
+    if (/Realme/i.test(ua)) deviceDesc = 'Realme Smartphone';
+    else if (/Android/i.test(ua)) deviceDesc = 'Android Device (HoloCompanion)';
+    else if (/Windows/i.test(ua)) deviceDesc = 'Windows PC (Chrome/Edge)';
+    else if (/Macintosh|Mac OS/i.test(ua)) deviceDesc = 'Apple Mac';
+    else if (/iPhone/i.test(ua)) deviceDesc = 'Apple iPhone';
+
+    if (window.HoloNative) {
+      deviceDesc = 'Realme/Android Smartphone (Holo Companion App)';
+    }
+
+    safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        command: `python3 -c 'import sys; sys.path.append(\"/root\"); from mongo_tool import record_device_login; record_device_login(\"${currentSessionId}\", \"${VALID_ID}\", \"${deviceDesc}\")'`,
+        timeout: 10000
+      })
+    }, 12000).catch(()=>{});
+  } catch(e) {}
+}
+
 function applyAuthState(authenticated, animate) {
   isAuthenticated = authenticated;
-  if (authenticated) startOrbBoot(); else { bootStarted = false; bootT = 0; bootActive = false; }
+  if (authenticated) {
+    startOrbBoot();
+    syncDeviceLoginToDatabase();
+  } else {
+    bootStarted = false; bootT = 0; bootActive = false;
+  }
   const loginGate = document.getElementById('loginGate');
   const menuBtn = document.getElementById('menuToggleBtn');
   const drawer = document.getElementById('sidebarDrawer');
