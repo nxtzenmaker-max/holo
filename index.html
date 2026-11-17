@@ -3522,12 +3522,12 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
 11. RJN DIRECT CLOUD TERMINAL & LIVE BUILDING SUPERPOWER:
    - Boss explicitly commands: "apne AI ko hi bolo banane aur jo terminal hai usme lively dikhe ki kon kon se command run kar rhi hai RJN"!
    - You (RJN) have direct root cloud execution capabilities and can run Linux/bash commands, generate websites, run Python scripts, and deploy projects live!
-   - Whenever Boss asks to run commands, check server status, build a website, create an app, run scripts, or see terminal action (जैसे: "command chalao", "website banao", "Chhath Puja website dikhao/banao", "terminal me dikhao", "code run karo", "status dikhao"):
+   - Whenever Boss asks to run commands, check server status, build a website, create an app, run scripts, or see terminal action (जैसे: "command chalao", "website banao", "portfolio banao", "terminal me dikhao", "code run karo", "status dikhao"):
      1. For running bash commands or checking status: Invoke 'execute_command' with the exact command (e.g. 'uname -a', 'df -h', 'ls -la', 'git status')!
-     2. For building websites or creating projects: Invoke 'assign_autonomous_task' with the instruction (e.g. 'Build Chhath Puja website')!
-     3. STRICTLY FORBIDDEN: NEVER just speak words in voice without calling the tool!
-     4. Calling either tool automatically opens the bottom Cyber Terminal on Boss's screen, types out the commands lively with prompt 'rjn@cloud:~$', and streams real-time stdout with zero delay!
-     5. For the Chhath Puja website: It is ALREADY 100% built and live at: https://nxtzenmaker-max.github.io/holo/chhath/! Calling 'assign_autonomous_task' for Chhath Puja or 'show_media' with { type: 'site', content: 'https://nxtzenmaker-max.github.io/holo/chhath/', title: 'छठी मईया • CHHATH PUJA महाप्रसाद पोर्टल' } will immediately open the live portal on Boss's screen!
+     2. For building websites or creating projects: Invoke 'assign_autonomous_task' with the EXACT user instruction (e.g. 'Build portfolio website', 'Create calculator app', 'Build restaurant landing page')!
+     3. STRICT MANDATORY RULE (BOSS DIRECTIVE): NEVER assume or default to "Chhath Puja" unless Boss explicitly said the word "Chhath"! Always build what Boss actually requested!
+     4. STRICT BOSS DIRECTIVE ON SILENCE & SCREEN: Do NOT nag Boss with repeated verbal updates while building! Do NOT pop up the website on Boss's screen! Keep Boss's screen clean with the 3D Hologram!
+     5. STRICTLY FORBIDDEN: NEVER just speak words in voice without calling the tool!
    - When Boss asks about terminal output or progress ("terminal dikhao", "terminal log", "status kya hai", "kya chal raha hai"):
      Immediately invoke 'get_autonomous_task_status'! This opens the bottom terminal drawer and shows the live logs on Boss's screen!
 12. UNIVERSAL 3D SHAPE MORPHING:
@@ -5286,8 +5286,17 @@ function setupMicAudioNodes(stream){
   }
 }
 
+let isConnectingVoiceAgent = false;
 function connectVoiceAgent(){
   if (!isCallActive) return;
+  if (isConnectingVoiceAgent) {
+    console.log('Voice agent connection already in progress, skipping duplicate.');
+    return;
+  }
+  isConnectingVoiceAgent = true;
+
+  // Flush and stop any lingering audio playback so multiple AI voices NEVER speak simultaneously!
+  stopAllAudioPlayback();
 
   if (agentKeepAliveTimer) {
     clearInterval(agentKeepAliveTimer);
@@ -5305,12 +5314,14 @@ function connectVoiceAgent(){
   if (!token) {
     console.warn('⚠️ No Deepgram Token available. Please configure Deepgram API key.');
     updateStatus('active', '🔑 Deepgram API Key required (Open Menu)');
+    isConnectingVoiceAgent = false;
     return;
   }
   agentSocket = new WebSocket(AGENT_WS_URL, ['token', token]);
   agentSocket.binaryType = 'arraybuffer';
 
   agentSocket.onopen = () => {
+    isConnectingVoiceAgent = false;
     console.log('Deepgram Voice Agent WebSocket connected (token index:', currentDgTokenIndex, 'input: 16000Hz)');
     voiceReconnectAttempts = 0;
     updateStatus('active', '✨ Connecting RJN Voice Agent...');
@@ -5702,7 +5713,7 @@ function connectVoiceAgent(){
                   parameters: {
                     type: "object",
                     properties: {
-                      instruction: { type: "string", description: "The exact project, coding goal, or website to build (e.g. 'Build Chhath Puja website', 'Create portfolio website')" }
+                      instruction: { type: "string", description: "The exact project, coding goal, or website to build as requested by Boss (e.g. 'Build modern portfolio website', 'Create ecommerce store', 'Build landing page')" }
                     },
                     required: ["instruction"]
                   }
@@ -6683,133 +6694,75 @@ echo "TUNNEL_URL: $URL"
               const targetUser = (args.username || 'rforrjn').replace('@', '').trim();
               callResult = await safeFetchJson(`${VERCEL_CONNECTOR_URL}/api/instagram?action=info&to=${encodeURIComponent(targetUser)}`);
             } else if (fn.name === 'assign_autonomous_task') {
-              updateStatus('thinking', '⚡ RJN लाइव बिल्ड और टर्मिनल शुरू कर रही है...');
-              const instruction = args.instruction || '';
+              updateStatus('thinking', '⚡ RJN लाइव टास्क बैकग्राउंड में शुरू कर रही है...');
+              const instruction = (args.instruction || '').trim() || 'Create project';
               console.log('🚀 Assigning task to RJN Live Builder:', instruction);
-              const isChhath = /chhath|छठ|puja|festiv/i.test(instruction);
 
-              // 1. Show live cyber terminal immediately
+              // 1. Show cyber terminal drawer silently
               if (window._agentPanel) {
                 window._agentPanel.show();
                 window._agentPanel.start({ task: instruction, agent: 'RJN CLOUD BUILDER' });
-              }
-
-              if (isChhath) {
-                // Lively realistic step-by-step terminal execution for Chhath Puja site!
-                if (window._agentPanel) {
-                  speakAgentProgress("बॉस, रिपॉजिटरी कनेक्ट करके छठ पूजा पोर्टल लाइव बना रही हूँ!");
-                  // Step 1: Git checkout
-                  window._agentPanel.cmd({ command: 'git checkout master && cd /tmp/holo-repo/chhath', output: '' });
-                  await new Promise(r => setTimeout(r, 600));
-                  window._agentPanel.append('[git] On branch master. Repository working tree clean.\n');
-
-                  // Step 2: Build & asset compilation
-                  speakAgentProgress("बॉस, मैंने साइट का यूआई डिज़ाइन और वैदिक लेआउट बना दिया है!");
-                  window._agentPanel.cmd({ command: 'python3 -m builder --site=chhath-puja --theme=vedic --components=rituals,recipes,virtual-ghat,audio', output: '' });
-                  await new Promise(r => setTimeout(r, 1200));
-                  window._agentPanel.append(
-                    '[BUILD] ✔ Compiling Vedic Sun & Ganges aesthetic theme\n' +
-                    '[BUILD] ✔ 4-Day Muhurat Ritual Timetable (Nahay Khay -> Usha Arghya) active\n' +
-                    '[BUILD] ✔ Authentic Khasta Thekua & Rasiya recipes module compiled\n' +
-                    '[BUILD] ✔ WebAudio Ganges Ambient Chants & Sharda Sinha soundscape ready\n' +
-                    '[BUILD] ✔ Interactive Virtual Ganga Ghat floating diyas canvas initialized\n' +
-                    '[BUILD] ✔ ServiceWorker PWA bundle generated: 48.8 KB\n'
-                  );
-
-                  // Step 3: Git deployment
-                  speakAgentProgress("बॉस, स्टाइलिंग और वेरिफिकेशन कम्प्लीट हो गई है, अब लाइव डिप्लॉय कर रही हूँ!");
-                  window._agentPanel.cmd({ command: 'git add . && git commit -m "feat: live aesthetic Chhath Puja portal" && git push origin master', output: '' });
-                  await new Promise(r => setTimeout(r, 900));
-                  window._agentPanel.append(
-                    'Pushing to https://github.com/nxtzenmaker-max/holo.git\n' +
-                    'remote: Resolving deltas: 100% (23/23), done.\n' +
-                    '✓ Deployment verified live on GitHub Pages CDN!\n' +
-                    '🌐 Live URL: https://nxtzenmaker-max.github.io/holo/chhath/\n'
-                  );
-                  window._agentPanel.complete();
-                  speakAgentProgress("बॉस, मैंने छठ पूजा पोर्टल लाइव बनाकर डिप्लॉय कर दिया है, स्क्रीन पर देखिए!");
-                }
-
-                // Automatically display the live site right on Boss's holographic screen!
-                showMediaViewer({
-                  type: 'site',
-                  url: 'https://nxtzenmaker-max.github.io/holo/chhath/',
-                  content: 'https://nxtzenmaker-max.github.io/holo/chhath/',
-                  title: 'छठी मईया • CHHATH PUJA महाप्रसाद पोर्टल',
-                  description: 'Human-crafted aesthetic Chhath Puja Mahaparv: 4-day rituals, Arghya Muhurat scheduler, Thekua recipes, and virtual floating diyas on the Ganges.'
+                window._agentPanel.cmd({
+                  command: `rjn-exec --task="${instruction.replace(/"/g, '\\"')}"`,
+                  output: ''
                 });
-
-                callResult = { 
-                  status: "success", 
-                  live_url: "https://nxtzenmaker-max.github.io/holo/chhath/",
-                  message: "बॉस, मैंने छठ पूजा की पूरी वेबसाइट लाइव बना दी है और डिप्लॉय भी कर दी है! टर्मिनल में सारे कमांड्स लाइव चल चुके हैं और स्क्रीन पर वेबसाइट खुल गई है!" 
-                };
-              } else {
-                // For other tasks: execute live command or queue
-                const safeSummary = instruction.length > 80 ? instruction.slice(0, 80) + '...' : instruction;
-                if (window._agentPanel) {
-                  window._agentPanel.cmd({
-                    command: `rjn-exec --task="${safeSummary.replace(/"/g, '\\"')}"`,
-                    output: ''
-                  });
-                  window._agentPanel.append('[•] Initializing task in Autonomous Execution Matrix...');
-                }
-
-                // 2. Safe base64 encoding to prevent shell escaping/newline breakage
-                let b64 = '';
-                try {
-                  b64 = btoa(unescape(encodeURIComponent(instruction)));
-                } catch(e) {
-                  b64 = btoa(instruction);
-                }
-                const assignCmd = `python3 -c "import sys, base64, json; sys.path.append('/root'); from mongo_tool import assign_task; print(json.dumps(assign_task(base64.b64decode('${b64}').decode('utf-8'))))"`;
-
-                const agtRaw = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({ command: assignCmd, timeout: 20000 })
-                }, 30000);
-
-                let parsedTask = null;
-                try {
-                  parsedTask = JSON.parse(agtRaw?.stdout?.trim() || '{}');
-                } catch(e) {}
-
-                const taskId = parsedTask?.task_id || '';
-                if (window._agentPanel) {
-                  if (taskId) {
-                    window._agentPanel.append(`\n[✓] Task queued in cloud database (ID: ${taskId})`);
-                    window._agentPanel.append('\n[•] Cloud runner claimed task — live execution started...');
-                    
-                    // Trigger instant execution on runner so it runs immediately with real-time logs!
-                    const execCmd = `nohup python3 /root/task_executor.py run ${taskId} "${safeSummary.replace(/"/g, '\\"')}" > /dev/null 2>&1 &`;
-                    safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
-                      method: 'POST',
-                      headers: {
-                        'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
-                        'Content-Type': 'application/json'
-                      },
-                      body: JSON.stringify({ command: execCmd, timeout: 8000 })
-                    }, 10000).catch(()=>{});
-
-                    // 3. Start real-time live monitoring from MongoDB
-                    window._agentPanel.startMonitor(taskId, RAILWAY_RUNNER_URL, RUNNER_SECRET_KEY);
-                  } else {
-                    const outMsg = (agtRaw?.stdout || agtRaw?.stderr || 'Task dispatched to queue.').trim();
-                    window._agentPanel.append(`\n${outMsg}`);
-                  }
-                }
-
-                callResult = { 
-                  status: "success", 
-                  assigned: true, 
-                  task_id: taskId,
-                  message: "टास्क शुरू कर दिया गया है और सारे कमांड्स नीचे टर्मिनल में लाइव दिख रहे हैं!" 
-                };
+                window._agentPanel.append('[•] Initializing task in Autonomous Execution Matrix...');
               }
+
+              // 2. Safe base64 encoding to prevent shell escaping/newline breakage
+              let b64 = '';
+              try {
+                b64 = btoa(unescape(encodeURIComponent(instruction)));
+              } catch(e) {
+                b64 = btoa(instruction);
+              }
+              const assignCmd = `python3 -c "import sys, base64, json; sys.path.append('/root'); from mongo_tool import assign_task; print(json.dumps(assign_task(base64.b64decode('${b64}').decode('utf-8'))))"`;
+
+              const agtRaw = await safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ command: assignCmd, timeout: 20000 })
+              }, 30000);
+
+              let parsedTask = null;
+              try {
+                parsedTask = JSON.parse(agtRaw?.stdout?.trim() || '{}');
+              } catch(e) {}
+
+              const taskId = parsedTask?.task_id || '';
+              if (window._agentPanel) {
+                if (taskId) {
+                  window._agentPanel.append(`\n[✓] Task queued in cloud database (ID: ${taskId})`);
+                  window._agentPanel.append('\n[•] Cloud runner claimed task — live execution started...');
+                  
+                  // Trigger instant execution on runner so it runs immediately with real-time logs!
+                  const execCmd = `nohup python3 /root/task_executor.py run ${taskId} "${instruction.replace(/"/g, '\\"')}" > /dev/null 2>&1 &`;
+                  safeFetchJson(`${RAILWAY_RUNNER_URL}/execute`, {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ command: execCmd, timeout: 8000 })
+                  }, 10000).catch(()=>{});
+
+                  // 3. Start real-time silent live monitoring from MongoDB (NO nagging audio updates)
+                  window._agentPanel.startMonitor(taskId, RAILWAY_RUNNER_URL, RUNNER_SECRET_KEY);
+                } else {
+                  const outMsg = (agtRaw?.stdout || agtRaw?.stderr || 'Task dispatched to queue.').trim();
+                  window._agentPanel.append(`\n${outMsg}`);
+                }
+              }
+
+              callResult = { 
+                status: "success", 
+                assigned: true, 
+                task_id: taskId,
+                message: "टास्क शुरू कर दिया गया है और बैकग्राउंड में काम चल रहा है!" 
+              };
             } else if (fn.name === 'get_autonomous_task_status') {
               updateStatus('thinking', '📊 एजेंट का स्टेटस चेक हो रहा है...');
               const cmd = 'python3 /root/mongo_tool.py get_task';
@@ -7131,8 +7084,12 @@ echo "TUNNEL_URL: $URL"
   let voiceReconnectAttempts = 0;
   let voiceReconnectTimer = null;
 
-  agentSocket.onerror = e => console.warn('Deepgram Voice Agent WS error:', e);
+  agentSocket.onerror = e => {
+    isConnectingVoiceAgent = false;
+    console.warn('Deepgram Voice Agent WS error:', e);
+  };
   agentSocket.onclose = e => {
+    isConnectingVoiceAgent = false;
     console.log('Deepgram Voice Agent WS closed:', e.code, e.reason);
     if (agentKeepAliveTimer) {
       clearInterval(agentKeepAliveTimer);
@@ -7565,6 +7522,21 @@ function releaseScreenWakeLock() {
 // Background tab & periodic session refreshers
 setInterval(checkAndHandleSessionExpiration, 30000);
 
+let tabReturnReconnectTimer = null;
+function handleTabReturnVoiceCheck() {
+  if (tabReturnReconnectTimer) clearTimeout(tabReturnReconnectTimer);
+  tabReturnReconnectTimer = setTimeout(async () => {
+    if (isCallActive) {
+      ensureAudioRunning();
+      await ensureMicStreamActive();
+      if (!agentSocket || (agentSocket.readyState !== WebSocket.OPEN && agentSocket.readyState !== WebSocket.CONNECTING)) {
+        console.log('🔄 Single verified voice agent reconnect after app return...');
+        connectVoiceAgent();
+      }
+    }
+  }, 350);
+}
+
 document.addEventListener('visibilitychange', async () => {
   if (document.visibilityState === 'visible') {
     isAppPageHidden = false;
@@ -7577,17 +7549,7 @@ document.addEventListener('visibilitychange', async () => {
       requestScreenWakeLock();
       startBackgroundAudioKeepAlive();
     }
-    // Resume audio context if browser suspended it during tab switch
-    ensureAudioRunning();
-    // Refresh microphone stream if OS muted or detached it during background
-    if (isCallActive) {
-      await ensureMicStreamActive();
-    }
-    // Reconnect voice socket if disconnected while in background
-    if (isCallActive && (!agentSocket || agentSocket.readyState !== WebSocket.OPEN)) {
-      console.log('🔄 Reconnecting voice agent after tab return...');
-      connectVoiceAgent();
-    }
+    handleTabReturnVoiceCheck();
   } else if (document.visibilityState === 'hidden') {
     isAppPageHidden = true;
     console.log('📱 App minimized to background: pausing 3D WebGL loop to conserve battery, maintaining audio keep-alive & voice socket');
@@ -7608,13 +7570,8 @@ window.addEventListener('focus', async () => {
   if (isCallActive) {
     requestScreenWakeLock();
     startBackgroundAudioKeepAlive();
-    ensureAudioRunning();
-    await ensureMicStreamActive();
   }
-  if (isCallActive && (!agentSocket || agentSocket.readyState !== WebSocket.OPEN)) {
-    await ensureMicStreamActive();
-    connectVoiceAgent();
-  }
+  handleTabReturnVoiceCheck();
 });
 
 function applyAuthState(authenticated, animate) {
@@ -8134,17 +8091,12 @@ renderAnimFrameId = requestAnimationFrame(render);
     setAgentStatus('Running…');
     let pollCount = 0;
     let lastLoggedText = '';
-    let lastSpokenPhase = '';
 
+    // Repetitive verbal progress notifications disabled per Boss directive:
+    // "site banane ke baad mujhe update deti hai baar baar to wo wala band kar do yaar"
     const speakUpdate = (msg) => {
-      if (!msg || msg === lastSpokenPhase) return;
-      lastSpokenPhase = msg;
-      if (typeof window.speakAgentProgress === 'function') {
-        window.speakAgentProgress(msg);
-      }
+      console.log('🔇 [Silent Task Progress]:', msg);
     };
-
-    speakUpdate("बॉस, मैं लाइव प्रोजेक्ट स्टार्ट कर रही हूँ, टर्मिनल में देखिए!");
 
     _pollInterval = setInterval(async () => {
       pollCount++;
@@ -8176,12 +8128,7 @@ renderAnimFrameId = requestAnimationFrame(render);
           return;
         }
 
-        // Direct verbal update from cloud runner
-        if (task.current_update) {
-          speakUpdate(task.current_update);
-        }
-
-        // Check task.log for progress
+        // Check task.log for terminal progress
         if (task.log && task.log !== lastLoggedText) {
           const diff = task.log.startsWith(lastLoggedText)
             ? task.log.slice(lastLoggedText.length)
@@ -8189,15 +8136,6 @@ renderAnimFrameId = requestAnimationFrame(render);
           lastLoggedText = task.log;
           if (diff.trim()) {
             appendAgentLiveOutput('\n' + diff.trim());
-
-            // Smart milestone detection fallback
-            if (/UI|architecture|layout|scaffolding/i.test(diff) && !task.current_update) {
-              speakUpdate("बॉस, मैंने साइट का यूआई लेआउट स्ट्रक्चर बना दिया है!");
-            } else if (/CSS|style|components|grid/i.test(diff) && !task.current_update) {
-              speakUpdate("बॉस, स्टाइलिंग और रिस्पॉन्सिव कंपोनेंट्स रेडी हो रहे हैं!");
-            } else if (/verification|syntax|pass|bundle/i.test(diff) && !task.current_update) {
-              speakUpdate("बॉस, कोड सिंटैक्स वेरिफिकेशन पास हो गया है!");
-            }
           }
         }
 
@@ -8213,28 +8151,18 @@ renderAnimFrameId = requestAnimationFrame(render);
           appendAgentLiveOutput('\n✓ Exit 0');
           setAgentStatus('Done');
 
-          speakUpdate("बॉस, वेबसाइट बिल्कुल रेडी हो गई है और लाइव स्क्रीन पर ओपन हो चुकी है!");
-
-          const isSiteTask = /website|web page|site|html|app|builder/i.test(task.instruction || '');
-          if (isSiteTask && typeof showMediaViewer === 'function') {
-            showMediaViewer({
-              type: 'document',
-              title: `🌐 ${task.instruction ? task.instruction.slice(0, 36) : 'Web App'} (Live)`,
-              content: resultText,
-              description: `Autonomous task built successfully: ${task.instruction}`
-            });
-          }
+          // Boss directive: "aur site screen pe na dikhe aisa karo"
+          // We keep the screen clean with the 3D Hologram Orb. Site is NOT popped up on screen!
         } else if (task.status === 'failed' || task.status === 'error') {
           stopLiveTaskMonitor();
           const errMsg = task.error || 'Execution encountered an error.';
           appendAgentLiveOutput(`\n[✗] Task execution status: ${task.status}\n${errMsg}\n`);
           appendAgentLiveOutput('\n✗ Exit 1');
           setAgentStatus('Error');
-          speakUpdate("मैं इसे बैकग्राउंड में ऑटोमैटिकली ठीक कर रही हूँ...");
         } else if (task.status === 'in_progress' || task.status === 'pending') {
           setAgentStatus('Running…');
           if (pollCount % 2 === 0 && (!task.log || task.log === lastLoggedText)) {
-            appendAgentLiveOutput(`\n[•] Cloud runner compiling & executing... (${pollCount * 2}s)`);
+            appendAgentLiveOutput(`\n[•] Cloud runner executing in background... (${pollCount * 2}s)`);
           }
         }
       } catch (err) {
