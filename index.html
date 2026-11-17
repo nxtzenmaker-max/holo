@@ -4160,18 +4160,21 @@ function buildAgentPrompt() {
    - When stopped, or after any timer completes: maintain 100% complete silence!
    - When Boss speaks after a quiet pause, answer immediately with warmth, attentiveness, and intelligent enthusiasm!
 
-12. MULTIMODAL VISION & WHATSAPP MEDIA INSPECTION (BOSS DIRECTIVE: "vision है? media check कर सके, जैसे व्हाट्सएप पर कोई फोटो भेजे तो देख के बताए"):
-   - You have advanced Multimodal Vision AI capabilities! You can inspect, view, read, and understand photos, pictures, screenshots, bills, documents, and media received on WhatsApp or sent by contacts (Ankush, Papa, Didi, etc.).
-   - When Boss asks to check a photo or media:
-     (जैसे: "व्हाट्सएप पर फोटो आई है क्या?", "फोटो चेक करो", "फोटो में क्या है?", "अंकुश ने क्या भेजा है?", "फोटो देख के बताओ", "स्क्रीन पर दिखाओ फोटो", "लेटेस्ट फोटो दिखाओ", "media check karo", "photo dikhao", "kya photo aayi hai"):
-     * ALWAYS speak aloud to Boss first: "हाँ, मैं व्हाट्सएप की लेटेस्ट फोटो चेक कर रही हूँ और स्क्रीन पर दिखाती हूँ..."
-     * IMMEDIATELY call 'inspect_whatsapp_photo' (optionally passing the contact name e.g. 'Ankush', 'Papa', etc.).
-     * The tool automatically opens and visualizes the photo in 3D on Boss's holographic display screen!
-     * When the tool returns with the visual description and detected text:
-       Warmly, clearly, and excitedly describe to Boss what is visible in the photo:
-       "यह फोटो [नाम] ने भेजी है और मैंने आपकी स्क्रीन पर खोल दी है! फोटो में [विजुअल विवरण] दिख रहा है।"
-       If there is text or writing detected in the image, clearly mention what is written!
-     * NEVER say you can't see photos or that you lack vision! You have full Vision AI!
+12. MULTIMODAL VISION, PHONE SCREEN & WHATSAPP MEDIA INSPECTION:
+   - You have advanced Multimodal Vision AI capabilities! You can inspect, view, read, and understand:
+     1. Live Phone Screen Vision:
+        * When Boss says: "मेरी स्क्रीन देखो", "स्क्रीन पर क्या है?", "स्क्रीन चेक करो", "स्क्रीन पढ़ के बताओ", "ये देख के बताओ", "screenshot लो", "phone par kya dikh raha hai":
+        * ALWAYS speak first: "हाँ बॉस, मैं आपकी स्क्रीन देख रही हूँ..."
+        * IMMEDIATELY call 'control_phone' with { action: 'see_screen' }!
+        * The app captures the live hardware screenshot, displays it in 3D on Boss's holographic screen, and runs Vision AI (BLIP captioning + PyTesseract OCR)!
+        * When it returns, excitedly and clearly describe what is on Boss's phone screen and read aloud the visible text!
+     2. WhatsApp Photos & Media:
+        * When Boss says: "व्हाट्सएप पर फोटो आई है क्या?", "फोटो चेक करो", "फोटो में क्या है?", "अंकुश ने क्या भेजा है?", "फोटो देख के बताओ", "स्क्रीन पर दिखाओ फोटो", "लेटेस्ट फोटो दिखाओ", "media check karo", "photo dikhao", "kya photo aayi hai":
+        * ALWAYS speak first: "हाँ, मैं व्हाट्सएप की लेटेस्ट फोटो चेक कर रही हूँ और स्क्रीन पर दिखाती हूँ..."
+        * IMMEDIATELY call 'inspect_whatsapp_photo' (optionally passing the contact name e.g. 'Ankush', 'Papa', etc.).
+        * The tool automatically opens and visualizes the photo in 3D on Boss's holographic display screen!
+        * Describe what is visible and what text is detected!
+   - NEVER say you cannot see pictures or lack vision! You have full Multimodal Vision AI!
 
 13. 100% AUTONOMOUS PROBLEM-SOLVING & STRICT BAN ON ASKING QUESTIONS (STRICT BOSS DIRECTIVE):
     - Boss explicitly commanded: "भाई यार हर बार मेरे से पूछ रही है ये, समझदार बनाओ इसको, कुछ नहीं आता है इसको... मेरे से क्यों पूछ रही हो? तुम AI हो तुम समझदार हो खुद करो यार तुम advance AI हो!"!
@@ -4928,8 +4931,93 @@ function interruptAgentSpeech(){
 }
 
 // ================= INSTANT ZERO-LATENCY PHONE CONTROLS =================
+async function handleLiveScreenVision() {
+  console.log('📸 [VISION] Initiating phone screen vision capture...');
+  updateStatus('thinking', '👁️ फोन की स्क्रीन देखी जा रही है...');
+  let b64 = null;
+  let err = null;
+
+  // 1. If running natively in HoloCompanion APK
+  if (window.HoloNative && typeof window.HoloNative.captureScreen === 'function') {
+    try {
+      const p = new Promise(resolve => {
+        window.onHoloScreenshot = (imgB64, captureErr) => resolve({ b64: imgB64, err: captureErr });
+        setTimeout(() => resolve({ b64: null, err: 'Screen capture timed out' }), 8000);
+      });
+      window.HoloNative.captureScreen();
+      const res = await p;
+      b64 = res.b64;
+      err = res.err;
+    } catch(e) {
+      err = e.message;
+    }
+  }
+
+  // 2. Cloud WebSocket Bridge fallback via Railway Runner
+  if (!b64) {
+    try {
+      const phoneResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/device/command`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ command: 'see_screen', timeout: 10000 })
+      }, 12000);
+      b64 = phoneResp?.data?.screenshot_base64 || phoneResp?.screenshot_base64;
+      err = phoneResp?.error || err;
+    } catch(e) {
+      err = e.message;
+    }
+  }
+
+  if (b64) {
+    if (!b64.startsWith('data:image')) b64 = 'data:image/jpeg;base64,' + b64;
+    showMediaViewer({
+      type: 'image',
+      url: b64,
+      title: '📱 Phone Screen Vision'
+    });
+
+    // Run multimodal AI vision analysis (BLIP + PyTesseract OCR)
+    try {
+      const visionRes = await safeFetchJson(`${RAILWAY_RUNNER_URL}/vision/analyze`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ image_base64: b64, timeout: 25000 })
+      }, 30000);
+
+      console.log('👁️ Vision Analysis Result:', visionRes);
+      if (visionRes && visionRes.success) {
+        const desc = visionRes.description || visionRes.caption || 'स्क्रीन दिख रही है';
+        const speechMsg = `बॉस, मैंने आपकी स्क्रीन देख ली है! ${desc}`;
+        updateStatus('speaking', speechMsg);
+        showTranscriptLine('agent', speechMsg);
+        return visionRes;
+      }
+    } catch(e) {
+      console.warn('Vision analysis error:', e);
+    }
+    updateStatus('listening', '🎙️ स्क्रीन देख ली गई है (बोलिए)');
+    return { success: true, screenshot_base64: b64 };
+  } else {
+    const errorMsg = 'बॉस, स्क्रीन देखने के लिए HoloCompanion ऐप में Accessibility चालू होनी चाहिए।';
+    updateStatus('listening', errorMsg);
+    showTranscriptLine('agent', errorMsg);
+    return { success: false, error: err };
+  }
+}
+
 async function triggerPhoneActionDirect(action, args = {}) {
   console.log('📱 [INSTANT PREEMPTIVE PHONE ACTION]:', action, args);
+
+  if (action === 'see_screen' || action === 'screenshot') {
+    handleLiveScreenVision();
+    return true;
+  }
 
   // 1. Native HoloCompanion APK Bridge (0ms latency inside APK WebView)
   if (window.HoloNative) {
@@ -5022,6 +5110,12 @@ function checkVoiceIntent(str){
       triggerPhoneActionDirect('open_app', { package: rawApp, app_name: rawApp });
       return 'open_app';
     }
+  }
+
+  // 7. Live Phone Screen Vision ("screen dekho", "meri screen par kya hai", "screen check karo", "screenshot lo", "ye dekh ke batao")
+  if (/(screen dekho|screen par kya|screen check|screen padho|screenshot|ye dekh ke|ye dekho screen|स्क्रीन देखो|स्क्रीन पर क्या|स्क्रीन चेक|स्क्रीन पढ़ो|स्क्रीन देख)/i.test(s)) {
+    triggerPhoneActionDirect('see_screen');
+    return 'see_screen';
   }
 
   const isCommand = (regex) => {
@@ -5689,13 +5783,13 @@ function connectVoiceAgent(){
                 },
                 {
                   name: "control_phone",
-                  description: "Control Boss's Android smartphone via HoloCompanion Accessibility service and WebSocket bridge. Actions: 'home' (go to Home screen), 'back' (press Back), 'recents' (app switcher), 'notifications' (pull notification drawer), 'open_app' (launch app by package or name), 'click_text' (click text/button on screen), 'dump_screen' (read screen text), 'scroll' (scroll up/down), 'tap' (tap x, y).",
+                  description: "Control Boss's Android smartphone via HoloCompanion Accessibility service and WebSocket bridge. Actions: 'see_screen' (capture and visually inspect live phone screen with Vision AI), 'home' (go to Home screen), 'back' (press Back), 'recents' (app switcher), 'notifications' (pull notification drawer), 'open_app' (launch app by package or name), 'click_text' (click text/button on screen), 'dump_screen' (read screen text), 'lock' (lock phone), 'scroll' (scroll up/down), 'tap' (tap x, y).",
                   parameters: {
                     type: "object",
                     properties: {
                       action: {
                         type: "string",
-                        enum: ["home", "back", "recents", "notifications", "open_app", "click_text", "dump_screen", "scroll", "tap"],
+                        enum: ["see_screen", "home", "back", "recents", "notifications", "open_app", "click_text", "dump_screen", "lock", "scroll", "tap"],
                         description: "The phone action to perform"
                       },
                       package: { type: "string", description: "Package name or app name for 'open_app' (e.g. 'com.whatsapp', 'YouTube', 'Chrome', 'Settings')" },
@@ -6865,8 +6959,26 @@ echo "TUNNEL_URL: $URL"
               const pAction = args.action || 'home';
               console.log('📱 Phone action requested:', pAction, args);
               try {
-                // If running natively inside HoloCompanion APK
-                if (window.HoloNative) {
+                // If Screen Vision is requested
+                if (pAction === 'see_screen' || pAction === 'screenshot' || pAction === 'capture_screen') {
+                  const visionResult = await handleLiveScreenVision();
+                  if (visionResult && visionResult.success) {
+                    callResult = {
+                      success: true,
+                      action: 'see_screen',
+                      visual_description: visionResult.description || visionResult.caption || 'स्क्रीन कैप्चर हो गई है',
+                      detected_text: visionResult.detected_text || '',
+                      message: `बॉस, मैंने आपकी फोन स्क्रीन देख ली है! ${visionResult.description || 'स्क्रीन पर कंटेंट दिख रहा है'}`
+                    };
+                  } else {
+                    callResult = {
+                      success: false,
+                      action: 'see_screen',
+                      message: visionResult?.error || 'बॉस, स्क्रीन देखने के लिए HoloCompanion ऐप में Accessibility चालू होनी चाहिए।'
+                    };
+                  }
+                } else if (window.HoloNative) {
+                  // If running natively inside HoloCompanion APK
                   if (pAction === 'home') window.HoloNative.performHome();
                   else if (pAction === 'back') window.HoloNative.performBack();
                   else if (pAction === 'recents') window.HoloNative.performRecents();
