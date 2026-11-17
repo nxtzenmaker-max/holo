@@ -3621,19 +3621,23 @@ YOUR LIVE SUPERPOWERS FOR YOUR BOSS:
      The website is automatically coded with Claude Opus 5.5 and deployed to a live link on Railway!
    - You are also PERMANENTLY logged into GitHub CLI ('gh') as 'nxtzenmaker-max'. NEVER tell Boss you are logged out, that login was removed, or ask for tokens!
 
-25. ANDROID COMPANION APP & WEBSOCKET PHONE CONTROL ('control_phone'):
-   - Boss has an Android companion app (HoloCompanion) connected via WebSocket to your Railway runner (/device-bridge)!
-   - You have the 'control_phone' superpower to interact with Boss's phone:
+25. ANDROID COMPANION APP & PHONE CONTROL ('control_phone'):
+   - Boss has an Android companion app (HoloCompanion) connected to your system!
+   - You have the 'control_phone' superpower to control Boss's smartphone in real time:
+     * 'open_app': Launch ANY app by name (e.g. 'WhatsApp', 'Spotify', 'YouTube', 'Chrome', 'Settings', 'Camera', 'Gemini', 'ChatGPT', 'Telegram', 'Instagram', 'PhonePe', 'Paytm', etc.)!
      * 'home': Go to Android Home screen
      * 'back': Press Back button
      * 'recents': Show Recent Apps
      * 'notifications': Pull down notification drawer
-     * 'open_app': Launch any app by package name or app name
+     * 'lock': Lock phone screen
      * 'click_text': Click any button/text on screen via Accessibility
      * 'dump_screen': Read all text currently visible on Boss's phone screen
      * 'scroll': Scroll up/down
-   - When Boss asks you to control or check their phone ("phone me ye kholo", "home par jao", "screen par kya hai", "WhatsApp kholo"):
-     Call 'control_phone'!
+   - CRITICAL MANDATORY INSTRUCTION:
+     * Whenever Boss asks to open an app, go home, go back, see recents, pull notifications, lock screen, or interact with phone:
+       YOU MUST CALL 'control_phone'!
+     * NEVER speak or pretend you opened an app without calling 'control_phone'!
+     * When Boss says "WhatsApp खोलो" or "मेरा WhatsApp खोलो" or "search karo screen par", DO NOT recite Ankush's number! That is a phone screen command, so call 'control_phone' with { action: 'open_app', package: 'WhatsApp' }!
 
 26. CONVERSATION CHAT HISTORY SUPERPOWER ('show_chat_history', 'get_chat_history'):
    - When Boss asks to see or view conversation history ("chat history dikhao", "purani baatein dikhao", "history open karo"):
@@ -4923,11 +4927,102 @@ function interruptAgentSpeech(){
   updateStatus('listening', '🎙️ RJN सुन रही है... (बोलिए)');
 }
 
-// ================= INTENT-DRIVEN SHAPE MORPHING =================
-// ONLY changes shape when user explicitly commands a transformation!
+// ================= INSTANT ZERO-LATENCY PHONE CONTROLS =================
+async function triggerPhoneActionDirect(action, args = {}) {
+  console.log('📱 [INSTANT PREEMPTIVE PHONE ACTION]:', action, args);
+
+  // 1. Native HoloCompanion APK Bridge (0ms latency inside APK WebView)
+  if (window.HoloNative) {
+    try {
+      if (action === 'home') { window.HoloNative.performHome(); return true; }
+      if (action === 'back') { window.HoloNative.performBack(); return true; }
+      if (action === 'recents') { window.HoloNative.performRecents(); return true; }
+      if (action === 'notifications') { window.HoloNative.performNotifications(); return true; }
+      if (action === 'lock') { window.HoloNative.performLock(); return true; }
+      if (action === 'open_app') {
+        const appToLaunch = args.package || args.app_name || '';
+        if (appToLaunch) {
+          window.HoloNative.launchApp(appToLaunch);
+          return true;
+        }
+      }
+    } catch(err) {
+      console.warn('Native HoloNative dispatch notice:', err);
+    }
+  }
+
+  // 2. Cloud WebSocket Bridge via Railway Runner
+  try {
+    fetch(`${RAILWAY_RUNNER_URL}/device/command`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        command: action,
+        args: {
+          package: args.package || '',
+          app_name: args.package || args.app_name || '',
+          ...args
+        },
+        timeout: 8000
+      })
+    }).then(r => r.json()).then(res => {
+      console.log('📱 Cloud bridge response:', res);
+    }).catch(e => console.warn('Cloud bridge fetch error:', e));
+  } catch(e) {}
+  return true;
+}
+
+// ================= INTENT-DRIVEN SHAPE MORPHING & INSTANT PHONE ACTIONS =================
 function checkVoiceIntent(str){
   const s = (str || '').trim().toLowerCase();
   if (!s) return null;
+
+  // 📱 PREEMPTIVE INSTANT PHONE AUTOMATION
+  // 1. Home
+  if (/(home screen|home par jao|home jao|होम स्क्रीन|होम पर)/i.test(s)) {
+    triggerPhoneActionDirect('home');
+    return 'home';
+  }
+  // 2. Back
+  if (/(back ho jao|back jao|back karo|peeche jao|बैक हो|बैक करो|बैक जाओ)/i.test(s)) {
+    triggerPhoneActionDirect('back');
+    return 'back';
+  }
+  // 3. Recents
+  if (/(recent apps|recents|रीसेंट ऐप्स|रिसेंट ऐप्स|रीसेंट)/i.test(s)) {
+    triggerPhoneActionDirect('recents');
+    return 'recents';
+  }
+  // 4. Notifications
+  if (/(notifications|notification shade|नोटिफिकेशन|नोटिफिकेशन्स)/i.test(s) && /(kholo|dikhao|lao|open|pull|खोलो|दिखाओ)/i.test(s)) {
+    triggerPhoneActionDirect('notifications');
+    return 'notifications';
+  }
+  // 5. Lock Screen
+  if (/(phone lock|screen lock|lock karo|lock phone|फोन लॉक|स्क्रीन लॉक)/i.test(s)) {
+    triggerPhoneActionDirect('lock');
+    return 'lock';
+  }
+  // 6. Launch Apps (e.g. "Spotify kholo", "WhatsApp open karo", "JioCinema kholo", "Camera kholo")
+  const genericAppMatch = s.match(/(.+?)\s*(खोलो|खोल दो|खोल दे|kholo|open karo|khol do|kholna)\b/i);
+  if (genericAppMatch) {
+    const rawApp = genericAppMatch[1].replace(/(मेरा|phone par|phone me|mobile me|app|apne|mera|kripya|please)\s*/gi, '').trim();
+    if (rawApp.length >= 2 && !/(door|gate|darwaza|khidki|khole|eyes|aankh|muh)/i.test(rawApp)) {
+      triggerPhoneActionDirect('open_app', { package: rawApp, app_name: rawApp });
+      return 'open_app';
+    }
+  }
+  const genericAppMatch2 = s.match(/\b(open|kholo|khol do)\s+(.+)/i);
+  if (genericAppMatch2) {
+    const rawApp = genericAppMatch2[2].replace(/(app|application|please)\s*/gi, '').trim();
+    if (rawApp.length >= 2 && !/(door|site|link|eyes|darwaza)/i.test(rawApp)) {
+      triggerPhoneActionDirect('open_app', { package: rawApp, app_name: rawApp });
+      return 'open_app';
+    }
+  }
 
   const isCommand = (regex) => {
     if (!regex.test(s)) return false;
@@ -6770,40 +6865,56 @@ echo "TUNNEL_URL: $URL"
               const pAction = args.action || 'home';
               console.log('📱 Phone action requested:', pAction, args);
               try {
-                const phoneResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/device/command`, {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
-                    'Content-Type': 'application/json'
-                  },
-                  body: JSON.stringify({
-                    command: pAction,
-                    args: {
-                      package: args.package || '',
-                      text: args.text || '',
-                      direction: args.direction || 'down',
-                      x: args.x,
-                      y: args.y
-                    },
-                    timeout: 10000
-                  })
-                }, 12000);
-
-                if (phoneResp && phoneResp.success) {
+                // If running natively inside HoloCompanion APK
+                if (window.HoloNative) {
+                  if (pAction === 'home') window.HoloNative.performHome();
+                  else if (pAction === 'back') window.HoloNative.performBack();
+                  else if (pAction === 'recents') window.HoloNative.performRecents();
+                  else if (pAction === 'notifications') window.HoloNative.performNotifications();
+                  else if (pAction === 'lock') window.HoloNative.performLock();
+                  else if (pAction === 'open_app') window.HoloNative.launchApp(args.package || args.app_name || '');
                   callResult = {
                     success: true,
                     action: pAction,
-                    result: phoneResp.result || phoneResp.message,
                     message: `बॉस, फोन पर ${pAction} कमांड पूरी हो गई है!`
                   };
                 } else {
-                  callResult = {
-                    success: false,
-                    error: phoneResp?.error || 'Device bridge not responding',
-                    message: phoneResp?.error?.includes('No active') 
-                      ? 'बॉस, फोन में HoloCompanion APK ओपन करके Accessibility चालू कर दीजिए, फिर कनेक्ट हो जाएगा!'
-                      : 'फोन कमांड में थोड़ी समस्या आई।'
-                  };
+                  const phoneResp = await safeFetchJson(`${RAILWAY_RUNNER_URL}/device/command`, {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${RUNNER_SECRET_KEY}`,
+                      'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                      command: pAction,
+                      args: {
+                        package: args.package || '',
+                        app_name: args.package || args.app_name || '',
+                        text: args.text || '',
+                        direction: args.direction || 'down',
+                        x: args.x,
+                        y: args.y
+                      },
+                      timeout: 10000
+                    })
+                  }, 12000);
+
+                  if (phoneResp && phoneResp.success) {
+                    callResult = {
+                      success: true,
+                      action: pAction,
+                      result: phoneResp.result || phoneResp.message,
+                      message: `बॉस, फोन पर ${pAction} कमांड पूरी हो गई है!`
+                    };
+                  } else {
+                    callResult = {
+                      success: false,
+                      error: phoneResp?.error || 'Device bridge not responding',
+                      message: phoneResp?.error?.includes('No active') 
+                        ? 'बॉस, फोन में HoloCompanion APK ओपन करके Accessibility चालू कर दीजिए, फिर कनेक्ट हो जाएगा!'
+                        : 'फोन कमांड में थोड़ी समस्या आई।'
+                    };
+                  }
                 }
               } catch(e) {
                 callResult = { success: false, error: e.message, message: 'फोन ब्रिज से संपर्क नहीं हो पाया।' };
